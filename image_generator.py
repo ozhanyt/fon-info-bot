@@ -442,15 +442,14 @@ def generate_fund_report_html(tracked_dict, allocation_diffs, config, period_lab
         """
 
     data = tracked_dict[target_fund]
-    allocations = allocation_diffs.get(target_fund, [])[:6]
-    top_inc = max(allocations, key=lambda x: x.get("diff", 0)) if allocations else {}
-    top_dec = min(allocations, key=lambda x: x.get("diff", 0)) if allocations else {}
+    allocations = allocation_diffs.get(target_fund, [])[:8]
 
     price_str = f"₺{data.get('price', 0):,.6f}".replace(",", "X").replace(".", ",").replace("X", ".")
     size_str = "₺" + f"{data.get('fund_size', 0):,.0f}".replace(",", ".")
     flow_str = format_money(data.get("period_flow", 0))
     flow_pct = f"{'+' if data.get('period_flow_pct', 0) >= 0 else ''}{format_pct(data.get('period_flow_pct', 0), 2)}"
-    ret_str = f"{'+' if data.get('period_return_pct', 0) >= 0 else ''}{format_pct(data.get('period_return_pct', 0), 2)}"
+    ret_decimals = 4 if period_label == "Günlük" else 2
+    ret_str = f"{'+' if data.get('period_return_pct', 0) >= 0 else ''}{format_pct(data.get('period_return_pct', 0), ret_decimals)}"
     investor_delta = int(data.get("period_investor_change", 0))
     investor_delta_str = f"{investor_delta:+,}".replace(",", ".")
     investor_pct_str = f"{'+' if data.get('period_investor_pct', 0) >= 0 else ''}{format_pct(data.get('period_investor_pct', 0), 2)}"
@@ -458,6 +457,9 @@ def generate_fund_report_html(tracked_dict, allocation_diffs, config, period_lab
     per_inv_str = "₺" + f"{data.get('per_investor_value', 0):,.0f}".replace(",", ".")
     per_inv_prev_str = "₺" + f"{data.get('per_investor_value_prev', 0):,.0f}".replace(",", ".")
     per_inv_pct_str = f"{'+' if data.get('per_investor_change_pct', 0) >= 0 else ''}{format_pct(data.get('per_investor_change_pct', 0), 2)}"
+    investor_delta_class = "trend-up" if investor_delta >= 0 else "trend-down"
+    ret_class = "trend-up" if data.get('period_return_pct', 0) >= 0 else "trend-down"
+    flow_class = "trend-up" if data.get('period_flow', 0) >= 0 else "trend-down"
 
     alloc_html = ""
     for alloc in allocations:
@@ -491,33 +493,33 @@ def generate_fund_report_html(tracked_dict, allocation_diffs, config, period_lab
         <div class="fund-report-kpis">
             <div class="fund-report-kpi">
                 <span class="fund-report-kpi-label">{period_label} Getirisi</span>
-                <span class="fund-report-kpi-value {'trend-up' if data.get('period_return_pct', 0) >= 0 else 'trend-down'}">{ret_str}</span>
+                <span class="fund-report-kpi-value {ret_class}">{ret_str}</span>
                 <span class="fund-report-kpi-sub">Dönem fiyat performansı</span>
             </div>
-            <div class="fund-report-kpi">
+            <div class="fund-report-kpi fund-report-kpi-accent fund-report-kpi-size">
                 <span class="fund-report-kpi-label">Fon Büyüklüğü</span>
                 <span class="fund-report-kpi-value">{size_str}</span>
                 <span class="fund-report-kpi-sub">Güncel portföy değeri</span>
             </div>
-            <div class="fund-report-kpi">
+            <div class="fund-report-kpi fund-report-kpi-accent fund-report-kpi-flow">
                 <span class="fund-report-kpi-label">Para Giriş/Çıkışı</span>
-                <span class="fund-report-kpi-value {'trend-up' if data.get('period_flow', 0) >= 0 else 'trend-down'}">{flow_str}</span>
+                <span class="fund-report-kpi-value {flow_class}">{flow_str}</span>
                 <span class="fund-report-kpi-sub">{flow_pct}</span>
             </div>
             <div class="fund-report-kpi">
                 <span class="fund-report-kpi-label">Yatırımcı Sayısı</span>
                 <span class="fund-report-kpi-value">{investor_count_str}</span>
-                <span class="fund-report-kpi-sub {'trend-up' if investor_delta >= 0 else 'trend-down'}">{investor_delta_str} kişi ({investor_pct_str})</span>
+                <span class="fund-report-kpi-sub">Güncel yatırımcı adedi</span>
             </div>
-            <div class="fund-report-kpi">
+            <div class="fund-report-kpi fund-report-kpi-accent fund-report-kpi-investor">
+                <span class="fund-report-kpi-label">{period_label} Yatırımcı Değişimi</span>
+                <span class="fund-report-kpi-value fund-report-kpi-big {investor_delta_class}">{investor_delta_str} kişi</span>
+                <span class="fund-report-kpi-sub {investor_delta_class}">{investor_pct_str}</span>
+            </div>
+            <div class="fund-report-kpi fund-report-kpi-accent fund-report-kpi-perinv">
                 <span class="fund-report-kpi-label">Kişi Başı Yatırım</span>
                 <span class="fund-report-kpi-value">{per_inv_str}</span>
                 <span class="fund-report-kpi-sub">Önceki: {per_inv_prev_str} ({per_inv_pct_str})</span>
-            </div>
-            <div class="fund-report-kpi">
-                <span class="fund-report-kpi-label">Özet Sinyal</span>
-                <span class="fund-report-kpi-value {'trend-up' if data.get('period_flow_pct', 0) >= 0 else 'trend-down'}">{flow_pct}</span>
-                <span class="fund-report-kpi-sub">Para akışı / ilgi yönü</span>
             </div>
         </div>
         <div class="fund-report-bottom">
@@ -525,27 +527,6 @@ def generate_fund_report_html(tracked_dict, allocation_diffs, config, period_lab
                 <div class="fund-report-panel-title">Portföy Dağılımı</div>
                 <div class="fund-report-alloc-grid">
                     {alloc_html if alloc_html else '<div class="fund-report-kpi-sub">Portföy dağılım verisi alınamadı.</div>'}
-                </div>
-            </div>
-            <div class="fund-report-panel">
-                <div class="fund-report-panel-title">Öne Çıkanlar</div>
-                <div class="fund-report-summary">
-                    <div class="fund-report-summary-item">
-                        <span class="fund-report-summary-label">En çok artan</span>
-                        <span class="fund-report-summary-value trend-up">{top_inc.get('asset_name', '-')}</span>
-                    </div>
-                    <div class="fund-report-summary-item">
-                        <span class="fund-report-summary-label">Artış farkı</span>
-                        <span class="fund-report-summary-value trend-up">{str(f"{float(top_inc.get('diff', 0)):+.2f}").replace('.', ',')}</span>
-                    </div>
-                    <div class="fund-report-summary-item">
-                        <span class="fund-report-summary-label">En çok azalan</span>
-                        <span class="fund-report-summary-value trend-down">{top_dec.get('asset_name', '-')}</span>
-                    </div>
-                    <div class="fund-report-summary-item">
-                        <span class="fund-report-summary-label">Azalış farkı</span>
-                        <span class="fund-report-summary-value trend-down">{str(f"{float(top_dec.get('diff', 0)):+.2f}").replace('.', ',')}</span>
-                    </div>
                 </div>
             </div>
         </div>
