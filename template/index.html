@@ -589,6 +589,154 @@
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
         }
 
+        .fund-report-body {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .fund-report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 18px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .fund-report-title {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 0;
+        }
+
+        .fund-report-code {
+            font-size: calc(var(--tcode-font-size) * 0.9);
+            font-weight: 900;
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+
+        .fund-report-name {
+            font-size: calc(var(--item-font-size) * 0.62);
+            color: rgba(255, 255, 255, 0.72);
+            font-weight: 700;
+            text-transform: uppercase;
+            line-height: 1.2;
+        }
+
+        .fund-report-price {
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .fund-report-price-label {
+            display: block;
+            font-size: calc(var(--item-font-size) * 0.42);
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .fund-report-price-value {
+            display: block;
+            font-size: calc(var(--item-font-size) * 1.1);
+            font-weight: 900;
+            color: #F59E0B;
+        }
+
+        .fund-report-kpis {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+
+        .fund-report-kpi {
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.02);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-height: 110px;
+        }
+
+        .fund-report-kpi-label {
+            font-size: calc(var(--item-font-size) * 0.42);
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .fund-report-kpi-value {
+            font-size: calc(var(--item-font-size) * 1.05);
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .fund-report-kpi-sub {
+            font-size: calc(var(--item-font-size) * 0.48);
+            color: rgba(255, 255, 255, 0.68);
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        .fund-report-bottom {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 16px;
+        }
+
+        .fund-report-panel {
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .fund-report-panel-title {
+            font-size: calc(var(--item-font-size) * 0.5);
+            color: rgba(255, 255, 255, 0.78);
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .fund-report-alloc-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px 14px;
+        }
+
+        .fund-report-alloc-item,
+        .fund-report-summary-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: calc(var(--item-font-size) * 0.52);
+            line-height: 1.2;
+        }
+
+        .fund-report-alloc-name,
+        .fund-report-summary-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 700;
+        }
+
+        .fund-report-alloc-val,
+        .fund-report-summary-value {
+            font-weight: 800;
+            text-align: right;
+        }
+
+        .fund-report-summary {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
         .t-header {
             display: flex;
             justify-content: space-between;
@@ -968,6 +1116,11 @@
                     </div>
                 </div>
                 {{PER_INVESTOR_HTML}}
+            </div>
+
+            <!-- fund_report -->
+            <div class="card glass-card fund-report {{SHOW_FUND_REPORT}}" style="/* POS_FUND_REPORT */">
+                {{FUND_REPORT_HTML}}
             </div>
         </div>
 

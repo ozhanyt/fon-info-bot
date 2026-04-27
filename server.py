@@ -342,7 +342,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                         
                         const bgUrl = document.getElementById('bgUrl').value;
                         const sections = [];
-                        ['inflows', 'outflows', 'cat_in', 'cat_out', 'inv_in', 'inv_out', 'divergent', 'momentum', 'crowding', 'category_rotation', 'tracked', 'tracked_rs', 'manager_actions', 'predictions', 'portfolio_diff', 'per_investor_value', 'top_gainers', 'top_losers', 'return_chart'].forEach(s => {
+                        ['inflows', 'outflows', 'cat_in', 'cat_out', 'inv_in', 'inv_out', 'divergent', 'momentum', 'crowding', 'category_rotation', 'tracked', 'tracked_rs', 'manager_actions', 'predictions', 'portfolio_diff', 'per_investor_value', 'fund_report', 'top_gainers', 'top_losers', 'return_chart'].forEach(s => {
                             const chk = document.getElementById('chk-' + s);
                             if (chk && chk.checked) sections.push(s);
                         });
@@ -368,7 +368,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                         const selectedCats = Array.from(document.querySelectorAll('.cat-chk:checked')).map(c => c.value);
                         
                         const positions = {};
-                        ['inflows', 'outflows', 'cat_in', 'cat_out', 'inv_in', 'inv_out', 'divergent', 'momentum', 'crowding', 'category_rotation', 'tracked', 'tracked_rs', 'manager_actions', 'predictions', 'portfolio_diff', 'per_investor_value', 'top_gainers', 'top_losers', 'return_chart'].forEach(s => {
+                        ['inflows', 'outflows', 'cat_in', 'cat_out', 'inv_in', 'inv_out', 'divergent', 'momentum', 'crowding', 'category_rotation', 'tracked', 'tracked_rs', 'manager_actions', 'predictions', 'portfolio_diff', 'per_investor_value', 'fund_report', 'top_gainers', 'top_losers', 'return_chart'].forEach(s => {
                             const chk = document.getElementById('chk-' + s);
                             if (chk) {
                                 const r = document.getElementById('pos-' + s + '-r').value;
@@ -408,6 +408,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                                 predictions: predictions,
                                 portfolio_diff_fund: document.getElementById('portfolioDiffFund') ? document.getElementById('portfolioDiffFund').value.trim() : 'PHE',
                                 portfolio_diff_cols: document.getElementById('portfolioDiffCols') ? document.getElementById('portfolioDiffCols').value : 1,
+                                fund_report_fund: document.getElementById('fundReportFund') ? document.getElementById('fundReportFund').value.trim() : 'PHE',
                                 pred_cols: document.getElementById('predCols') ? document.getElementById('predCols').value : 1,
                                 positions: positions
                             })
@@ -500,6 +501,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                 "top_losers": "En Çok Kaybedenler",
                 "tracked": "Takipteki Fonlar", 
                 "per_investor_value": "Kişi Başı Yatırım Değeri",
+                "fund_report": "Fon Karnesi",
                 "predictions": "Tahminler (Serbest Bölüm)", 
                 "portfolio_diff": "Portföy Değişimleri"
             }
@@ -519,6 +521,11 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                         <option value="1" {"selected" if def_port_cols == 1 else ""}>1 Sütun</option>
                         <option value="2" {"selected" if def_port_cols == 2 else ""}>2 Sütun</option>
                     </select>
+                    '''
+                elif key == "fund_report":
+                    def_fund_report = db_config.get("fund_report_fund", "PHE")
+                    extra_input = f'''
+                    <input type="text" id="fundReportFund" value="{def_fund_report}" style="width:70px; margin-left:10px; padding:6px; font-size:12px;" placeholder="PHE">
                     '''
                     
                 pos_rows_html += f"""
@@ -605,6 +612,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
             pred_cols = int(req_data.get('pred_cols', 1))
             portfolio_diff_fund = req_data.get('portfolio_diff_fund', 'PHE')
             portfolio_diff_cols = int(req_data.get('portfolio_diff_cols', 1))
+            fund_report_fund = req_data.get('fund_report_fund', 'PHE')
             predictions = req_data.get('predictions', [])
             positions = req_data.get('positions', {})
             
@@ -623,6 +631,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                     "header_show_sub": header_show_sub, "pred_title": pred_title, "pred_cols": pred_cols,
                     "portfolio_diff_fund": portfolio_diff_fund,
                     "portfolio_diff_cols": int(req_data.get('portfolio_diff_cols', 1)),
+                    "fund_report_fund": fund_report_fund,
                     "predictions": predictions, "positions": positions
                 }, f)
 
@@ -633,18 +642,22 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
             try:
                 # 1. Run Data Fetcher
                 # Ensure data fetcher runs if any Tefas section is requested
-                tefas_sections = ["inflows", "outflows", "cat_in", "cat_out", "inv_in", "inv_out", "divergent", "momentum", "crowding", "category_rotation", "tracked", "tracked_rs", "manager_actions", "portfolio_diff", "per_investor_value", "top_gainers", "top_losers", "return_chart"]
+                tefas_sections = ["inflows", "outflows", "cat_in", "cat_out", "inv_in", "inv_out", "divergent", "momentum", "crowding", "category_rotation", "tracked", "tracked_rs", "manager_actions", "portfolio_diff", "per_investor_value", "fund_report", "top_gainers", "top_losers", "return_chart"]
                 section_list = sections.split(",")
                 needs_data = any(s in section_list for s in tefas_sections)
                 
                 if needs_data:
                     # If portfolio_diff is active, make sure that fund is in tracked_funds so it is fetched properly
                     current_tracked = [t.strip().upper() for t in tracked_funds.split(',') if t.strip()]
+                    priority_funds = []
+                    if "fund_report" in section_list and fund_report_fund.strip():
+                        priority_funds.append(fund_report_fund.upper())
                     if "portfolio_diff" in section_list and portfolio_diff_fund.strip():
-                        target_portfolio_fund = portfolio_diff_fund.upper()
-                        current_tracked = [t for t in current_tracked if t != target_portfolio_fund]
-                        current_tracked.insert(0, target_portfolio_fund)
-                        tracked_funds = ", ".join(current_tracked)
+                        priority_funds.append(portfolio_diff_fund.upper())
+                    for target_code in reversed(priority_funds):
+                        current_tracked = [t for t in current_tracked if t != target_code]
+                        current_tracked.insert(0, target_code)
+                    tracked_funds = ", ".join(current_tracked)
 
                     print(f"Running data fetcher for {period}...")
                     subprocess.run(["python", os.path.join(DIRECTORY, "data_fetcher.py"), period, tracked_funds, selected_categories, "--sort", sort_mode], check=True)
@@ -663,6 +676,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                         "header_show_sub": header_show_sub, "pred_title": pred_title,
                         "portfolio_diff_fund": portfolio_diff_fund,
                         "portfolio_diff_cols": portfolio_diff_cols,
+                        "fund_report_fund": fund_report_fund,
                         "pred_cols": pred_cols,
                         "canvas_width": int(canvas_width), "item_font_size": int(item_font_size),
                         "period_font_size": int(period_font_size), "tcode_font_size": int(tcode_font_size),

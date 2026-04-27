@@ -592,7 +592,7 @@ def fetch_allocation_diff(fund_code):
             return None
             
         latest_date_str = df_hist.index[-1].strftime("%Y%m%d")
-        prev_date_str = df_hist.index[0].strftime("%Y%m%d")
+        prev_date_str = df_hist.index[-2].strftime("%Y%m%d")
         
         dist_latest = tapi.get_portfolio_distribution(fund_code, latest_date_str)
         dist_prev = tapi.get_portfolio_distribution(fund_code, prev_date_str)

@@ -194,6 +194,46 @@ def tweet_per_investor_value(data, period):
     return "\n".join(lines)
 
 
+def tweet_fund_report(data, config, period):
+    tracked = data.get("tracked", {})
+    diffs = data.get("allocation_diffs", {})
+    target_fund = config.get("fund_report_fund", "").upper()
+    if not target_fund:
+        target_fund = next(iter(tracked.keys()), "")
+    if not target_fund or target_fund not in tracked:
+        return "Fon Karnesi için veri bulunamadı."
+
+    item = tracked[target_fund]
+    allocs = diffs.get(target_fund, [])
+    top_inc = max(allocs, key=lambda x: x.get("diff", 0)) if allocs else {}
+    top_dec = min(allocs, key=lambda x: x.get("diff", 0)) if allocs else {}
+    date = tr_date(data["date"])
+    lbl = PERIOD_LABEL.get(period, "Günlük")
+
+    flow = fmt_money(item.get("period_flow", 0))
+    flow_pct = fmt_pct(item.get("period_flow_pct", 0))
+    ret = fmt_pct(item.get("period_return_pct", 0))
+    size = f"₺{item.get('fund_size', 0):,.0f}".replace(",", ".")
+    investors = f"{int(item.get('investors', 0)):,}".replace(",", ".")
+    inv_delta = f"{int(item.get('period_investor_change', 0)):+d}"
+    per_inv = f"₺{item.get('per_investor_value', 0):,.0f}".replace(",", ".")
+    per_inv_pct = fmt_pct(item.get("per_investor_change_pct", 0))
+
+    lines = [f"📘 #{target_fund} Fon Karnesi — {date}\n"]
+    lines.append(f"Getiri: {ret}")
+    lines.append(f"Fon Büyüklüğü: {size}")
+    lines.append(f"Para Giriş/Çıkışı: {flow} ({flow_pct})")
+    lines.append(f"Yatırımcı: {investors} ({inv_delta} kişi)")
+    lines.append(f"Kişi Başı Yatırım: {per_inv} ({per_inv_pct})")
+    if top_inc:
+        lines.append(f"En çok artan dağılım: {top_inc.get('asset_name', '')} ({top_inc.get('diff', 0):+.2f})".replace(".", ","))
+    if top_dec:
+        lines.append(f"En çok azalan dağılım: {top_dec.get('asset_name', '')} ({top_dec.get('diff', 0):+.2f})".replace(".", ","))
+    lines.append(f"\nNot: {lbl.lower()} dönem karnesi; getiri, para akışı, yatırımcı ve portföy dağılımını birlikte özetler.")
+    lines.append(f"\n#TEFAS #FonYatırımı #{target_fund}")
+    return "\n".join(lines)
+
+
 def tweet_predictions(data, config):
     preds = config.get("predictions", [])
     date  = tr_date(data["date"])
@@ -412,6 +452,9 @@ def generate_tweet_text(data, sections, config=None):
     if has("per_investor_value") and len(sections) == 1:
         return tweet_per_investor_value(data, period)
 
+    if has("fund_report") and len(sections) == 1:
+        return tweet_fund_report(data, config, period)
+
     if (has("top_gainers") or has("top_losers")) and not has("inflows") and not has("outflows") and not has("cat_in") and not has("cat_out") and not has("inv_in") and not has("inv_out"):
         return tweet_top_returns(data, period)
 
@@ -453,6 +496,9 @@ def generate_tweet_text(data, sections, config=None):
 
     if has("per_investor_value"):
         return tweet_per_investor_value(data, period)
+
+    if has("fund_report"):
+        return tweet_fund_report(data, config, period)
 
     if has("top_gainers") or has("top_losers"):
         return tweet_top_returns(data, period)

@@ -422,6 +422,136 @@ def generate_per_investor_html(tracked_dict):
         """
     return html
 
+
+def generate_fund_report_html(tracked_dict, allocation_diffs, config, period_label):
+    if not tracked_dict:
+        return ""
+
+    target_fund = config.get("fund_report_fund", "").upper()
+    if not target_fund:
+        target_fund = list(tracked_dict.keys())[0] if tracked_dict else ""
+    if target_fund not in tracked_dict:
+        return f"""
+        <div class="fund-report-body">
+            <div class="card-header">
+                <div class="header-icon inflow-icon" style="background:rgba(10,132,255,0.2); color:#0A84FF;">📘</div>
+                <h2>Fon Karnesi <span class="period-label">({period_label})</span></h2>
+            </div>
+            <div class="fund-report-kpi"><span class="fund-report-kpi-sub">{target_fund} için veri alınamadı.</span></div>
+        </div>
+        """
+
+    data = tracked_dict[target_fund]
+    allocations = allocation_diffs.get(target_fund, [])[:6]
+    top_inc = max(allocations, key=lambda x: x.get("diff", 0)) if allocations else {}
+    top_dec = min(allocations, key=lambda x: x.get("diff", 0)) if allocations else {}
+
+    price_str = f"₺{data.get('price', 0):,.6f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    size_str = "₺" + f"{data.get('fund_size', 0):,.0f}".replace(",", ".")
+    flow_str = format_money(data.get("period_flow", 0))
+    flow_pct = f"{'+' if data.get('period_flow_pct', 0) >= 0 else ''}{format_pct(data.get('period_flow_pct', 0), 2)}"
+    ret_str = f"{'+' if data.get('period_return_pct', 0) >= 0 else ''}{format_pct(data.get('period_return_pct', 0), 2)}"
+    investor_delta = int(data.get("period_investor_change", 0))
+    investor_delta_str = f"{investor_delta:+,}".replace(",", ".")
+    investor_pct_str = f"{'+' if data.get('period_investor_pct', 0) >= 0 else ''}{format_pct(data.get('period_investor_pct', 0), 2)}"
+    investor_count_str = f"{int(data.get('investors', 0)):,}".replace(",", ".")
+    per_inv_str = "₺" + f"{data.get('per_investor_value', 0):,.0f}".replace(",", ".")
+    per_inv_prev_str = "₺" + f"{data.get('per_investor_value_prev', 0):,.0f}".replace(",", ".")
+    per_inv_pct_str = f"{'+' if data.get('per_investor_change_pct', 0) >= 0 else ''}{format_pct(data.get('per_investor_change_pct', 0), 2)}"
+
+    alloc_html = ""
+    for alloc in allocations:
+        diff = float(alloc.get("diff", 0))
+        diff_str = f"{'+' if diff >= 0 else ''}{str(f'{diff:.2f}').replace('.', ',')}"
+        diff_class = "trend-up" if diff >= 0 else "trend-down"
+        weight_str = f"%{alloc.get('weight', 0):.2f}".replace(".", ",")
+        alloc_html += f"""
+        <div class="fund-report-alloc-item">
+            <span class="fund-report-alloc-name">{alloc.get('asset_name', '')}</span>
+            <span class="fund-report-alloc-val {diff_class}">{weight_str} ({diff_str})</span>
+        </div>
+        """
+
+    return f"""
+    <div class="fund-report-body">
+        <div class="card-header">
+            <div class="header-icon inflow-icon" style="background:rgba(10,132,255,0.2); color:#0A84FF;">📘</div>
+            <h2>Fon Karnesi <span class="period-label">({period_label})</span></h2>
+        </div>
+        <div class="fund-report-header">
+            <div class="fund-report-title">
+                <span class="fund-report-code">{target_fund}</span>
+                <span class="fund-report-name">{data.get('name', '')}</span>
+            </div>
+            <div class="fund-report-price">
+                <span class="fund-report-price-label">Güncel Fiyat</span>
+                <span class="fund-report-price-value">{price_str}</span>
+            </div>
+        </div>
+        <div class="fund-report-kpis">
+            <div class="fund-report-kpi">
+                <span class="fund-report-kpi-label">{period_label} Getirisi</span>
+                <span class="fund-report-kpi-value {'trend-up' if data.get('period_return_pct', 0) >= 0 else 'trend-down'}">{ret_str}</span>
+                <span class="fund-report-kpi-sub">Dönem fiyat performansı</span>
+            </div>
+            <div class="fund-report-kpi">
+                <span class="fund-report-kpi-label">Fon Büyüklüğü</span>
+                <span class="fund-report-kpi-value">{size_str}</span>
+                <span class="fund-report-kpi-sub">Güncel portföy değeri</span>
+            </div>
+            <div class="fund-report-kpi">
+                <span class="fund-report-kpi-label">Para Giriş/Çıkışı</span>
+                <span class="fund-report-kpi-value {'trend-up' if data.get('period_flow', 0) >= 0 else 'trend-down'}">{flow_str}</span>
+                <span class="fund-report-kpi-sub">{flow_pct}</span>
+            </div>
+            <div class="fund-report-kpi">
+                <span class="fund-report-kpi-label">Yatırımcı Sayısı</span>
+                <span class="fund-report-kpi-value">{investor_count_str}</span>
+                <span class="fund-report-kpi-sub {'trend-up' if investor_delta >= 0 else 'trend-down'}">{investor_delta_str} kişi ({investor_pct_str})</span>
+            </div>
+            <div class="fund-report-kpi">
+                <span class="fund-report-kpi-label">Kişi Başı Yatırım</span>
+                <span class="fund-report-kpi-value">{per_inv_str}</span>
+                <span class="fund-report-kpi-sub">Önceki: {per_inv_prev_str} ({per_inv_pct_str})</span>
+            </div>
+            <div class="fund-report-kpi">
+                <span class="fund-report-kpi-label">Özet Sinyal</span>
+                <span class="fund-report-kpi-value {'trend-up' if data.get('period_flow_pct', 0) >= 0 else 'trend-down'}">{flow_pct}</span>
+                <span class="fund-report-kpi-sub">Para akışı / ilgi yönü</span>
+            </div>
+        </div>
+        <div class="fund-report-bottom">
+            <div class="fund-report-panel">
+                <div class="fund-report-panel-title">Portföy Dağılımı</div>
+                <div class="fund-report-alloc-grid">
+                    {alloc_html if alloc_html else '<div class="fund-report-kpi-sub">Portföy dağılım verisi alınamadı.</div>'}
+                </div>
+            </div>
+            <div class="fund-report-panel">
+                <div class="fund-report-panel-title">Öne Çıkanlar</div>
+                <div class="fund-report-summary">
+                    <div class="fund-report-summary-item">
+                        <span class="fund-report-summary-label">En çok artan</span>
+                        <span class="fund-report-summary-value trend-up">{top_inc.get('asset_name', '-')}</span>
+                    </div>
+                    <div class="fund-report-summary-item">
+                        <span class="fund-report-summary-label">Artış farkı</span>
+                        <span class="fund-report-summary-value trend-up">{str(f"{float(top_inc.get('diff', 0)):+.2f}").replace('.', ',')}</span>
+                    </div>
+                    <div class="fund-report-summary-item">
+                        <span class="fund-report-summary-label">En çok azalan</span>
+                        <span class="fund-report-summary-value trend-down">{top_dec.get('asset_name', '-')}</span>
+                    </div>
+                    <div class="fund-report-summary-item">
+                        <span class="fund-report-summary-label">Azalış farkı</span>
+                        <span class="fund-report-summary-value trend-down">{str(f"{float(top_dec.get('diff', 0)):+.2f}").replace('.', ',')}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    """
+
 def generate_tracked_html(tracked_dict, period_label, show_chart=False):
     html = ""
     for code, data in tracked_dict.items():
@@ -715,6 +845,7 @@ async def main():
     
     
     portfolio_diff_html = generate_portfolio_diff_html(data.get('allocation_diffs', {}), config) if "portfolio_diff" in sections else ""
+    fund_report_html = generate_fund_report_html(data.get('tracked', {}), data.get('allocation_diffs', {}), config, period_label) if "fund_report" in sections else ""
     
     top_gainers_html = generate_top_returns_html(data.get('top_gainers', []), True) if "top_gainers" in sections else ""
     top_losers_html = generate_top_returns_html(data.get('top_losers', []), False) if "top_losers" in sections else ""
@@ -761,6 +892,7 @@ async def main():
     template = template.replace("{{RETURN_CHART_HTML}}", chart_card_html)
     template = template.replace("{{PORTFOLIO_DIFF_HTML}}", portfolio_diff_html)
     template = template.replace("{{PORTFOLIO_COLS_CLASS}}", "cols-2" if int(config.get("portfolio_diff_cols", 1)) == 2 else "cols-1")
+    template = template.replace("{{FUND_REPORT_HTML}}", fund_report_html)
     template = template.replace("{{TOP_GAINERS_HTML}}", top_gainers_html)
     template = template.replace("{{TOP_LOSERS_HTML}}", top_losers_html)
     template = template.replace("{{PREDICTIONS_HTML}}", predictions_html)
@@ -784,7 +916,7 @@ async def main():
     template = template.replace("{{LAYOUT_MODE_CLASS}}", layout_mode_class)
     
     # Conditional Visibility and Positioning
-    for s_name in ["inflows", "outflows", "cat_in", "cat_out", "inv_in", "inv_out", "divergent", "momentum", "crowding", "category_rotation", "tracked", "tracked_rs", "manager_actions", "predictions", "portfolio_diff", "top_gainers", "top_losers", "return_chart", "per_investor_value"]:
+    for s_name in ["inflows", "outflows", "cat_in", "cat_out", "inv_in", "inv_out", "divergent", "momentum", "crowding", "category_rotation", "tracked", "tracked_rs", "manager_actions", "predictions", "portfolio_diff", "fund_report", "top_gainers", "top_losers", "return_chart", "per_investor_value"]:
         placeholder_show = f"{{{{SHOW_{s_name.upper()}}}}}"
         placeholder_pos = f"/* POS_{s_name.upper()} */"
         
@@ -828,7 +960,7 @@ async def main():
     print(f"DEBUG: pred_cols from config is: {config.get('pred_cols')} (type: {type(config.get('pred_cols'))})")
     template = template.replace("{{PRED_COLS_CLASS}}", "cols-2" if int(config.get("pred_cols", 1)) == 2 else "cols-1")
     long_footer_sections = {"inflows", "outflows", "inv_in", "inv_out", "top_gainers", "top_losers", "cat_in", "cat_out"}
-    short_footer_sections = {"tracked", "per_investor_value", "portfolio_diff"}
+    short_footer_sections = {"tracked", "per_investor_value", "portfolio_diff", "fund_report"}
 
     if any(s in long_footer_sections for s in sections):
         footer_note = clean_footer_note(data.get("footer_note", "* Veriler TEFAS üzerinden alınmıştır."))
@@ -887,6 +1019,7 @@ async def main():
     template = template.replace("/* POS_MANAGER_ACTIONS */", get_grid_pos("manager_actions"))
     template = template.replace("/* POS_PREDICTIONS */", get_grid_pos("predictions"))
     template = template.replace("/* POS_PORTFOLIO_DIFF */", get_grid_pos("portfolio_diff"))
+    template = template.replace("/* POS_FUND_REPORT */", get_grid_pos("fund_report"))
     template = template.replace("/* POS_TOP_GAINERS */", get_grid_pos("top_gainers"))
     template = template.replace("/* POS_TOP_LOSERS */", get_grid_pos("top_losers"))
     
