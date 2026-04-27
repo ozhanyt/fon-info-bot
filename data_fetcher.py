@@ -3,6 +3,7 @@ import os
 import json
 import logging
 import time
+import unicodedata
 from datetime import datetime, timedelta
 import concurrent.futures
 import argparse
@@ -79,11 +80,22 @@ def get_fund_flow(fund_code, period_type):
         return None
 
 def normalize(s):
-    if not s: return ""
-    s = str(s).lower()
-    repls = {'ı': 'i', 'ş': 's', 'ğ': 'g', 'ü': 'u', 'ö': 'o', 'ç': 'c', 'i̇': 'i'}
-    for k, v in repls.items():
-        s = s.replace(k, v)
+    if not s:
+        return ""
+    s = str(s).strip().lower()
+    for src, dst in {'ı': 'i', 'ş': 's', 'ğ': 'g', 'ü': 'u', 'ö': 'o', 'ç': 'c'}.items():
+        s = s.replace(src, dst)
+    if any(mark in s for mark in ("Ã", "Ä", "Å", "Ì", "ã", "ä", "å", "ì")):
+        try:
+            repaired = s.encode("latin1", errors="ignore").decode("utf-8", errors="ignore")
+            if repaired:
+                s = repaired
+        except Exception:
+            pass
+    for src, dst in {'ı': 'i', 'ş': 's', 'ğ': 'g', 'ü': 'u', 'ö': 'o', 'ç': 'c'}.items():
+        s = s.replace(src, dst)
+    s = unicodedata.normalize("NFKD", s)
+    s = s.encode("ascii", "ignore").decode("ascii")
     return s
 
 def build_divergent_signals(results_filtered):
@@ -290,37 +302,42 @@ def fetch_all_flows(period_type, selected_cats=None, sort_mode='tl'):
     # Mapping of categories to keywords for granular filtering
     # Refined Category Rules: any (OR), all (AND), none (NOT)
     # This prevents 'Para Piyasası Serbest' from matching 'Serbest (Genel)'
+    display_categories = [
+        "Hisse Senedi", "De?i?ken", "Karma", "Fon Sepeti", "Bor?lanma Ara?lar?",
+        "K.Maden", "Kat?l?m", "Para Piy.", "Serbest (Genel)", "Serbest (P.Piy)",
+        "Serbest (D?viz)", "Serbest (K.Vade)", "Serbest (Kat?l?m)"
+    ]
     cat_rules = {
-        "Hisse": {"any": ["Hisse Senedi"], "none": ["Serbest"]},
-        "Değişken": {"any": ["Değişken"], "none": ["Serbest"]},
-        "Karma": {"any": ["Karma"], "none": ["Serbest"]},
-        "Fon Sepeti": {"any": ["Fon Sepeti"], "none": ["Serbest"]},
-        "Borçlanma": {"any": ["Borçlanma Araçları"], "none": ["Serbest"]},
-        "K.Maden": {"any": ["Kıymetli Madenler", "Altın"], "none": ["Serbest"]},
-        "Katılım": {"any": ["Katılım"], "none": ["Serbest"]},
-        "Para Piy.": {"any": ["Para Piyasası"], "none": ["Serbest"]},
-        
-        "Serbest (Genel)": {"all": ["Serbest"], "none": ["Para Piyasası", "Döviz", "Kısa Vadeli", "Katılım"]},
-        "Serbest (P.Piy)": {"all": ["Serbest", "Para Piyasası"]},
-        "Serbest (Döviz)": {"all": ["Serbest", "Döviz"]},
-        "Serbest (K.Vade)": {"all": ["Serbest", "Kısa Vadeli"]},
-        "Serbest (Katılım)": {"all": ["Serbest", "Katılım"]}
+        "hisse senedi": {"any": ["hisse senedi"], "none": ["serbest"]},
+        "degisken": {"any": ["degisken"], "none": ["serbest"]},
+        "karma": {"any": ["karma"], "none": ["serbest"]},
+        "fon sepeti": {"any": ["fon sepeti"], "none": ["serbest"]},
+        "borclanma araclari": {"any": ["borclanma araclari"], "none": ["serbest"]},
+        "k.maden": {"any": ["kiymetli maden", "altin"], "none": ["serbest"]},
+        "katilim": {"any": ["katilim"], "none": ["serbest"]},
+        "para piy.": {"any": ["para piyasas"], "none": ["serbest"]},
+        "serbest (genel)": {"all": ["serbest"], "none": ["para piyasas", "doviz", "kisa vadeli", "katilim"]},
+        "serbest (p.piy)": {"all": ["serbest", "para piyasas"]},
+        "serbest (doviz)": {"all": ["serbest", "doviz"]},
+        "serbest (k.vade)": {"all": ["serbest", "kisa vadeli"]},
+        "serbest (katilim)": {"all": ["serbest", "katilim"]},
     }
     
     def check_match(ftype, rule):
-        ftype_l = ftype.lower()
+        ftype_l = normalize(ftype)
         if "all" in rule:
-            if not all(kw.lower() in ftype_l for kw in rule["all"]):
+            if not all(kw in ftype_l for kw in rule["all"]):
                 return False
         if "any" in rule:
-            if not any(kw.lower() in ftype_l for kw in rule["any"]):
+            if not any(kw in ftype_l for kw in rule["any"]):
                 return False
         if "none" in rule:
-            if any(kw.lower() in ftype_l for kw in rule["none"]):
+            if any(kw in ftype_l for kw in rule["none"]):
                 return False
         return True
 
-    all_cats = sorted(cat_rules.keys(), key=len, reverse=True)
+    all_cats = display_categories[:]
+    normalized_cat_rules = {normalize(k): v for k, v in cat_rules.items()}
     
     today = datetime.now()
     if period_type == "daily":
@@ -412,18 +429,7 @@ def fetch_all_flows(period_type, selected_cats=None, sort_mode='tl'):
             ftype = code_to_type.get(code, 'Diğer')
             matched = False
             for cat_name in selected_cats:
-                # Handle UI name to internal rule name mapping if needed
-                rule_name = cat_name
-                # Mapping UI names to internal keys
-                ui_map = {
-                    "Hisse": "Hisse", "Değişken": "Değişken", "Karma": "Karma", 
-                    "Fon Sepeti": "Fon Sepeti", "Borçlanma": "Borçlanma", 
-                    "K.Maden": "K.Maden", "Katılım": "Katılım", "Para Piy.": "Para Piy.",
-                    "Serbest (Genel)": "Serbest (Genel)", "Serbest (P.Piy)": "Serbest (P.Piy)",
-                    "Serbest (Döviz)": "Serbest (Döviz)", "Serbest (K.Vade)": "Serbest (K.Vade)",
-                    "Serbest (Katılım)": "Serbest (Katılım)"
-                }
-                rule = cat_rules.get(ui_map.get(cat_name, cat_name))
+                rule = normalized_cat_rules.get(normalize(cat_name))
                 if rule and check_match(ftype, rule):
                     matched = True
                     break
