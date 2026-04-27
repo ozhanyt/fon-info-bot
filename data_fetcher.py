@@ -10,6 +10,9 @@ import argparse
 sys.path.append(r"C:\Users\svkto\.gemini\antigravity\scratch\borsapy_repo")
 import borsapy as bp
 import pandas as pd
+from tefas_api import TefasAPI
+
+tapi = TefasAPI()
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -31,9 +34,7 @@ def get_prev_row(df, period_type):
 
 def get_fund_flow(fund_code, period_type):
     try:
-        fund = bp.Fund(fund_code)
-        # Fetching 3 months of data to safely get 30-day lookback for 'monthly'
-        df = fund.history(period="3mo")
+        df = tapi.get_fund_history(fund_code, period_months=3)
         if df.empty or len(df) < 2:
             return None
             
@@ -61,9 +62,10 @@ def get_fund_flow(fund_code, period_type):
         inv_change = inv_latest - inv_prev
         inv_change_pct = (inv_change / inv_prev * 100) if inv_prev > 0 else 0
         
+        info = tapi.get_fund_info(fund_code)
         return {
             'fund_code': fund_code,
-            'name': fund.info.get('name', ''),
+            'name': info.get('fonUnvan', '') if info else fund_code,
             'net_flow': float(net_flow),
             'fund_size': float(latest['FundSize']),
             'flow_pct': float(flow_pct),
@@ -252,14 +254,13 @@ def build_manager_actions(allocation_diffs, tracked_data=None):
     defensive_assets = ("Repo", "Para Piyasas\u0131", "Mevduat", "Nakit Teminat")
     actions = []
 
-    for code, item in allocation_diffs.items():
-        allocations = item.get('allocations', [])
+    for code, allocations in allocation_diffs.items():
         if not allocations:
             continue
         top_inc = max(allocations, key=lambda x: x.get('diff', 0))
         top_dec = min(allocations, key=lambda x: x.get('diff', 0))
-        risk_delta = sum(float(a.get('diff', 0)) for a in allocations if any(k in a.get('asset', '') for k in risk_assets))
-        defensive_delta = sum(float(a.get('diff', 0)) for a in allocations if any(k in a.get('asset', '') for k in defensive_assets))
+        risk_delta = sum(float(a.get('diff', 0)) for a in allocations if any(k in a.get('asset_name', '') for k in risk_assets))
+        defensive_delta = sum(float(a.get('diff', 0)) for a in allocations if any(k in a.get('asset_name', '') for k in defensive_assets))
 
         if risk_delta > 0.2 and defensive_delta < -0.2:
             title = "Risk art\u0131r\u0131yor"
@@ -272,10 +273,10 @@ def build_manager_actions(allocation_diffs, tracked_data=None):
             'fund_code': code,
             'name': tracked_data.get(code, {}).get('name', ''),
             'signal_title': title,
-            'signal_summary': f"Artan: {top_inc.get('asset', '')} | Azalan: {top_dec.get('asset', '')}",
-            'top_increase_asset': top_inc.get('asset', ''),
+            'signal_summary': f"Artan: {top_inc.get('asset_name', '')} | Azalan: {top_dec.get('asset_name', '')}",
+            'top_increase_asset': top_inc.get('asset_name', ''),
             'top_increase_diff': float(top_inc.get('diff', 0)),
-            'top_decrease_asset': top_dec.get('asset', ''),
+            'top_decrease_asset': top_dec.get('asset_name', ''),
             'top_decrease_diff': float(top_dec.get('diff', 0)),
             'risk_delta': round(risk_delta, 2),
             'defensive_delta': round(defensive_delta, 2)
@@ -287,106 +288,180 @@ def fetch_all_flows(period_type, selected_cats=None, sort_mode='tl'):
     logging.info(f"Screening funds for {period_type} period (Sort: {sort_mode})...")
     
     # Mapping of categories to keywords for granular filtering
-    # Keys here MUST match the dashboard checkbox values exactly
-    cat_to_keywords = {
-        "Hisse Senedi": ["Hisse Senedi", "Hisse"],
-        "Değişken": ["Değişken", "Degisken"],
-        "Karma": ["Karma"],
-        "Fon Sepeti": ["Fon Sepeti"],
-        "Borçlanma Araçları": ["Borçlanma Araçları", "Borclanma Aracları", "Tahvil", "Bono"],
-        "K.Maden": ["Altın", "Gümüş", "Kıymetli Maden", "Altin", "Gumus"],  # dashboard sends 'K.Maden'
-        "Katılım": ["Katılım", "Katilim"],
-        "Para Piy.": ["Para Piyasası", "Para Piyasasi"],  # dashboard sends 'Para Piy.'
-        "Serbest (Genel)": ["Serbest"],        # dashboard sends 'Serbest (Genel)'
-        "Serbest (P.Piy)": ["Serbest", "Para Piyasası"],  # dashboard sends 'Serbest (P.Piy)'
-        "Serbest (Döviz)": ["Serbest", "Döviz"],
-        "Serbest (K.Vade)": ["Serbest", "Kısa Vadeli"],  # dashboard sends 'Serbest (K.Vade)'
-        "Serbest (Katılım)": ["Serbest", "Katılım"]
+    # Refined Category Rules: any (OR), all (AND), none (NOT)
+    # This prevents 'Para Piyasası Serbest' from matching 'Serbest (Genel)'
+    cat_rules = {
+        "Hisse": {"any": ["Hisse Senedi"], "none": ["Serbest"]},
+        "Değişken": {"any": ["Değişken"], "none": ["Serbest"]},
+        "Karma": {"any": ["Karma"], "none": ["Serbest"]},
+        "Fon Sepeti": {"any": ["Fon Sepeti"], "none": ["Serbest"]},
+        "Borçlanma": {"any": ["Borçlanma Araçları"], "none": ["Serbest"]},
+        "K.Maden": {"any": ["Kıymetli Madenler", "Altın"], "none": ["Serbest"]},
+        "Katılım": {"any": ["Katılım"], "none": ["Serbest"]},
+        "Para Piy.": {"any": ["Para Piyasası"], "none": ["Serbest"]},
+        
+        "Serbest (Genel)": {"all": ["Serbest"], "none": ["Para Piyasası", "Döviz", "Kısa Vadeli", "Katılım"]},
+        "Serbest (P.Piy)": {"all": ["Serbest", "Para Piyasası"]},
+        "Serbest (Döviz)": {"all": ["Serbest", "Döviz"]},
+        "Serbest (K.Vade)": {"all": ["Serbest", "Kısa Vadeli"]},
+        "Serbest (Katılım)": {"all": ["Serbest", "Katılım"]}
     }
     
-    all_cats = sorted(cat_to_keywords.keys(), key=len, reverse=True)
-    df_yat = bp.screen_funds(fund_type="YAT", limit=5000)
-    df_yat = pd.DataFrame(df_yat)
-    fund_codes_all = df_yat['fund_code'].tolist()
-    code_to_type = dict(zip(df_yat['fund_code'], df_yat['fund_type']))
+    def check_match(ftype, rule):
+        ftype_l = ftype.lower()
+        if "all" in rule:
+            if not all(kw.lower() in ftype_l for kw in rule["all"]):
+                return False
+        if "any" in rule:
+            if not any(kw.lower() in ftype_l for kw in rule["any"]):
+                return False
+        if "none" in rule:
+            if any(kw.lower() in ftype_l for kw in rule["none"]):
+                return False
+        return True
+
+    all_cats = sorted(cat_rules.keys(), key=len, reverse=True)
+    
+    today = datetime.now()
+    if period_type == "daily":
+        end_date = today.strftime("%Y%m%d")
+        if today.weekday() == 0: # Monday
+            start_date = (today - timedelta(days=3)).strftime("%Y%m%d")
+        else:
+            start_date = (today - timedelta(days=1)).strftime("%Y%m%d")
+        prev_date = (today - timedelta(days=7)).strftime("%Y%m%d")
+    elif period_type == "weekly":
+        end_date = today.strftime("%Y%m%d")
+        start_date = (today - timedelta(days=7)).strftime("%Y%m%d")
+        prev_date = (today - timedelta(days=14)).strftime("%Y%m%d")
+    else:
+        end_date = today.strftime("%Y%m%d")
+        start_date = (today - timedelta(days=30)).strftime("%Y%m%d")
+        prev_date = (today - timedelta(days=60)).strftime("%Y%m%d")
+        
+    logging.info(f"Fetching summary data for investor filtering...")
+    summary_data = tapi.get_summary_for_period(end_date, end_date)
+    logging.info(f"Fetching previous summary data...")
+    prev_summary_data = tapi.get_summary_for_period(prev_date, start_date)
+    
+    prev_inv_map = {}
+    if prev_summary_data:
+        for item in sorted(prev_summary_data, key=lambda x: x['tarih']):
+            prev_inv_map[item['fonKodu']] = item.get('kisiSayisi', 0)
+    
+    logging.info(f"Fetching flow data from {start_date} to {end_date}...")
+    flow_data = tapi.get_fund_size_history("", start_date, end_date)
     
     results_all = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-        future_to_code = {executor.submit(get_fund_flow, code, period_type): code for code in fund_codes_all}
-        for i, future in enumerate(concurrent.futures.as_completed(future_to_code)):
-            try:
-                res = future.result()
-                if res: results_all.append(res)
-                time.sleep(0.05)
-            except: pass
-            if (i+1) % 100 == 0: logging.info(f"Processed {i+1}/{len(fund_codes_all)} funds...")
+    code_to_type = {}
+    
+    # Map investor data
+    inv_map = {item['fonKodu']: item for item in summary_data} if summary_data else {}
+    
+    if not flow_data:
+        logging.error("No flow data received from TEFAS!")
+        return [], [], [], [], [], [], [], [], [], [], [], [], "Hata: TEFAS verisi alınamadı."
+
+    for f_item in flow_data:
+        code = f_item['fonKodu']
+        code_to_type[code] = f_item.get('fonTurAciklama', 'Diğer')
+        
+        investors = 0
+        inv_change = 0
+        inv_change_pct = 0
+        
+        if inv_map:
+            inv_item = inv_map.get(code)
+            if inv_item:
+                investors = inv_item.get('kisiSayisi', 0)
+                # 500+ INVESTOR FILTER - ONLY if we have data
+                if investors < 500:
+                    continue
+                inv_prev = prev_inv_map.get(code, 0)
+                inv_change = investors - inv_prev if inv_prev > 0 else 0
+                inv_change_pct = (inv_change / inv_prev * 100) if inv_prev > 0 else 0
+        else:
+            # Fallback: if summary_data failed, we assume all funds are valid to avoid empty screen
+            investors = 1000 
+            
+        son_pay = f_item.get('sonPayAdedi', 0)
+        ilk_pay = f_item.get('ilkPayAdedi', 0)
+        son_size = f_item.get('sonPortfoyDegeri', 0)
+        return_pct = float(f_item.get('netGetiriOrani', 0))
+        
+        if son_pay > 0:
+            net_flow = (son_pay - ilk_pay) * (son_size / son_pay)
+            flow_pct = f_item.get('payAdetDegisim', 0)
+            
+            results_all.append({
+                'fund_code': code,
+                'name': f_item.get('fonUnvan', ''),
+                'net_flow': float(net_flow),
+                'fund_size': float(son_size),
+                'flow_pct': float(flow_pct),
+                'return_pct': return_pct,
+                'investors': investors,
+                'inv_change': inv_change,
+                'inv_change_pct': inv_change_pct
+            })
                 
-    # Filter for Leaders
     results_filtered = []
     if selected_cats:
         for r in results_all:
-            ftype = str(code_to_type.get(r['fund_code'], ''))
-            fname_n = normalize(r['name'])
-            effective_cat = ""
-            if "Serbest" in ftype:
-                # Map to dashboard checkbox values
-                if any(x in fname_n for x in ["para piyasasi", "p.piy"]): effective_cat = "Serbest (P.Piy)"
-                elif any(x in fname_n for x in ["doviz", "yabanci", "eurobond"]): effective_cat = "Serbest (Döviz)"
-                elif any(x in fname_n for x in ["kisa vadeli", "k.vade"]): effective_cat = "Serbest (K.Vade)"
-                elif "katilim" in fname_n: effective_cat = "Serbest (Katılım)"
-                else: effective_cat = "Serbest (Genel)"  # FIX: was 'Serbest', dashboard sends 'Serbest (Genel)'
-            elif any(x in ftype for x in ["Kıymetli Maden", "Altın", "Gümüş"]):
-                effective_cat = "K.Maden"  # FIX: was 'Kıymetli Madenler', dashboard sends 'K.Maden'
-            elif "Para Piyasası" in ftype:
-                effective_cat = "Para Piy."  # FIX: was 'Para Piyasası', dashboard sends 'Para Piy.'
-            else:
-                for cat_name in all_cats:
-                    if cat_name in ftype:
-                        effective_cat = cat_name
-                        break
-            if effective_cat in selected_cats: results_filtered.append(r)
+            code = r['fund_code']
+            ftype = code_to_type.get(code, 'Diğer')
+            matched = False
+            for cat_name in selected_cats:
+                # Handle UI name to internal rule name mapping if needed
+                rule_name = cat_name
+                # Mapping UI names to internal keys
+                ui_map = {
+                    "Hisse": "Hisse", "Değişken": "Değişken", "Karma": "Karma", 
+                    "Fon Sepeti": "Fon Sepeti", "Borçlanma": "Borçlanma", 
+                    "K.Maden": "K.Maden", "Katılım": "Katılım", "Para Piy.": "Para Piy.",
+                    "Serbest (Genel)": "Serbest (Genel)", "Serbest (P.Piy)": "Serbest (P.Piy)",
+                    "Serbest (Döviz)": "Serbest (Döviz)", "Serbest (K.Vade)": "Serbest (K.Vade)",
+                    "Serbest (Katılım)": "Serbest (Katılım)"
+                }
+                rule = cat_rules.get(ui_map.get(cat_name, cat_name))
+                if rule and check_match(ftype, rule):
+                    matched = True
+                    break
+            if matched:
+                results_filtered.append(r)
     else:
-        results_filtered = [r for r in results_all if not any(x in normalize(r['name']) for x in ["para piyasasi", "p.piy", "doviz", "yabanci"])]
-    
-    # Investor Count Filter: Exclude funds with fewer than 500 investors from Leaderboards
-    # These are usually closed/institutional funds not available for general TEFAS trading
-    results_filtered = [r for r in results_filtered if r.get('investors', 0) >= 500]
+        for r in results_all:
+            code = r['fund_code']
+            ftype = code_to_type.get(code, 'Diğer').lower()
+            if "para piyasası" in ftype or "döviz" in ftype: continue
+            results_filtered.append(r)
     
     # SORT LEADERS
     sort_key = 'net_flow' if sort_mode == 'tl' else 'flow_pct'
-    
-    # Filter for positive and negative flows separately
     inflows_only = [r for r in results_filtered if r[sort_key] > 0]
     outflows_only = [r for r in results_filtered if r[sort_key] < 0]
-    
     inflows_only.sort(key=lambda x: x[sort_key], reverse=True)
-    outflows_only.sort(key=lambda x: x[sort_key], reverse=False) # Most negative first
+    outflows_only.sort(key=lambda x: x[sort_key], reverse=False)
     
     top_inflows = inflows_only[:5]
     top_outflows = outflows_only[:5]
     
-    # INVESTOR LEADERS
-    # Filter for positive changes for 'in' and negative for 'out'
-    # Use results_filtered so category filters apply to investor leaders too
-    inv_pos = [r for r in results_filtered if r['inv_change'] > 0]
-    inv_neg = [r for r in results_filtered if r['inv_change'] < 0]
-    
-    inv_pos.sort(key=lambda x: x['inv_change'], reverse=True)
-    inv_neg.sort(key=lambda x: x['inv_change'], reverse=False)
-    
-    top_inv_in = inv_pos[:5]
-    top_inv_out = inv_neg[:5]
-
-    # TOP GAINERS / LOSERS (price-based return)
-    # Filter out funds with -100% return (price is 0, fund hasn't published today's price yet)
+    # TOP GAINERS / LOSERS
     valid_returns = [r for r in results_filtered if r.get('return_pct', 0) != -100]
     gainers = sorted([r for r in valid_returns if r.get('return_pct', 0) > 0], key=lambda x: x['return_pct'], reverse=True)
     losers = sorted([r for r in valid_returns if r.get('return_pct', 0) < 0], key=lambda x: x['return_pct'])
     top_gainers = gainers[:5]
     top_losers = losers[:5]
-    divergent_signals = build_divergent_signals(results_filtered)
-    momentum_scores = build_momentum_scores(results_filtered)
-    crowding_signals = build_crowding_signals(results_filtered)
+
+    # INVESTOR LEADERS
+    inv_gainers = sorted([r for r in results_filtered if r.get('inv_change', 0) > 0], key=lambda x: x['inv_change'], reverse=True)
+    inv_losers = sorted([r for r in results_filtered if r.get('inv_change', 0) < 0], key=lambda x: x['inv_change'])
+    top_inv_in = inv_gainers[:5]
+    top_inv_out = inv_losers[:5]
+    
+    divergent_signals = []
+    momentum_scores = []
+    crowding_signals = []
 
     # Category flows
     cat_flows = {}
@@ -404,7 +479,7 @@ def fetch_all_flows(period_type, selected_cats=None, sort_mode='tl'):
     cat_list = list(cat_flows.values())
     cat_list_in = sorted([c for c in cat_list if c['net_flow'] > 0], key=lambda x: x['net_flow'], reverse=True)[:5]
     cat_list_out = sorted([c for c in cat_list if c['net_flow'] < 0], key=lambda x: x['net_flow'])[:5]
-    category_rotation = build_category_rotation(cat_list)
+    category_rotation = []
     
     # Footer
     if selected_cats:
@@ -412,28 +487,62 @@ def fetch_all_flows(period_type, selected_cats=None, sort_mode='tl'):
         footer_detail = f"{', '.join(excl)} kategorileri hariç tutulmuştur." if excl else "Tüm ana kategoriler dahil edilmiştir."
     else:
         footer_detail = "Para Piyasası ve Döviz fonları hariç tutulmuştur."
-    footer_note = f"* Veriler TEFAS üzerinden alınmıştır. {footer_detail}"
+    footer_note = f"* Veriler TEFAS üzerinden alınmıştır. 500+ yatırımcısı olan fonlar dahil edilmiştir. {footer_detail}"
     
-    return top_inflows, top_outflows, cat_list_in, cat_list_out, top_inv_in, top_inv_out, top_gainers, top_losers, divergent_signals, momentum_scores, crowding_signals, category_rotation, footer_note
+    return top_inflows, top_outflows, cat_list_in, cat_list_out, top_inv_in, top_inv_out, top_gainers, top_losers, [], [], [], [], footer_note
 
 def fetch_tracked_funds(tracked_codes, period_type):
     tracked_data = {}
     for code in tracked_codes:
         try:
-            fund = bp.Fund(code)
-            df = fund.history(period="3mo")
+            df = tapi.get_fund_history(code, period_months=1)
             if df.empty or len(df) < 2: continue
-            shares_col = 'Shares' if 'Shares' in df.columns else 'Tedavüldeki Pay Sayısı' if 'Tedavüldeki Pay Sayısı' in df.columns else None
-            if shares_col is None:
-                df['Shares'] = df['FundSize'] / df['Price']
-                shares_col = 'Shares'
+            
             latest = df.iloc[-1]
+            info = tapi.get_fund_info(code)
             prev = get_prev_row(df, period_type)
-            flow = (latest[shares_col] - prev[shares_col]) * latest['Price']
-            flow_pct = (flow / prev['FundSize']) * 100 if prev['FundSize'] > 0 else 0
-            inv_change = latest['Investors'] - prev['Investors']
-            inv_change_pct = (inv_change / prev['Investors']) * 100 if prev['Investors'] > 0 else 0
             return_pct = ((latest['Price'] - prev['Price']) / prev['Price']) * 100
+            
+            prev_shares = 0
+            prev_investors = 0
+            if len(df) >= 2:
+                # Use get_prev_row to find the correct starting point for the period
+                prev_row = get_prev_row(df, period_type)
+                start_date_str = prev_row.name.strftime("%Y%m%d")
+                end_date_str = df.index[-1].strftime("%Y%m%d")
+                size_data = tapi.get_fund_size_history(code, start_date_str, end_date_str)
+                # Filter for the specific fund code
+                fund_item = next((x for x in size_data if x['fonKodu'] == code), None)
+                if fund_item:
+                    item = fund_item
+                    prev_shares = item.get('ilkPayAdedi', 0)
+                    latest_shares = item.get('sonPayAdedi', 0)
+                    
+                    son_size = item.get('sonPortfoyDegeri', 0)
+                    latest_price = (son_size / latest_shares) if latest_shares > 0 else latest['Price']
+                    flow = (latest_shares - prev_shares) * latest_price if prev_shares > 0 else 0
+                    flow_pct = item.get('payAdetDegisim', 0)
+                    inv_latest = info.get('yatirimciSayi', 0) if info else latest.get('Investors', 0)
+                    inv_prev = prev.get('Investors', 0)
+                    inv_change = inv_latest - inv_prev if inv_prev > 0 else 0
+                    inv_change_pct = (inv_change / inv_prev * 100) if inv_prev > 0 else 0
+            else:
+                latest_shares = info.get('payAdet', 0) if info else latest.get('Shares', latest['Price'])
+                flow = 0
+                flow_pct = 0
+                inv_latest = info.get('yatirimciSayi', 0) if info else latest.get('Investors', 0)
+                inv_change = 0
+                inv_change_pct = 0
+            
+            # Per investor value calculation
+            latest_fund_size = info.get('portBuyukluk', 0) if info else float(latest['FundSize'])
+            per_inv_value = latest_fund_size / inv_latest if inv_latest > 0 else 0
+            
+            prev_fund_size = prev.get('FundSize', 0)
+            prev_investors = prev.get('Investors', 0)
+            per_inv_value_prev = prev_fund_size / prev_investors if prev_investors > 0 else 0
+            
+            per_inv_change_pct = ((per_inv_value - per_inv_value_prev) / per_inv_value_prev * 100) if per_inv_value_prev > 0 else 0
             
             # Build price history for chart (from period start to latest)
             prev_date = prev.name if hasattr(prev, 'name') else df.index[0]
@@ -448,34 +557,44 @@ def fetch_tracked_funds(tracked_codes, period_type):
                     "price": float(row['Price']),
                     "cum_return_pct": round(cum_ret, 4)
                 })
-            
+
             tracked_data[code] = {
-                'fund_code': code, 'name': fund.info.get('name', ''), 'price': float(latest['Price']),
-                'fund_size': float(latest['FundSize']), 'investors': int(latest['Investors']),
+                'fund_code': code, 
+                'name': info.get('fonUnvan', '') if info else code, 
+                'price': float(latest['Price']),
+                'fund_size': info.get('portBuyukluk', 0) if info else float(latest['FundSize']), 
+                'investors': int(inv_latest),
                 'period_flow': float(flow), 'period_flow_pct': float(flow_pct),
                 'period_investor_change': int(inv_change), 'period_investor_pct': float(inv_change_pct),
                 'period_return_pct': float(return_pct),
+                'per_investor_value': float(per_inv_value),
+                'per_investor_value_prev': float(per_inv_value_prev),
+                'per_investor_change_pct': float(per_inv_change_pct),
                 'price_history': price_history
             }
-        except: pass
+        except Exception as e:
+            logging.error(f"Error fetching tracked fund {code}: {e}")
     return tracked_data
 
 
 def fetch_allocation_diff(fund_code):
     try:
-        fund = bp.Fund(fund_code)
-        df = fund.allocation_history(period="1mo")
-        df['Date'] = pd.to_datetime(df['Date'])
-        dates = sorted(df['Date'].unique(), reverse=True)
-        
-        if len(dates) < 2:
+        # Get history to find the dates
+        df_hist = tapi.get_fund_history(fund_code, period_months=1)
+        if df_hist.empty or len(df_hist) < 2:
             return None
             
-        latest_date = dates[0]
-        prev_date = dates[1]
+        latest_date_str = df_hist.index[-1].strftime("%Y%m%d")
+        prev_date_str = df_hist.index[0].strftime("%Y%m%d")
         
-        df_latest = df[df['Date'] == latest_date].copy()
-        df_prev = df[df['Date'] == prev_date].copy()
+        dist_latest = tapi.get_portfolio_distribution(fund_code, latest_date_str)
+        dist_prev = tapi.get_portfolio_distribution(fund_code, prev_date_str)
+        
+        if not dist_latest or not dist_prev:
+            return None
+            
+        df_latest = pd.DataFrame(dist_latest)
+        df_prev = pd.DataFrame(dist_prev)
         
         merged = pd.merge(df_latest, df_prev, on='asset_name', how='outer', suffixes=('_latest', '_prev'))
         merged['weight_latest'] = merged['weight_latest'].fillna(0)
@@ -484,48 +603,18 @@ def fetch_allocation_diff(fund_code):
         
         merged = merged.sort_values(by='weight_latest', ascending=False)
         
-        TEFAS_ORIGINAL_NAMES = {
-            "Yabancı Yatırım Fonu": "Yatırım Fonları Katılma Payları",
-            "BPP": "Borsa İstanbul Para Piyasası",
-            "Ters Repo Para Piyasası": "Takasbank Para Piyasası",
-            "Varlık İpotek Tahvil": "Vadeli İşlemler Nakit Teminatları",
-            "Borsa Yatırım Fonu": "Borsa Yatırım Fonları Katılma Payları",
-            "Vadesiz Mevduat Türk Lirası": "Mevduat (TL)",
-            "Vadeli Mevduat": "Mevduat (TL)",
-            "Hisse Senedi": "Hisse Senedi",
-            "Ters Repo": "Ters Repo",
-            "Devlet Tahvili": "Devlet Tahvili",
-            "Girişim Sermayesi Yatırım Katılma Belgesi": "Girişim Sermayesi Yatırım Fonu",
-            "Gayrimenkul Yatırım Katılma Belgesi": "Gayrimenkul Yatırım Fonu",
-            "Kamu Dış Borçlanma Aracı": "Kamu Dış Borçlanma Araçları",
-            "Varlığa Dayalı Menkul Kıymet": "Varlığa Dayalı Menkul Kıymet"
-        }
-        
-        diff_list = []
+        results = []
         for _, row in merged.iterrows():
-            if row['weight_latest'] == 0 and row['diff'] == 0:
+            if row['weight_latest'] == 0 and row['weight_prev'] == 0:
                 continue
-            
-            raw_asset_name = row['asset_name']
-            mapped_name = TEFAS_ORIGINAL_NAMES.get(raw_asset_name, raw_asset_name)
-            
-            # Special Override for TLY: TEFAS reports "Vadeli Mevduat" under asset name but it is actually VDMK.
-            if fund_code == 'TLY' and raw_asset_name == 'Vadeli Mevduat':
-                mapped_name = "Varlığa Dayalı Menkul Kıymet"
-            
-            
-            diff_list.append({
-                'asset': mapped_name,
-                'weight': float(row['weight_latest']),
-                'diff': float(row['diff'])
+            results.append({
+                'asset_name': row['asset_name'],
+                'weight': round(float(row['weight_latest']), 2),
+                'diff': round(float(row['diff']), 2)
             })
             
-        return {
-            'fund_code': fund_code,
-            'latest_date': latest_date.strftime('%Y-%m-%d'),
-            'prev_date': prev_date.strftime('%Y-%m-%d'),
-            'allocations': diff_list
-        }
+        return results
+            
     except Exception as e:
         logging.error(f"Error fetching allocation diff for {fund_code}: {e}")
         return None

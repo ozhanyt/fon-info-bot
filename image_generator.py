@@ -363,6 +363,42 @@ def generate_manager_actions_html(items):
         """
     return html
 
+def generate_per_investor_html(tracked_dict):
+    html = ""
+    for code, data in tracked_dict.items():
+        val = data.get('per_investor_value', 0)
+        prev_val = data.get('per_investor_value_prev', 0)
+        pct = data.get('per_investor_change_pct', 0)
+        name = data.get('name', '')
+        
+        val_str = f"₺{val:,.0f}".replace(",", ".")
+        prev_val_str = f"₺{prev_val:,.0f}".replace(",", ".")
+        pct_str = f"({'+' if pct >= 0 else ''}{format_pct(pct)})"
+        trend_class = "trend-up" if pct >= 0 else "trend-down"
+        
+        html += f"""
+        <div class="per-inv-card">
+            <div class="t-header" style="margin-bottom:12px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <span class="t-code" style="font-size:var(--tcode-font-size);">{code}</span>
+                    <span class="t-name" style="font-size:calc(var(--item-font-size) * 0.45); color:rgba(255,255,255,0.5); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">{name}</span>
+                </div>
+                <span class="t-label" style="font-size:calc(var(--item-font-size) * 0.3); color:rgba(255,255,255,0.4); text-transform:uppercase; font-weight:700; letter-spacing:1px;">Kişi Başı Yatırım</span>
+            </div>
+            <div class="t-values-row" style="display:flex; justify-content:space-between; align-items:flex-end;">
+                <div style="display:flex; align-items:baseline; gap:10px;">
+                    <span class="t-val-main" style="font-size:var(--item-font-size) !important; color:#fff; line-height:1;">{val_str}</span>
+                    <span class="t-val-sub {trend_class}" style="font-size:calc(var(--item-font-size) * 0.6) !important; font-weight:800;">{pct_str}</span>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:2px;">
+                    <span style="font-size:calc(var(--item-font-size) * 0.3); color:rgba(255,255,255,0.4); text-transform:uppercase; font-weight:700; letter-spacing:1px;">Önceki Değer</span>
+                    <span style="font-size:calc(var(--item-font-size) * 0.6); color:rgba(255,255,255,0.6); font-weight:700; font-family:'Space Grotesk', sans-serif;">{prev_val_str}</span>
+                </div>
+            </div>
+        </div>
+        """
+    return html
+
 def generate_tracked_html(tracked_dict, period_label, show_chart=False):
     html = ""
     for code, data in tracked_dict.items():
@@ -599,7 +635,8 @@ async def main():
             "tracked": "5,1",
             "tracked_rs": "5,2",
             "manager_actions": "6,1",
-            "predictions": "7,1"
+            "per_investor_value": "7,1",
+            "predictions": "8,1"
         },
         "predictions": []
     }
@@ -662,6 +699,8 @@ async def main():
     predictions = config.get("predictions", [])
     predictions_html = generate_predictions_html(predictions) if "predictions" in sections else ""
     
+    per_investor_html = generate_per_investor_html(data.get('tracked', {})) if "per_investor_value" in sections else ""
+    
     bg_url = config.get("bg_url", "")
     if not bg_url:
         bg_url = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop"
@@ -702,6 +741,7 @@ async def main():
     template = template.replace("{{TOP_GAINERS_HTML}}", top_gainers_html)
     template = template.replace("{{TOP_LOSERS_HTML}}", top_losers_html)
     template = template.replace("{{PREDICTIONS_HTML}}", predictions_html)
+    template = template.replace("{{PER_INVESTOR_HTML}}", per_investor_html)
     template = template.replace("{{PRED_TITLE}}", config.get("pred_title", "Getiri Tahmini"))
     
     # Handle layout mode class
@@ -721,7 +761,7 @@ async def main():
     template = template.replace("{{LAYOUT_MODE_CLASS}}", layout_mode_class)
     
     # Conditional Visibility and Positioning
-    for s_name in ["inflows", "outflows", "cat_in", "cat_out", "inv_in", "inv_out", "divergent", "momentum", "crowding", "category_rotation", "tracked", "tracked_rs", "manager_actions", "predictions", "portfolio_diff", "top_gainers", "top_losers", "return_chart"]:
+    for s_name in ["inflows", "outflows", "cat_in", "cat_out", "inv_in", "inv_out", "divergent", "momentum", "crowding", "category_rotation", "tracked", "tracked_rs", "manager_actions", "predictions", "portfolio_diff", "top_gainers", "top_losers", "return_chart", "per_investor_value"]:
         placeholder_show = f"{{{{SHOW_{s_name.upper()}}}}}"
         placeholder_pos = f"/* POS_{s_name.upper()} */"
         
@@ -758,7 +798,12 @@ async def main():
     
     # Final cleanup substitutions
     template = template.replace("{{BG_URL}}", bg_url)
+    template = template.replace("{{CANVAS_WIDTH}}", str(config.get("canvas_width", 1080)))
+    template = template.replace("{{TRACKED_GRID_COLS}}", str(config.get("tracked_grid_cols", 1)))
     template = template.replace("{{GRID_COLS}}", str(config.get("grid_cols", 2)))
+    template = template.replace("{{PRED_COLS}}", str(config.get("pred_cols", 1)))
+    print(f"DEBUG: pred_cols from config is: {config.get('pred_cols')} (type: {type(config.get('pred_cols'))})")
+    template = template.replace("{{PRED_COLS_CLASS}}", "cols-2" if int(config.get("pred_cols", 1)) == 2 else "cols-1")
     template = template.replace("{{FOOTER_NOTE}}", data.get("footer_note", "* Veriler TEFAS üzerinden alınmıştır."))
     
     # Positions and Dynamic Grid Styles

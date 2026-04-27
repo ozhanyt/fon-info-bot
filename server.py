@@ -85,7 +85,8 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
             
             # Position defaults
             def_pos = db_config.get("positions", {})
-            def_sections = db_config.get("sections", ["inflows", "outflows", "cat_in", "cat_out", "inv_in", "inv_out", "divergent", "momentum", "crowding", "category_rotation", "tracked", "tracked_rs", "manager_actions", "return_chart"])
+            # Start with empty sections by default as requested
+            def_sections = db_config.get("sections", [])
             
             self.send_response(200)
             self.send_header("Content-type", "text/html; charset=utf-8")
@@ -127,8 +128,11 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                     .pred-section { margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 30px; }
                     .pred-table { display: flex; flex-direction: column; gap: 10px; }
                     .pred-header { display: grid; grid-template-columns: 1fr 1.2fr 2fr; gap: 10px; font-size: 12px; color: #8e8e93; font-weight: 700; padding-bottom: 5px; }
-                    .pred-row { display: grid; grid-template-columns: 1fr 1.2fr 2fr; gap: 10px; }
+                    .pred-row { display: grid; grid-template-columns: 1fr 1.2fr 2fr 40px; gap: 10px; align-items: center; }
                     .pred-row input { padding: 10px 14px; font-size: 14px; }
+                    .remove-btn { background: #ff453a; color: #fff; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 700; opacity: 0.6; }
+                    .remove-btn:hover { opacity: 1; }
+                    .add-btn { background: #0a84ff; color: #fff; border: none; padding: 10px 15px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 10px; }
                     
                     /* Action buttons */
                     .button-group { display: flex; flex-direction: row; gap: 18px; margin-top: 50px; justify-content: center; width: 100%; }
@@ -271,7 +275,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                             <label for="predTitle">Bölüm Başlığı:</label>
                             <input type="text" id="predTitle" value="{{PRED_SECTION_TITLE}}" placeholder="Örn: Getiri Tahmini / Gün Ortası Tahmini">
                         </div>
-                        <div class="pred-table">
+                        <div id="predRowsContainer" class="pred-table">
                             <div class="pred-header">
                                 <span>FON KODU</span>
                                 <span>GETİRİ (%)</span>
@@ -279,9 +283,14 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                             </div>
                             {{PRED_ROWS}}
                         </div>
-                        <div class="input-group" style="margin-top:15px; display:flex; align-items:center; gap:10px;">
-                            <input type="checkbox" id="chkPredOnly" style="width:auto; margin:0;">
-                            <label for="chkPredOnly" style="margin:0;">Sadece Tahmin Paylaş (Ortalı Mod)</label>
+                        <button class="add-btn" onclick="addPredictionRow()">+ Satır Ekle</button>
+                        
+                        <div style="margin-top:20px;">
+                            <label>Tahmin Bölümü Sütun Sayısı</label>
+                            <select id="predCols">
+                                <option value="1" {{SEL_PRED_COL_1}}>1 Sütun (Dikey)</option>
+                                <option value="2" {{SEL_PRED_COL_2}}>2 Sütun (Yan Yana)</option>
+                            </select>
                         </div>
                     </div>
 
@@ -311,6 +320,19 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                 </div>
 
                 <script>
+                    const addPredictionRow = (code='', val='', desc='') => {
+                        const container = document.getElementById('predRowsContainer');
+                        const row = document.createElement('div');
+                        row.className = 'pred-row';
+                        row.innerHTML = `
+                            <input type="text" class="pred-code" value="${code}" placeholder="KOD">
+                            <input type="text" class="pred-val" value="${val}" placeholder="%2,5">
+                            <input type="text" class="pred-desc" value="${desc}" placeholder="Açıklama...">
+                            <button class="remove-btn" onclick="this.parentElement.remove()">✕</button>
+                        `;
+                        container.appendChild(row);
+                    };
+
                     function generate(period) {
                         const btnId = period === 'predictions' ? 'btn-preds' : 'btn-' + period;
                         const btn = document.getElementById(btnId);
@@ -320,36 +342,33 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                         
                         const bgUrl = document.getElementById('bgUrl').value;
                         const sections = [];
-                        ['inflows', 'outflows', 'cat_in', 'cat_out', 'inv_in', 'inv_out', 'divergent', 'momentum', 'crowding', 'category_rotation', 'tracked', 'tracked_rs', 'manager_actions', 'predictions', 'portfolio_diff', 'top_gainers', 'top_losers', 'return_chart'].forEach(s => {
+                        ['inflows', 'outflows', 'cat_in', 'cat_out', 'inv_in', 'inv_out', 'divergent', 'momentum', 'crowding', 'category_rotation', 'tracked', 'tracked_rs', 'manager_actions', 'predictions', 'portfolio_diff', 'per_investor_value', 'top_gainers', 'top_losers', 'return_chart'].forEach(s => {
                             const chk = document.getElementById('chk-' + s);
                             if (chk && chk.checked) sections.push(s);
                         });
                         
                         // Prediction Rows
                         const predictions = [];
-                        for (let i=0; i<10; i++) {
-                            const codeVal = document.getElementById('pred-code-' + i).value;
-                            if (codeVal) {
+                        document.querySelectorAll('.pred-row').forEach(row => {
+                            const code = row.querySelector('.pred-code').value;
+                            if (code) {
                                 predictions.push({
-                                    code: codeVal,
-                                    val: document.getElementById('pred-val-' + i).value,
-                                    desc: document.getElementById('pred-desc-' + i).value
+                                    code: code,
+                                    val: row.querySelector('.pred-val').value,
+                                    desc: row.querySelector('.pred-desc').value
                                 });
                             }
-                        }
+                        });
 
                         let finalSections = sections;
-                        if (period === 'predictions' || document.getElementById('chkPredOnly').checked) {
+                        if (period === 'predictions') {
                             finalSections = ['predictions'];
                         }
-                        // Note: predictions is ONLY included if the user explicitly checks the 'chk-predictions' checkbox.
-                        // It is NOT auto-added based on prediction data presence.
-
 
                         const selectedCats = Array.from(document.querySelectorAll('.cat-chk:checked')).map(c => c.value);
                         
                         const positions = {};
-                        ['inflows', 'outflows', 'cat_in', 'cat_out', 'inv_in', 'inv_out', 'divergent', 'momentum', 'crowding', 'category_rotation', 'tracked', 'tracked_rs', 'manager_actions', 'predictions', 'portfolio_diff', 'top_gainers', 'top_losers', 'return_chart'].forEach(s => {
+                        ['inflows', 'outflows', 'cat_in', 'cat_out', 'inv_in', 'inv_out', 'divergent', 'momentum', 'crowding', 'category_rotation', 'tracked', 'tracked_rs', 'manager_actions', 'predictions', 'portfolio_diff', 'per_investor_value', 'top_gainers', 'top_losers', 'return_chart'].forEach(s => {
                             const chk = document.getElementById('chk-' + s);
                             if (chk) {
                                 const r = document.getElementById('pos-' + s + '-r').value;
@@ -358,7 +377,6 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                             }
                         });
 
-                        // UI State
                         btn.disabled = true;
                         loader.style.display = 'block';
                         status.textContent = period.toUpperCase() + " görseli hazırlanıyor... Lütfen bekleyin.";
@@ -390,6 +408,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                                 predictions: predictions,
                                 portfolio_diff_fund: document.getElementById('portfolioDiffFund') ? document.getElementById('portfolioDiffFund').value.trim() : 'PHE',
                                 portfolio_diff_cols: document.getElementById('portfolioDiffCols') ? document.getElementById('portfolioDiffCols').value : 1,
+                                pred_cols: document.getElementById('predCols') ? document.getElementById('predCols').value : 1,
                                 positions: positions
                             })
                         })
@@ -471,20 +490,19 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
             
             # Position Rows HTML Generation
             pos_labels = {
-                "portfolio_diff": "Portföy Dağılımı", 
-                "inflows": "Para Girişi", "outflows": "Para Çıkışı", 
-                "cat_in": "Kategori Giriş", "cat_out": "Kategori Çıkış",
-                "inv_in": "Yatırımcı Giriş", "inv_out": "Yatırımcı Kaybı",
-                "top_gainers": "En Çok Kazandıran", "top_losers": "En Çok Kaybeden",
-                "tracked": "Takipteki Fonlar", "return_chart": "Getiri Grafiği", "predictions": "Tahmin"
+                "inflows": "Para Girişi (Top 5)", 
+                "outflows": "Para Çıkışı (Top 5)", 
+                "cat_in": "Kategori Giriş (Top 5)", 
+                "cat_out": "Kategori Çıkış (Top 5)",
+                "inv_in": "Yatırımcı Giriş (Top 5)", 
+                "inv_out": "Yatırımcı Kaybı (Top 5)",
+                "top_gainers": "En Çok Kazandıranlar", 
+                "top_losers": "En Çok Kaybedenler",
+                "tracked": "Takipteki Fonlar", 
+                "per_investor_value": "Kişi Başı Yatırım Değeri",
+                "predictions": "Tahminler (Serbest Bölüm)", 
+                "portfolio_diff": "Portföy Değişimleri"
             }
-            pos_labels["divergent"] = "AyrÄ±ÅŸan Fonlar"
-            pos_labels["divergent"] = "Ayr\u0131\u015fan Fonlar"
-            pos_labels["momentum"] = "Ak\u0131ll\u0131 Skor"
-            pos_labels["crowding"] = "Kalabal\u0131kla\u015fma / Sakin Birikim"
-            pos_labels["category_rotation"] = "Kategori Rotasyonu"
-            pos_labels["tracked_rs"] = "G\u00f6receli G\u00fc\u00e7"
-            pos_labels["manager_actions"] = "Y\u00f6netici Hamlesi \u00d6zeti"
             pos_rows_html = ""
             for key, label in pos_labels.items():
                 r, c = pget(key, "R"), pget(key, "C")
@@ -517,13 +535,15 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
             # Prediction rows
             pred_rows_html = ""
             saved_preds = db_config.get("predictions", [])
-            for i in range(10):
-                p = saved_preds[i] if i < len(saved_preds) else {"code": "", "val": "", "desc": ""}
+            if not saved_preds:
+                saved_preds = [{"code": "", "val": "", "desc": ""}]
+            for p in saved_preds:
                 pred_rows_html += f"""
                 <div class="pred-row">
-                    <input type="text" id="pred-code-{i}" value="{p.get('code', '')}" placeholder="KOD">
-                    <input type="text" id="pred-val-{i}" value="{p.get('val', '')}" placeholder="%2,5">
-                    <input type="text" id="pred-desc-{i}" value="{p.get('desc', '')}" placeholder="Açıklama...">
+                    <input type="text" class="pred-code" value="{p.get('code', '')}" placeholder="KOD">
+                    <input type="text" class="pred-val" value="{p.get('val', '')}" placeholder="%2,5">
+                    <input type="text" class="pred-desc" value="{p.get('desc', '')}" placeholder="Açıklama...">
+                    <button class="remove-btn" onclick="this.parentElement.remove()">✕</button>
                 </div>
                 """
             html = html.replace("{{PRED_ROWS}}", pred_rows_html)
@@ -548,6 +568,9 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
             html = html.replace("{{SEL_SORT_TL}}", "selected" if def_sort_mode == "tl" else "")
             html = html.replace("{{SEL_SORT_PCT}}", "selected" if def_sort_mode == "pct" else "")
 
+            html = html.replace("{{SEL_PRED_COL_1}}", "selected" if db_config.get("pred_cols", 1) == 1 else "")
+            html = html.replace("{{SEL_PRED_COL_2}}", "selected" if db_config.get("pred_cols", 1) == 2 else "")
+            
             self.wfile.write(html.encode("utf-8"))
             return
         
@@ -563,7 +586,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
             period = req_data.get('period', 'daily')
             tracked_funds = req_data.get('tracked_funds', 'TLY, DFI, PHE')
             bg_url = req_data.get('bg_url', '')
-            sections = req_data.get('sections', 'inflows,outflows,cat_in,cat_out,inv_in,inv_out,divergent,momentum,crowding,category_rotation,tracked,tracked_rs,manager_actions,portfolio_diff')
+            sections = req_data.get('sections', 'inflows,outflows,cat_in,cat_out,inv_in,inv_out,divergent,momentum,crowding,category_rotation,tracked,tracked_rs,manager_actions,portfolio_diff,per_investor_value')
             selected_categories = req_data.get('selected_categories', 'Hisse Senedi,Değişken,Karma,Borçlanma Araçları,Katılım,Para Piy.,Serbest')
             grid_cols = req_data.get('grid_cols', '2')
             sort_mode = req_data.get('sort_mode', 'tl')
@@ -579,6 +602,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
             header_show_main = req_data.get('header_show_main', True)
             header_show_sub = req_data.get('header_show_sub', True)
             pred_title = req_data.get('pred_title', 'Getiri Tahmini')
+            pred_cols = int(req_data.get('pred_cols', 1))
             portfolio_diff_fund = req_data.get('portfolio_diff_fund', 'PHE')
             portfolio_diff_cols = int(req_data.get('portfolio_diff_cols', 1))
             predictions = req_data.get('predictions', [])
@@ -596,7 +620,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                     "tcode_font_size": int(tcode_font_size),
                     "show_chart": bool(show_chart),
                     "watermark_anchor": watermark_anchor, "header_show_main": header_show_main,
-                    "header_show_sub": header_show_sub, "pred_title": pred_title,
+                    "header_show_sub": header_show_sub, "pred_title": pred_title, "pred_cols": pred_cols,
                     "portfolio_diff_fund": portfolio_diff_fund,
                     "portfolio_diff_cols": int(req_data.get('portfolio_diff_cols', 1)),
                     "predictions": predictions, "positions": positions
@@ -609,7 +633,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
             try:
                 # 1. Run Data Fetcher
                 # Ensure data fetcher runs if any Tefas section is requested
-                tefas_sections = ["inflows", "outflows", "cat_in", "cat_out", "inv_in", "inv_out", "divergent", "momentum", "crowding", "category_rotation", "tracked", "tracked_rs", "manager_actions", "portfolio_diff", "top_gainers", "top_losers", "return_chart"]
+                tefas_sections = ["inflows", "outflows", "cat_in", "cat_out", "inv_in", "inv_out", "divergent", "momentum", "crowding", "category_rotation", "tracked", "tracked_rs", "manager_actions", "portfolio_diff", "per_investor_value", "top_gainers", "top_losers", "return_chart"]
                 section_list = sections.split(",")
                 needs_data = any(s in section_list for s in tefas_sections)
                 
@@ -637,6 +661,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                         "header_show_sub": header_show_sub, "pred_title": pred_title,
                         "portfolio_diff_fund": portfolio_diff_fund,
                         "portfolio_diff_cols": portfolio_diff_cols,
+                        "pred_cols": pred_cols,
                         "canvas_width": int(canvas_width), "item_font_size": int(item_font_size),
                         "period_font_size": int(period_font_size), "tcode_font_size": int(tcode_font_size),
                         "positions": positions,

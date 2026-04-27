@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 
 <head>
@@ -63,9 +63,11 @@
             }
 
             px;
-            /* Force 4:5 aspect ratio height on mobile retina standard */
-            height: 1350px;
+            /* Allow height to grow based on content */
+            min-height: 1350px;
+            height: auto;
             padding: 20px 24px;
+            padding-bottom: 60px; /* Add some space at bottom */
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -365,11 +367,21 @@
             margin-left: 4px;
         }
 
+        /* Fund List Grids */
         .fund-list {
             list-style: none;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 14px;
+        }
+        .portfolio-diff.cols-2 .fund-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .portfolio-diff.cols-1 .fund-list {
+            display: flex;
+            flex-direction: column;
         }
 
         .fund-item {
@@ -499,10 +511,11 @@
 
         /* Prediction Grid */
         .pred-grid {
-            display: flex;
-            flex-direction: column;
+            display: grid;
             gap: 14px;
         }
+        .predictions.cols-1 .pred-grid { grid-template-columns: 1fr; }
+        .predictions.cols-2 .pred-grid { grid-template-columns: 1fr 1fr; }
 
         .pred-item {
             display: flex;
@@ -799,6 +812,26 @@
             color: var(--glass-text);
         }
 
+        /* NEW: Per Investor Value Section */
+        .per-investor-value {
+            display: grid;
+            grid-template-columns: repeat({{TRACKED_GRID_COLS}}, 1fr);
+            gap: 12px;
+        }
+
+        .per-inv-card {
+            position: relative;
+            backdrop-filter: blur(20px) saturate(180%);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
         .footer-note {
             width: 100%;
             text-align: center;
@@ -889,43 +922,10 @@
                 <ul class="fund-list">{{TOP_INV_OUT_HTML}}</ul>
             </div>
 
-            <!-- divergent -->
-            <div class="card glass-card divergent {{SHOW_DIVERGENT}}" style="/* POS_DIVERGENT */">
-                <div class="card-header">
-                    <div class="header-icon inflow-icon" style="background:rgba(255,255,255,0.1); color:#fff;">🧭</div>
-                    <h2>Ayrışan Fonlar <span class="period-label">{{PERIOD_NOTE}}</span></h2>
-                </div>
-                <ul class="fund-list">{{DIVERGENT_HTML}}</ul>
-            </div>
 
-            <div class="card glass-card momentum {{SHOW_MOMENTUM}}" style="/* POS_MOMENTUM */">
-                <div class="card-header">
-                    <div class="header-icon inflow-icon" style="background:rgba(48,209,88,0.16); color:#30D158;">⚡</div>
-                    <h2>Akıllı Skor <span class="period-label">{{PERIOD_NOTE}}</span></h2>
-                </div>
-                <ul class="fund-list">{{MOMENTUM_HTML}}</ul>
-            </div>
-
-            <div class="card glass-card crowding {{SHOW_CROWDING}}" style="/* POS_CROWDING */">
-                <div class="card-header">
-                    <div class="header-icon inflow-icon" style="background:rgba(10,132,255,0.16); color:#0A84FF;">👥</div>
-                    <h2>Kalabalıklaşma / Sakin Birikim <span class="period-label">{{PERIOD_NOTE}}</span></h2>
-                </div>
-                <ul class="fund-list">{{CROWDING_HTML}}</ul>
-            </div>
-
-            <div class="card glass-card category-rotation {{SHOW_CATEGORY_ROTATION}}" style="/* POS_CATEGORY_ROTATION */">
-                <div class="card-header">
-                    <div class="header-icon inflow-icon" style="background:rgba(255,255,255,0.1); color:#fff;">🔄</div>
-                    <h2>Kategori Rotasyonu <span class="period-label">{{PERIOD_NOTE}}</span></h2>
-                </div>
-                <ul class="fund-list">{{CATEGORY_ROTATION_HTML}}</ul>
-            </div>
-
-            <div class="card glass-card predictions {{SHOW_PREDICTIONS}}" style="/* POS_PREDICTIONS */">
+            <div class="card glass-card predictions {{SHOW_PREDICTIONS}} {{PRED_COLS_CLASS}}" style="/* POS_PREDICTIONS */">
                 <div class="card-header">
                     <div style="display:flex; align-items:center; gap:20px;">
-
                         <h2>{{PRED_TITLE}}</h2>
                     </div>
                     <div class="pred-only-date" style="display:none;">{{DATE}}</div>
@@ -953,25 +953,21 @@
             </div>
 
             <!-- portfolio_diff -->
-            <div class="card glass-card portfolio-diff {{SHOW_PORTFOLIO_DIFF}}" style="/* POS_PORTFOLIO_DIFF */">
+            <div class="card glass-card portfolio-diff {{SHOW_PORTFOLIO_DIFF}} {{PORTFOLIO_COLS_CLASS}}" style="/* POS_PORTFOLIO_DIFF */">
                 <div class="card-header" style="display:none;"></div>
                 <ul class="fund-list">{{PORTFOLIO_DIFF_HTML}}</ul>
             </div>
 
-            <div class="card glass-card tracked-rs {{SHOW_TRACKED_RS}}" style="/* POS_TRACKED_RS */">
-                <div class="card-header">
-                    <div class="header-icon inflow-icon" style="background:rgba(10,132,255,0.16); color:#0A84FF;">📏</div>
-                    <h2>Göreceli Güç <span class="period-label">{{PERIOD_NOTE}}</span></h2>
-                </div>
-                <ul class="fund-list">{{TRACKED_RS_HTML}}</ul>
-            </div>
 
-            <div class="card glass-card manager-actions {{SHOW_MANAGER_ACTIONS}}" style="/* POS_MANAGER_ACTIONS */">
-                <div class="card-header">
-                    <div class="header-icon inflow-icon" style="background:rgba(255,159,10,0.18); color:#FF9F0A;">🧠</div>
-                    <h2>Yönetici Hamlesi Özeti <span class="period-label">{{PERIOD_NOTE}}</span></h2>
+            <!-- per_investor_value -->
+            <div class="per-investor-value {{SHOW_PER_INVESTOR_VALUE}}" style="/* POS_PER_INVESTOR_VALUE */">
+                <div class="glass-card" style="grid-column: 1 / -1; padding-bottom: 2px;">
+                    <div class="card-header" style="margin-bottom: 0;">
+                        <div class="header-icon" style="background:rgba(191,90,242,0.2); color:#BF5AF2;">👤</div>
+                        <h2>Kişi Başı Yatırım Değeri <span class="period-label">({{PERIOD_TYPE_LABEL}})</span></h2>
+                    </div>
                 </div>
-                <ul class="fund-list">{{MANAGER_ACTIONS_HTML}}</ul>
+                {{PER_INVESTOR_HTML}}
             </div>
         </div>
 
@@ -984,10 +980,6 @@
             <div class="tracked-list" style="/* DYNAMIC_TRACKED_GRID */">{{TRACKED_FUNDS_HTML}}</div>
         </div>
 
-        <!-- return_chart -->
-        <div class="card glass-card return-chart-section {{SHOW_RETURN_CHART}}" style="/* POS_RETURN_CHART */">
-            {{RETURN_CHART_HTML}}
-        </div>
 
         <!-- footer area -->
         <div class="watermark-container">
