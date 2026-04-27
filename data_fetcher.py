@@ -323,8 +323,8 @@ def fetch_all_flows(period_type, selected_cats=None, sort_mode='tl'):
         "serbest (katilim)": {"all": ["serbest", "katilim"]},
     }
     
-    def check_match(ftype, rule):
-        ftype_l = normalize(ftype)
+    def check_match(ftype, fund_name, rule):
+        ftype_l = normalize(f"{ftype or ""} {fund_name or ""}")
         if "all" in rule:
             if not all(kw in ftype_l for kw in rule["all"]):
                 return False
@@ -427,10 +427,11 @@ def fetch_all_flows(period_type, selected_cats=None, sort_mode='tl'):
         for r in results_all:
             code = r['fund_code']
             ftype = code_to_type.get(code, 'Diğer')
+            fund_name = r.get('name', '')
             matched = False
             for cat_name in selected_cats:
                 rule = normalized_cat_rules.get(normalize(cat_name))
-                if rule and check_match(ftype, rule):
+                if rule and check_match(ftype, fund_name, rule):
                     matched = True
                     break
             if matched:
