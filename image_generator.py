@@ -203,6 +203,22 @@ def generate_top_returns_html(funds, is_gainer=True):
         """
     return html
 
+
+def clean_footer_note(note):
+    if not note:
+        return "* Veriler TEFAS üzerinden alınmıştır."
+
+    replacements = {
+        "De?i?ken": "Değişken",
+        "Bor?lanma Ara?lar?": "Borçlanma Araçları",
+        "Kat?l?m": "Katılım",
+        "D?viz": "Döviz",
+        "üzerinden al?nm??t?r": "üzerinden alınmıştır",
+    }
+    for old, new in replacements.items():
+        note = note.replace(old, new)
+    return note
+
 def generate_divergent_signals_html(signals):
     html = ""
     for s in signals:
@@ -811,7 +827,17 @@ async def main():
     template = template.replace("{{PRED_COLS}}", str(config.get("pred_cols", 1)))
     print(f"DEBUG: pred_cols from config is: {config.get('pred_cols')} (type: {type(config.get('pred_cols'))})")
     template = template.replace("{{PRED_COLS_CLASS}}", "cols-2" if int(config.get("pred_cols", 1)) == 2 else "cols-1")
-    template = template.replace("{{FOOTER_NOTE}}", data.get("footer_note", "* Veriler TEFAS üzerinden alınmıştır."))
+    long_footer_sections = {"inflows", "outflows", "inv_in", "inv_out", "top_gainers", "top_losers", "cat_in", "cat_out"}
+    short_footer_sections = {"tracked", "per_investor_value", "portfolio_diff"}
+
+    if any(s in long_footer_sections for s in sections):
+        footer_note = clean_footer_note(data.get("footer_note", "* Veriler TEFAS üzerinden alınmıştır."))
+    elif any(s in short_footer_sections for s in sections):
+        footer_note = "* Veriler TEFAS üzerinden alınmıştır."
+    else:
+        footer_note = clean_footer_note(data.get("footer_note", "* Veriler TEFAS üzerinden alınmıştır."))
+
+    template = template.replace("{{FOOTER_NOTE}}", footer_note)
     
     # Positions and Dynamic Grid Styles
     positions = config.get("positions", {})
