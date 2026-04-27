@@ -130,10 +130,15 @@ def generate_portfolio_diff_html(diffs_dict, config):
         return ""
         
     data = diffs_dict[target_fund]
-    allocations = data.get("allocations", [])
+    if isinstance(data, dict):
+        allocations = data.get("allocations", [])
+    elif isinstance(data, list):
+        allocations = data
+    else:
+        allocations = []
     
     def get_item_html(alloc):
-        asset = alloc.get("asset", "")
+        asset = alloc.get("asset") or alloc.get("asset_name", "")
         w = alloc.get("weight", 0)
         d = alloc.get("diff", 0)
         
