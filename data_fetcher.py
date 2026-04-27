@@ -640,14 +640,15 @@ if __name__ == "__main__":
     if not tracked_codes: tracked_codes = ['TLY', 'DFI', 'PHE']
         
     tracked_data = fetch_tracked_funds(tracked_codes, args.period)
-    top_inflows, top_outflows, top_cat_in, top_cat_out, top_inv_in, top_inv_out, top_gainers, top_losers, divergent_signals, momentum_scores, crowding_signals, category_rotation, footer_note = fetch_all_flows(args.period, selected_cats, args.sort)
-    
-    # Fetch allocation diffs for all tracked funds
+
+    # Fetch allocation diffs early before heavier market-wide calls trigger rate limits
     allocation_diffs = {}
     for code in tracked_codes:
         diff_data = fetch_allocation_diff(code)
         if diff_data:
             allocation_diffs[code] = diff_data
+
+    top_inflows, top_outflows, top_cat_in, top_cat_out, top_inv_in, top_inv_out, top_gainers, top_losers, divergent_signals, momentum_scores, crowding_signals, category_rotation, footer_note = fetch_all_flows(args.period, selected_cats, args.sort)
 
     tracked_relative_strength = build_relative_strength(tracked_data)
     manager_actions = build_manager_actions(allocation_diffs, tracked_data)

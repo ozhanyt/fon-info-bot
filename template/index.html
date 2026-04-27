@@ -375,8 +375,8 @@
             gap: 14px;
         }
         .portfolio-diff.cols-2 .fund-list {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
+            flex-direction: column;
             gap: 12px;
         }
         .portfolio-diff.cols-1 .fund-list {
@@ -955,7 +955,7 @@
             <!-- portfolio_diff -->
             <div class="card glass-card portfolio-diff {{SHOW_PORTFOLIO_DIFF}} {{PORTFOLIO_COLS_CLASS}}" style="/* POS_PORTFOLIO_DIFF */">
                 <div class="card-header" style="display:none;"></div>
-                <ul class="fund-list">{{PORTFOLIO_DIFF_HTML}}</ul>
+                {{PORTFOLIO_DIFF_HTML}}
             </div>
 
 

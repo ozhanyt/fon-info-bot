@@ -639,9 +639,11 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                 
                 if needs_data:
                     # If portfolio_diff is active, make sure that fund is in tracked_funds so it is fetched properly
-                    current_tracked = [t.strip().upper() for t in tracked_funds.split(',')]
-                    if "portfolio_diff" in section_list and portfolio_diff_fund.upper() not in current_tracked:
-                        current_tracked.append(portfolio_diff_fund.upper())
+                    current_tracked = [t.strip().upper() for t in tracked_funds.split(',') if t.strip()]
+                    if "portfolio_diff" in section_list and portfolio_diff_fund.strip():
+                        target_portfolio_fund = portfolio_diff_fund.upper()
+                        current_tracked = [t for t in current_tracked if t != target_portfolio_fund]
+                        current_tracked.insert(0, target_portfolio_fund)
                         tracked_funds = ", ".join(current_tracked)
 
                     print(f"Running data fetcher for {period}...")

@@ -122,9 +122,11 @@ def generate_portfolio_diff_html(diffs_dict, config):
     target_fund = config.get("portfolio_diff_fund", "").upper()
     cols = int(config.get("portfolio_diff_cols", 1))
     
-    # Fallback to the first available if not found
-    if target_fund not in diffs_dict:
+    # Fallback only when no specific fund was requested
+    if not target_fund:
         target_fund = list(diffs_dict.keys())[0] if diffs_dict else None
+    elif target_fund not in diffs_dict:
+        return f'<div class="fund-list"><li class="fund-item"><div class="f-left"><span class="f-name">{target_fund} için portföy dağılım verisi alınamadı.</span></div></li></div>'
         
     if not target_fund:
         return ""
@@ -758,7 +760,7 @@ async def main():
         diffs = data.get('allocation_diffs', {})
         if diffs:
             target_fund = config.get("portfolio_diff_fund", "").upper()
-            if target_fund not in diffs:
+            if not target_fund:
                 target_fund = list(diffs.keys())[0] if diffs else ""
             template = template.replace(config.get("main_title") if config.get("main_title") else title, f"{target_fund} Portföy Dağılımı")
     else:

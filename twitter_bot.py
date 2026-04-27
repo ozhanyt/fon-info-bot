@@ -9,8 +9,8 @@ try:
     TWEEPY_OK = True
 except ImportError:
     TWEEPY_OK = False
-    print("⚠️  tweepy yüklü değil. Sadece önizleme modunda çalışıyor.")
-    print("   Yüklemek için: pip install tweepy\n")
+    print("UYARI: tweepy yuklu degil. Sadece onizleme modunda calisiyor.")
+    print("Yuklemek icin: pip install tweepy\n")
 
 # ─── Paths ───────────────────────────────────────────────────────────────────
 BASE_DIR         = os.path.dirname(__file__)
@@ -220,9 +220,11 @@ def tweet_allocation_diff(data, config):
     if not diffs:
         return "Portföy dağılım verisi bulunamadı."
         
-    # Fallback to the first available if not found
-    if target_fund not in diffs:
+    # Fallback only when no specific fund was requested
+    if not target_fund:
         target_fund = list(diffs.keys())[0] if diffs else None
+    elif target_fund not in diffs:
+        return f"{target_fund} için portföy dağılım verisi alınamadı."
         
     if not target_fund:
         return "Portföy dağılım verisi bulunamadı."
@@ -232,9 +234,15 @@ def tweet_allocation_diff(data, config):
     date = tr_date(data["date"])
     lines = [f"🎯 #{target_fund} Portföy Dağılımı (Düne Göre Değişim) — {date}\n"]
     
-    allocations = fund_data.get("allocations", [])
+    if isinstance(fund_data, dict):
+        allocations = fund_data.get("allocations", [])
+    elif isinstance(fund_data, list):
+        allocations = fund_data
+    else:
+        allocations = []
+
     for alloc in allocations:
-        asset = alloc.get("asset", "")
+        asset = alloc.get("asset") or alloc.get("asset_name", "")
         w = alloc.get("weight", 0)
         d = alloc.get("diff", 0)
         
