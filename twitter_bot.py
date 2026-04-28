@@ -178,14 +178,14 @@ def tweet_per_investor_value(data, period):
     lbl = PERIOD_LABEL.get(period, "Günlük")
 
     lines = [f"👤 TEFAS {lbl} Kişi Başı Yatırım Değeri — {date}\n"]
-    
-    # Sort by value descending
-    sorted_tracked = sorted(tracked.items(), key=lambda x: x[1].get('per_investor_value', 0), reverse=True)[:5]
-    
-    for code, f in sorted_tracked:
+
+    def fmt_full_tl(val):
+        return ("₺" + f"{val:,.0f}").replace(",", ".")
+
+    for code, f in tracked.items():
         val = f.get("per_investor_value", 0)
         pct = f.get("per_investor_change_pct", 0)
-        val_str = f"₺{val/1000:,.1f}K".replace(",", "X").replace(".", ",").replace("X", ".")
+        val_str = fmt_full_tl(val)
         pct_str = fmt_pct(pct)
         lines.append(f"  #{code} {val_str} ({pct_str})")
 
