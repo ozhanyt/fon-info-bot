@@ -659,28 +659,30 @@
             background: rgba(255, 255, 255, 0.02);
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
             min-height: 110px;
+        }
+
+        .fund-report-kpi-compact {
+            justify-content: center;
         }
 
         .fund-report-kpi-accent {
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 12px 30px rgba(0,0,0,0.16);
         }
 
+        .fund-report-kpi-pos {
+            border-color: rgba(48,209,88,0.22);
+            background: linear-gradient(180deg, rgba(48,209,88,0.14), rgba(48,209,88,0.04));
+        }
+
+        .fund-report-kpi-neg {
+            border-color: rgba(255,69,58,0.22);
+            background: linear-gradient(180deg, rgba(255,69,58,0.16), rgba(255,69,58,0.04));
+        }
+
         .fund-report-kpi-size {
             background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
-        }
-
-        .fund-report-kpi-flow {
-            background: linear-gradient(180deg, rgba(48,209,88,0.10), rgba(48,209,88,0.02));
-        }
-
-        .fund-report-kpi-investor {
-            background: linear-gradient(180deg, rgba(10,132,255,0.10), rgba(10,132,255,0.02));
-        }
-
-        .fund-report-kpi-perinv {
-            background: linear-gradient(180deg, rgba(191,90,242,0.10), rgba(191,90,242,0.02));
         }
 
         .fund-report-kpi-label {
@@ -694,11 +696,24 @@
             font-size: calc(var(--item-font-size) * 1.05);
             font-weight: 900;
             line-height: 1;
+            white-space: nowrap;
         }
 
         .fund-report-kpi-big {
-            font-size: calc(var(--item-font-size) * 1.28);
+            font-size: calc(var(--item-font-size) * 1.05);
             line-height: 0.95;
+        }
+
+        .fund-report-kpi-inline {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            flex-wrap: nowrap;
+        }
+
+        .fund-report-kpi-inline-wrap {
+            flex-wrap: wrap;
+            row-gap: 6px;
         }
 
         .fund-report-kpi-sub {
@@ -706,6 +721,29 @@
             color: rgba(255, 255, 255, 0.68);
             font-weight: 600;
             line-height: 1.2;
+        }
+
+        .fund-report-kpi-sub-strong {
+            font-size: calc(var(--item-font-size) * 0.78);
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .fund-report-kpi-compact .fund-report-kpi-value {
+            font-size: calc(var(--item-font-size) * 1.3);
+        }
+
+        .fund-report-kpi-compact .fund-report-kpi-big {
+            font-size: calc(var(--item-font-size) * 1.3);
+        }
+
+        .fund-report-kpi-perinv .fund-report-kpi-value {
+            font-size: calc(var(--item-font-size) * 1.3);
+        }
+
+        .fund-report-kpi-compact .fund-report-kpi-inline {
+            justify-content: flex-start;
+            gap: 10px;
         }
 
         .fund-report-bottom {
@@ -717,31 +755,83 @@
         .fund-report-panel {
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 16px;
-            padding: 16px 18px;
+            padding: 18px 20px;
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255,255,255,0.015));
         }
 
         .fund-report-panel-title {
-            font-size: calc(var(--item-font-size) * 0.5);
+            font-size: calc(var(--item-font-size) * 1);
             color: rgba(255, 255, 255, 0.78);
             font-weight: 800;
             text-transform: uppercase;
-            margin-bottom: 10px;
+            margin-bottom: 18px;
+        }
+
+        .fund-report-chart-panel {
+            padding: 16px 18px 12px;
+        }
+
+        .fund-report-chart-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .fund-report-chart-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .fund-report-chart-title {
+            font-size: calc(var(--item-font-size) * 0.5);
+            color: rgba(255,255,255,0.78);
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .fund-report-chart-badge {
+            font-size: calc(var(--item-font-size) * 0.56);
+            font-weight: 900;
+        }
+
+        .fund-report-chart-svg {
+            width: 100%;
+            height: 200px;
+            display: block;
+        }
+
+        .fund-report-chart-axis {
+            display: flex;
+            justify-content: space-between;
+            color: rgba(255,255,255,0.42);
+            font-size: calc(var(--item-font-size) * 0.42);
+            font-weight: 700;
+        }
+
+        .fund-report-chart-empty {
+            color: rgba(255,255,255,0.56);
+            font-size: calc(var(--item-font-size) * 0.5);
+            font-weight: 700;
+            padding: 18px 0;
         }
 
         .fund-report-alloc-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px 14px;
+            gap: 18px 28px;
+            min-height: 150px;
+            align-content: space-between;
         }
 
         .fund-report-alloc-item,
         .fund-report-summary-item {
             display: flex;
             justify-content: space-between;
-            gap: 12px;
-            font-size: calc(var(--item-font-size) * 0.52);
-            line-height: 1.2;
+            gap: 18px;
+            font-size: calc(var(--item-font-size) * 0.75);
+            line-height: 1.25;
         }
 
         .fund-report-alloc-name,
@@ -754,6 +844,10 @@
         .fund-report-summary-value {
             font-weight: 800;
             text-align: right;
+        }
+
+        .fund-report-alloc-panel {
+            min-height: 360px;
         }
 
         .fund-report-summary {

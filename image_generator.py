@@ -423,6 +423,68 @@ def generate_per_investor_html(tracked_dict):
     return html
 
 
+def generate_fund_report_sparkline(price_history, chart_title):
+    if not price_history or len(price_history) < 2:
+        return '<div class="fund-report-chart-empty">Grafik verisi alınamadı.</div>'
+
+    values = [float(p.get("cum_return_pct", 0)) for p in price_history]
+    labels = [p.get("date", "")[-5:] for p in price_history]
+    min_v = min(values)
+    max_v = max(values)
+    span = (max_v - min_v) or 1.0
+    width = 760
+    height = 180
+    pad_x = 16
+    pad_y = 18
+    usable_w = width - pad_x * 2
+    usable_h = height - pad_y * 2
+
+    points = []
+    for idx, value in enumerate(values):
+        x = pad_x + (usable_w * idx / (len(values) - 1))
+        y = pad_y + usable_h - ((value - min_v) / span) * usable_h
+        points.append((x, y))
+
+    polyline = " ".join(f"{x:.1f},{y:.1f}" for x, y in points)
+    area = f"{pad_x:.1f},{height-pad_y:.1f} " + polyline + f" {width-pad_x:.1f},{height-pad_y:.1f}"
+    last_val = values[-1]
+    line_class = "#30D158" if last_val >= 0 else "#FF453A"
+    fill_color = "rgba(48,209,88,0.18)" if last_val >= 0 else "rgba(255,69,58,0.18)"
+    latest_str = f"{'+' if last_val >= 0 else ''}{format_pct(last_val, 2)}"
+
+    tick_html = ""
+    if len(labels) >= 2:
+        tick_html = f"""
+        <div class="fund-report-chart-axis">
+            <span>{labels[0]}</span>
+            <span>{labels[len(labels)//2]}</span>
+            <span>{labels[-1]}</span>
+        </div>
+        """
+
+    return f"""
+    <div class="fund-report-chart-wrap">
+        <div class="fund-report-chart-meta">
+            <span class="fund-report-chart-title">{chart_title}</span>
+            <span class="fund-report-chart-badge {'trend-up' if last_val >= 0 else 'trend-down'}">{latest_str}</span>
+        </div>
+        <svg class="fund-report-chart-svg" viewBox="0 0 {width} {height}" preserveAspectRatio="none">
+            <defs>
+                <linearGradient id="fundReportArea" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="{fill_color}" />
+                    <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+                </linearGradient>
+            </defs>
+            <line x1="{pad_x}" y1="{height-pad_y:.1f}" x2="{width-pad_x}" y2="{height-pad_y:.1f}" stroke="rgba(255,255,255,0.10)" stroke-width="1" />
+            <polygon points="{area}" fill="url(#fundReportArea)"></polygon>
+            <polyline points="{polyline}" fill="none" stroke="{line_class}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></polyline>
+            <circle cx="{points[-1][0]:.1f}" cy="{points[-1][1]:.1f}" r="5" fill="{line_class}"></circle>
+        </svg>
+        {tick_html}
+    </div>
+    """
+
+
 def generate_fund_report_html(tracked_dict, allocation_diffs, config, period_label):
     if not tracked_dict:
         return ""
@@ -460,6 +522,10 @@ def generate_fund_report_html(tracked_dict, allocation_diffs, config, period_lab
     investor_delta_class = "trend-up" if investor_delta >= 0 else "trend-down"
     ret_class = "trend-up" if data.get('period_return_pct', 0) >= 0 else "trend-down"
     flow_class = "trend-up" if data.get('period_flow', 0) >= 0 else "trend-down"
+    per_inv_class = "trend-up" if data.get('per_investor_change_pct', 0) >= 0 else "trend-down"
+    report_history = data.get("fund_report_history") or data.get("price_history", [])
+    report_history_title = data.get("fund_report_history_title", "Performans Eğrisi")
+    chart_html = generate_fund_report_sparkline(report_history, report_history_title)
 
     alloc_html = ""
     for alloc in allocations:
@@ -491,39 +557,45 @@ def generate_fund_report_html(tracked_dict, allocation_diffs, config, period_lab
             </div>
         </div>
         <div class="fund-report-kpis">
-            <div class="fund-report-kpi">
+            <div class="fund-report-kpi fund-report-kpi-compact fund-report-kpi-accent {'fund-report-kpi-pos' if data.get('period_return_pct', 0) >= 0 else 'fund-report-kpi-neg'}">
                 <span class="fund-report-kpi-label">{period_label} Getirisi</span>
                 <span class="fund-report-kpi-value {ret_class}">{ret_str}</span>
-                <span class="fund-report-kpi-sub">Dönem fiyat performansı</span>
             </div>
-            <div class="fund-report-kpi fund-report-kpi-accent fund-report-kpi-size">
+            <div class="fund-report-kpi fund-report-kpi-compact fund-report-kpi-accent fund-report-kpi-size">
                 <span class="fund-report-kpi-label">Fon Büyüklüğü</span>
                 <span class="fund-report-kpi-value">{size_str}</span>
-                <span class="fund-report-kpi-sub">Güncel portföy değeri</span>
             </div>
-            <div class="fund-report-kpi fund-report-kpi-accent fund-report-kpi-flow">
+            <div class="fund-report-kpi fund-report-kpi-compact fund-report-kpi-accent fund-report-kpi-flow {'fund-report-kpi-pos' if data.get('period_flow', 0) >= 0 else 'fund-report-kpi-neg'}">
                 <span class="fund-report-kpi-label">Para Giriş/Çıkışı</span>
-                <span class="fund-report-kpi-value {flow_class}">{flow_str}</span>
-                <span class="fund-report-kpi-sub">{flow_pct}</span>
+                <div class="fund-report-kpi-inline">
+                    <span class="fund-report-kpi-value {flow_class}">{flow_str}</span>
+                    <span class="fund-report-kpi-sub fund-report-kpi-sub-strong {flow_class}">{flow_pct}</span>
+                </div>
             </div>
-            <div class="fund-report-kpi">
-                <span class="fund-report-kpi-label">Yatırımcı Sayısı</span>
+            <div class="fund-report-kpi fund-report-kpi-compact">
+                <span class="fund-report-kpi-label">Mevcut Yatırımcı Sayısı</span>
                 <span class="fund-report-kpi-value">{investor_count_str}</span>
-                <span class="fund-report-kpi-sub">Güncel yatırımcı adedi</span>
             </div>
-            <div class="fund-report-kpi fund-report-kpi-accent fund-report-kpi-investor">
+            <div class="fund-report-kpi fund-report-kpi-compact fund-report-kpi-accent fund-report-kpi-investor {'fund-report-kpi-pos' if investor_delta >= 0 else 'fund-report-kpi-neg'}">
                 <span class="fund-report-kpi-label">{period_label} Yatırımcı Değişimi</span>
-                <span class="fund-report-kpi-value fund-report-kpi-big {investor_delta_class}">{investor_delta_str} kişi</span>
-                <span class="fund-report-kpi-sub {investor_delta_class}">{investor_pct_str}</span>
+                <div class="fund-report-kpi-inline">
+                    <span class="fund-report-kpi-value fund-report-kpi-big {investor_delta_class}">{investor_delta_str} kişi</span>
+                    <span class="fund-report-kpi-sub fund-report-kpi-sub-strong {investor_delta_class}">{investor_pct_str}</span>
+                </div>
             </div>
-            <div class="fund-report-kpi fund-report-kpi-accent fund-report-kpi-perinv">
+            <div class="fund-report-kpi fund-report-kpi-accent fund-report-kpi-perinv {'fund-report-kpi-pos' if data.get('per_investor_change_pct', 0) >= 0 else 'fund-report-kpi-neg'}">
                 <span class="fund-report-kpi-label">Kişi Başı Yatırım</span>
-                <span class="fund-report-kpi-value">{per_inv_str}</span>
-                <span class="fund-report-kpi-sub">Önceki: {per_inv_prev_str} ({per_inv_pct_str})</span>
+                <div class="fund-report-kpi-inline fund-report-kpi-inline-wrap">
+                    <span class="fund-report-kpi-value {per_inv_class}">{per_inv_str}</span>
+                    <span class="fund-report-kpi-sub fund-report-kpi-sub-strong {per_inv_class}">Önceki: {per_inv_prev_str} ({per_inv_pct_str})</span>
+                </div>
             </div>
         </div>
         <div class="fund-report-bottom">
-            <div class="fund-report-panel">
+            <div class="fund-report-panel fund-report-chart-panel">
+                {chart_html}
+            </div>
+            <div class="fund-report-panel fund-report-alloc-panel">
                 <div class="fund-report-panel-title">Portföy Dağılımı</div>
                 <div class="fund-report-alloc-grid">
                     {alloc_html if alloc_html else '<div class="fund-report-kpi-sub">Portföy dağılım verisi alınamadı.</div>'}

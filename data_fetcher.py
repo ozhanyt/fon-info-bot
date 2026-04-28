@@ -498,6 +498,41 @@ def fetch_all_flows(period_type, selected_cats=None, sort_mode='tl'):
     
     return top_inflows, top_outflows, cat_list_in, cat_list_out, top_inv_in, top_inv_out, top_gainers, top_losers, [], [], [], [], footer_note
 
+
+def build_fund_report_history(df, period_type):
+    if df.empty or len(df) < 2:
+        return [], "Performans Eğrisi"
+
+    if period_type == "daily":
+        chart_df = df.tail(min(len(df), 22))
+        title = "Son 1 Ay Performans Eğrisi"
+    elif period_type == "weekly":
+        weekly_df = df.resample("W-FRI").last().dropna(subset=["Price"])
+        chart_df = weekly_df.tail(min(len(weekly_df), 8))
+        title = "Son 1 Ay Haftalık Performans"
+    else:
+        monthly_df = df.resample("ME").last().dropna(subset=["Price"])
+        if len(monthly_df) >= 2:
+            chart_df = monthly_df.tail(min(len(monthly_df), 3))
+        else:
+            chart_df = df.resample("W-FRI").last().dropna(subset=["Price"]).tail(min(len(df), 6))
+        title = "Aylık Görünüm Performansı"
+
+    if chart_df.empty or len(chart_df) < 2:
+        return [], title
+
+    base_price = float(chart_df.iloc[0]["Price"])
+    history = []
+    for idx, row in chart_df.iterrows():
+        cum_ret = ((float(row["Price"]) - base_price) / base_price) * 100 if base_price > 0 else 0
+        history.append({
+            "date": idx.strftime("%Y-%m-%d") if hasattr(idx, "strftime") else str(idx),
+            "price": float(row["Price"]),
+            "cum_return_pct": round(cum_ret, 4),
+        })
+    return history, title
+
+
 def fetch_tracked_funds(tracked_codes, period_type):
     tracked_data = {}
     for code in tracked_codes:
@@ -565,6 +600,8 @@ def fetch_tracked_funds(tracked_codes, period_type):
                     "cum_return_pct": round(cum_ret, 4)
                 })
 
+            fund_report_history, fund_report_history_title = build_fund_report_history(df, period_type)
+
             tracked_data[code] = {
                 'fund_code': code, 
                 'name': info.get('fonUnvan', '') if info else code, 
@@ -577,7 +614,9 @@ def fetch_tracked_funds(tracked_codes, period_type):
                 'per_investor_value': float(per_inv_value),
                 'per_investor_value_prev': float(per_inv_value_prev),
                 'per_investor_change_pct': float(per_inv_change_pct),
-                'price_history': price_history
+                'price_history': price_history,
+                'fund_report_history': fund_report_history,
+                'fund_report_history_title': fund_report_history_title
             }
         except Exception as e:
             logging.error(f"Error fetching tracked fund {code}: {e}")
