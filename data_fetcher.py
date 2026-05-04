@@ -356,18 +356,37 @@ def fetch_all_flows(period_type, selected_cats=None, sort_mode='tl'):
         start_date = (today - timedelta(days=30)).strftime("%Y%m%d")
         prev_date = (today - timedelta(days=60)).strftime("%Y%m%d")
         
+    def fetch_summary_for_date_backwards(target_date_str, max_days_back=7):
+        target_dt = datetime.strptime(target_date_str, "%Y%m%d")
+        for i in range(max_days_back):
+            d_str = (target_dt - timedelta(days=i)).strftime("%Y%m%d")
+            res = tapi.get_summary_for_period(d_str, d_str)
+            if res and len(res) > 0:
+                return res, d_str
+        return [], target_date_str
+
     logging.info(f"Fetching summary data for investor filtering...")
-    summary_data = tapi.get_summary_for_period(end_date, end_date)
+    summary_data, actual_end_date = fetch_summary_for_date_backwards(end_date)
+    
+    # Recalculate start_date based on the confirmed actual_end_date to avoid holiday/weekend traps
+    actual_end_dt = datetime.strptime(actual_end_date, "%Y%m%d")
+    if period_type == "daily":
+        target_start = (actual_end_dt - timedelta(days=1)).strftime("%Y%m%d")
+    elif period_type == "weekly":
+        target_start = (actual_end_dt - timedelta(days=7)).strftime("%Y%m%d")
+    else:
+        target_start = (actual_end_dt - timedelta(days=30)).strftime("%Y%m%d")
+
     logging.info(f"Fetching previous summary data...")
-    prev_summary_data = tapi.get_summary_for_period(prev_date, start_date)
+    prev_summary_data, actual_start_date = fetch_summary_for_date_backwards(target_start, max_days_back=10)
     
     prev_inv_map = {}
     if prev_summary_data:
-        for item in sorted(prev_summary_data, key=lambda x: x['tarih']):
+        for item in prev_summary_data:
             prev_inv_map[item['fonKodu']] = item.get('kisiSayisi', 0)
     
-    logging.info(f"Fetching flow data from {start_date} to {end_date}...")
-    flow_data = tapi.get_fund_size_history("", start_date, end_date)
+    logging.info(f"Fetching flow data from {actual_start_date} to {actual_end_date}...")
+    flow_data = tapi.get_fund_size_history("", actual_start_date, actual_end_date)
     
     results_all = []
     code_to_type = {}
@@ -391,12 +410,16 @@ def fetch_all_flows(period_type, selected_cats=None, sort_mode='tl'):
             inv_item = inv_map.get(code)
             if inv_item:
                 investors = inv_item.get('kisiSayisi', 0)
-                # 500+ INVESTOR FILTER - ONLY if we have data
-                if investors < 500:
-                    continue
-                inv_prev = prev_inv_map.get(code, 0)
-                inv_change = investors - inv_prev if inv_prev > 0 else 0
-                inv_change_pct = (inv_change / inv_prev * 100) if inv_prev > 0 else 0
+            else:
+                investors = 0
+                
+            # 500+ INVESTOR FILTER
+            if investors < 500:
+                continue
+                
+            inv_prev = prev_inv_map.get(code, 0)
+            inv_change = investors - inv_prev if inv_prev > 0 else 0
+            inv_change_pct = (inv_change / inv_prev * 100) if inv_prev > 0 else 0
         else:
             # Fallback: if summary_data failed, we assume all funds are valid to avoid empty screen
             investors = 1000 
