@@ -558,9 +558,10 @@ def build_fund_report_history(df, period_type):
 
 def fetch_tracked_funds(tracked_codes, period_type):
     tracked_data = {}
+    period_months = 2 if period_type == "monthly" else 1
     for code in tracked_codes:
         try:
-            df = tapi.get_fund_history(code, period_months=1)
+            df = tapi.get_fund_history(code, period_months=period_months)
             if df.empty or len(df) < 2: continue
             
             latest = df.iloc[-1]
@@ -646,15 +647,18 @@ def fetch_tracked_funds(tracked_codes, period_type):
     return tracked_data
 
 
-def fetch_allocation_diff(fund_code):
+def fetch_allocation_diff(fund_code, period_type="daily"):
     try:
         # Get history to find the dates
-        df_hist = tapi.get_fund_history(fund_code, period_months=1)
+        period_months = 2 if period_type == "monthly" else 1
+        df_hist = tapi.get_fund_history(fund_code, period_months=period_months)
         if df_hist.empty or len(df_hist) < 2:
             return None
             
         latest_date_str = df_hist.index[-1].strftime("%Y%m%d")
-        prev_date_str = df_hist.index[-2].strftime("%Y%m%d")
+        prev_row = get_prev_row(df_hist, period_type)
+        prev_date = prev_row.name if hasattr(prev_row, "name") else df_hist.index[-2]
+        prev_date_str = prev_date.strftime("%Y%m%d")
         
         dist_latest = tapi.get_portfolio_distribution(fund_code, latest_date_str)
         dist_prev = tapi.get_portfolio_distribution(fund_code, prev_date_str)
@@ -706,7 +710,7 @@ if __name__ == "__main__":
     # Fetch allocation diffs early before heavier market-wide calls trigger rate limits
     allocation_diffs = {}
     for code in tracked_codes:
-        diff_data = fetch_allocation_diff(code)
+        diff_data = fetch_allocation_diff(code, args.period)
         if diff_data:
             allocation_diffs[code] = diff_data
 

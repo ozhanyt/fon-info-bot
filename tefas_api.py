@@ -34,7 +34,7 @@ class TefasAPI:
         headers["Origin"] = self.base_url
         headers["Referer"] = referer if referer else f"{self.base_url}/tr"
             
-        for attempt in range(3):
+        for attempt in range(4):
             try:
                 response = self.session.post(url, json=payload, headers=headers, timeout=25)
                 response.raise_for_status()
@@ -42,15 +42,16 @@ class TefasAPI:
                 
                 # Check for "Too many requests" message in JSON
                 if isinstance(data, dict) and data.get('message') == 'Too many requests':
-                     logging.warning(f"TEFAS returned 'Too many requests' (Attempt {attempt+1}). Sleeping 5s...")
-                     time.sleep(5)
+                     sleep_s = 5 * (attempt + 1)
+                     logging.warning(f"TEFAS returned 'Too many requests' (Attempt {attempt+1}). Sleeping {sleep_s}s...")
+                     time.sleep(sleep_s)
                      continue
                 
                 return data
             except Exception as e:
                 logging.error(f"POST to {endpoint} failed (Attempt {attempt+1}): {e}")
-                if attempt < 2:
-                    time.sleep(2 * (attempt + 1))
+                if attempt < 3:
+                    time.sleep(3 * (attempt + 1))
                     continue
                 return None
         return None
@@ -62,10 +63,8 @@ class TefasAPI:
             return data["resultList"][0]
         return None
 
-    def get_fund_history(self, fund_code, period_months=3):
+    def _fetch_fund_history_range(self, fund_code, start_date, end_date):
         import pandas as pd
-        start_date = (datetime.now() - timedelta(days=period_months*30)).strftime("%Y%m%d")
-        end_date = datetime.now().strftime("%Y%m%d")
         payload = {
             "fonTipi": "YAT",
             "fonKodu": fund_code, 
@@ -76,6 +75,8 @@ class TefasAPI:
             "bitSira": 2000
         }
         data = self.post("fonGnlBlgSiraliGetir", payload)
+        if data is None:
+            return None
         if data and data.get("resultList") is not None:
             records = []
             for item in data["resultList"]:
@@ -91,16 +92,57 @@ class TefasAPI:
                 df['Date'] = pd.to_datetime(df['Date'])
                 df.set_index("Date", inplace=True)
                 df.sort_index(inplace=True)
-                
-                info = self.get_fund_info(fund_code)
-                if info:
-                    last_idx = df.index[-1]
-                    df.at[last_idx, "FundSize"] = info.get("portBuyukluk", 0)
-                    df.at[last_idx, "Investors"] = info.get("yatirimciSayi", 0)
-                    df.at[last_idx, "Shares"] = info.get("payAdet", 0)
-                
             return df
         return pd.DataFrame()
+
+    def get_fund_history(self, fund_code, period_months=3):
+        import pandas as pd
+
+        end_dt = datetime.now()
+        start_dt = end_dt - timedelta(days=period_months * 30)
+        total_days = max((end_dt - start_dt).days, 1)
+
+        if total_days <= 30:
+            df = self._fetch_fund_history_range(
+                fund_code,
+                start_dt.strftime("%Y%m%d"),
+                end_dt.strftime("%Y%m%d"),
+            )
+        else:
+            parts = []
+            cursor = start_dt
+            while cursor <= end_dt:
+                chunk_end = min(cursor + timedelta(days=29), end_dt)
+                part = self._fetch_fund_history_range(
+                    fund_code,
+                    cursor.strftime("%Y%m%d"),
+                    chunk_end.strftime("%Y%m%d"),
+                )
+                if part is None:
+                    logging.error(
+                        "Fund history chunk fetch failed for %s (%s -> %s); aborting to avoid partial history.",
+                        fund_code,
+                        cursor.strftime("%Y%m%d"),
+                        chunk_end.strftime("%Y%m%d"),
+                    )
+                    return pd.DataFrame()
+                if not part.empty:
+                    parts.append(part)
+                cursor = chunk_end + timedelta(days=1)
+
+            df = pd.concat(parts).sort_index() if parts else pd.DataFrame()
+            if not df.empty:
+                df = df[~df.index.duplicated(keep="last")]
+
+        if not df.empty:
+            info = self.get_fund_info(fund_code)
+            if info:
+                last_idx = df.index[-1]
+                df.at[last_idx, "FundSize"] = info.get("portBuyukluk", 0)
+                df.at[last_idx, "Investors"] = info.get("yatirimciSayi", 0)
+                df.at[last_idx, "Shares"] = info.get("payAdet", 0)
+
+        return df
 
     def get_fund_details_for_date(self, fund_code, date_str):
         # date_str should be YYYYMMDD
