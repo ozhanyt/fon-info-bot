@@ -417,6 +417,28 @@ def generate_tweet_text(data, sections, config=None):
     """
     if config is None: config = {}
     period = data.get("period_type", "daily")
+
+    # Dynamically update custom period label if dates are available
+    if period == "custom":
+        start_date = data.get("actual_start_date")
+        end_date = data.get("actual_end_date")
+        if start_date and end_date:
+            parsed_start = None
+            parsed_end = None
+            for fmt in ("%Y%m%d", "%Y-%m-%d"):
+                try:
+                    if not parsed_start:
+                        parsed_start = datetime.strptime(start_date, fmt)
+                except:
+                    pass
+                try:
+                    if not parsed_end:
+                        parsed_end = datetime.strptime(end_date, fmt)
+                except:
+                    pass
+            if parsed_start and parsed_end:
+                PERIOD_LABEL["custom"] = f"{parsed_start.strftime('%d.%m.%Y')} - {parsed_end.strftime('%d.%m.%Y')}"
+
     has = lambda s: s in sections
 
     # ==========================

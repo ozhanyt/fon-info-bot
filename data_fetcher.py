@@ -26,6 +26,23 @@ def parse_iso_date(date_str):
     return datetime.strptime(date_str, "%Y-%m-%d")
 
 
+def format_to_tr_date(date_val):
+    if isinstance(date_val, datetime):
+        return date_val.strftime("%d.%m.%Y")
+    if hasattr(date_val, "strftime"):
+        return date_val.strftime("%d.%m.%Y")
+    date_str = str(date_val)
+    # Extract date part in case of time component
+    date_part = date_str.split()[0]
+    for fmt in ("%Y-%m-%d", "%Y%m%d"):
+        try:
+            return datetime.strptime(date_part, fmt).strftime("%d.%m.%Y")
+        except ValueError:
+            pass
+    return date_str
+
+
+
 def period_month_window(period_type):
     if period_type == "monthly":
         return 2
@@ -568,7 +585,12 @@ def build_fund_report_history(df, period_type, custom_range=False):
 
     if custom_range:
         chart_df = df
-        title = "Seçilen Aralık Performansı"
+        try:
+            start_date_str = format_to_tr_date(chart_df.index[0])
+            end_date_str = format_to_tr_date(chart_df.index[-1])
+            title = f"{start_date_str} - {end_date_str} Performansı"
+        except Exception:
+            title = "Seçilen Aralık Performansı"
     elif period_type == "daily":
         chart_df = df.tail(min(len(df), 22))
         title = "Son 1 Ay Performans Eğrisi"

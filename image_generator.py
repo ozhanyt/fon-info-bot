@@ -33,6 +33,26 @@ def format_turkish_date(date_str):
             pass
     return date_str
 
+def format_custom_period_label(start_date, end_date):
+    if not start_date or not end_date:
+        return "Özel Aralık"
+    parsed_start = None
+    parsed_end = None
+    for fmt in ("%Y%m%d", "%Y-%m-%d"):
+        try:
+            if not parsed_start:
+                parsed_start = datetime.strptime(start_date, fmt)
+        except:
+            pass
+        try:
+            if not parsed_end:
+                parsed_end = datetime.strptime(end_date, fmt)
+        except:
+            pass
+    if parsed_start and parsed_end:
+        return f"{parsed_start.strftime('%d.%m.%Y')} - {parsed_end.strftime('%d.%m.%Y')}"
+    return "Özel Aralık"
+
 def generate_fund_list_html(funds, is_inflow=True, sort_mode='tl'):
     html = ""
     for f in funds:
@@ -869,7 +889,7 @@ async def main():
         period_note = "(Geçen Haftaya Göre)"
     elif period_type == "custom":
         title = "TEFAS TARİH ARALIĞI ÖZETİ"
-        period_label = "Özel Aralık"
+        period_label = format_custom_period_label(actual_start_date, actual_end_date)
         if actual_start_date and actual_end_date:
             period_note = f"({format_turkish_date(actual_start_date)} - {format_turkish_date(actual_end_date)})"
         else:
