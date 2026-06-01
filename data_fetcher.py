@@ -17,6 +17,104 @@ tapi = TefasAPI()
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+
+def parse_yyyymmdd(date_str):
+    return datetime.strptime(date_str, "%Y%m%d")
+
+
+def parse_iso_date(date_str):
+    return datetime.strptime(date_str, "%Y-%m-%d")
+
+
+def period_month_window(period_type):
+    if period_type == "monthly":
+        return 2
+    if period_type == "weekly":
+        return 1
+    return 1
+
+
+def find_previous_available_date(target_date_str, max_days_back=10):
+    target_dt = parse_yyyymmdd(target_date_str)
+    for i in range(max_days_back + 1):
+        d_str = (target_dt - timedelta(days=i)).strftime("%Y%m%d")
+        res = tapi.get_summary_for_period(d_str, d_str)
+        if res and len(res) > 0:
+            return res, d_str
+    return [], target_date_str
+
+
+def resolve_period_dates(period_type, custom_start_date=None, custom_end_date=None):
+    if custom_start_date and custom_end_date:
+        requested_start = parse_iso_date(custom_start_date).strftime("%Y%m%d")
+        requested_end = parse_iso_date(custom_end_date).strftime("%Y%m%d")
+        if requested_start > requested_end:
+            raise ValueError("Başlangıç tarihi bitiş tarihinden büyük olamaz.")
+
+        end_summary, actual_end_date = find_previous_available_date(requested_end, max_days_back=10)
+        start_summary, actual_start_date = find_previous_available_date(requested_start, max_days_back=10)
+        return {
+            "requested_start_date": requested_start,
+            "requested_end_date": requested_end,
+            "actual_start_date": actual_start_date,
+            "actual_end_date": actual_end_date,
+            "start_summary": start_summary,
+            "end_summary": end_summary,
+            "period_key": "custom",
+        }
+
+    today = datetime.now()
+    if period_type == "daily":
+        target_end_date = today.strftime("%Y%m%d")
+        if today.weekday() == 0:
+            target_start = (today - timedelta(days=3)).strftime("%Y%m%d")
+        else:
+            target_start = (today - timedelta(days=1)).strftime("%Y%m%d")
+    elif period_type == "weekly":
+        target_end_date = today.strftime("%Y%m%d")
+        target_start = (today - timedelta(days=7)).strftime("%Y%m%d")
+    else:
+        target_end_date = today.strftime("%Y%m%d")
+        target_start = (today - timedelta(days=30)).strftime("%Y%m%d")
+
+    end_summary, actual_end_date = find_previous_available_date(target_end_date, max_days_back=7)
+    actual_end_dt = parse_yyyymmdd(actual_end_date)
+    if period_type == "daily":
+        back_target = (actual_end_dt - timedelta(days=1)).strftime("%Y%m%d")
+    elif period_type == "weekly":
+        back_target = (actual_end_dt - timedelta(days=7)).strftime("%Y%m%d")
+    else:
+        first_day_current_month = actual_end_dt.replace(day=1)
+        back_target = (first_day_current_month - timedelta(days=1)).strftime("%Y%m%d")
+
+    start_summary, actual_start_date = find_previous_available_date(back_target, max_days_back=10)
+    return {
+        "requested_start_date": target_start,
+        "requested_end_date": target_end_date,
+        "actual_start_date": actual_start_date,
+        "actual_end_date": actual_end_date,
+        "start_summary": start_summary,
+        "end_summary": end_summary,
+        "period_key": period_type,
+    }
+
+
+def log_resolved_range(resolved):
+    requested_start = resolved.get("requested_start_date", "-")
+    requested_end = resolved.get("requested_end_date", "-")
+    actual_start = resolved.get("actual_start_date", "-")
+    actual_end = resolved.get("actual_end_date", "-")
+    period_key = resolved.get("period_key", "-")
+    logging.info(
+        "Resolved date range [%s] requested=%s -> %s | actual=%s -> %s",
+        period_key,
+        requested_start,
+        requested_end,
+        actual_start,
+        actual_end,
+    )
+
+
 def get_prev_row(df, period_type):
     latest_date = df.index[-1]
     if period_type == "daily":
@@ -296,16 +394,14 @@ def build_manager_actions(allocation_diffs, tracked_data=None):
 
     return actions
 
-def fetch_all_flows(period_type, selected_cats=None, sort_mode='tl'):
-    logging.info(f"Screening funds for {period_type} period (Sort: {sort_mode})...")
+def fetch_all_flows(period_type, selected_cats=None, sort_mode='tl', resolved_dates=None):
+    mode_label = resolved_dates.get("period_key", period_type)
+    logging.info(f"Screening funds for {mode_label} period (Sort: {sort_mode})...")
     
-    # Mapping of categories to keywords for granular filtering
-    # Refined Category Rules: any (OR), all (AND), none (NOT)
-    # This prevents 'Para Piyasası Serbest' from matching 'Serbest (Genel)'
     display_categories = [
-        "Hisse Senedi", "De?i?ken", "Karma", "Fon Sepeti", "Bor?lanma Ara?lar?",
-        "K.Maden", "Kat?l?m", "Para Piy.", "Serbest (Genel)", "Serbest (P.Piy)",
-        "Serbest (D?viz)", "Serbest (K.Vade)", "Serbest (Kat?l?m)"
+        "Hisse Senedi", "Değişken", "Karma", "Fon Sepeti", "Borçlanma Araçları",
+        "K.Maden", "Katılım", "Para Piy.", "Serbest (Genel)", "Serbest (P.Piy)",
+        "Serbest (Döviz)", "Serbest (K.Vade)", "Serbest (Katılım)"
     ]
     cat_rules = {
         "hisse senedi": {"any": ["hisse senedi"], "none": ["serbest"]},
@@ -324,7 +420,7 @@ def fetch_all_flows(period_type, selected_cats=None, sort_mode='tl'):
     }
     
     def check_match(ftype, fund_name, rule):
-        ftype_l = normalize(f"{ftype or ""} {fund_name or ""}")
+        ftype_l = normalize(f"{ftype or ''} {fund_name or ''}")
         if "all" in rule:
             if not all(kw in ftype_l for kw in rule["all"]):
                 return False
@@ -339,112 +435,60 @@ def fetch_all_flows(period_type, selected_cats=None, sort_mode='tl'):
     all_cats = display_categories[:]
     normalized_cat_rules = {normalize(k): v for k, v in cat_rules.items()}
     
-    today = datetime.now()
-    if period_type == "daily":
-        end_date = today.strftime("%Y%m%d")
-        if today.weekday() == 0: # Monday
-            start_date = (today - timedelta(days=3)).strftime("%Y%m%d")
-        else:
-            start_date = (today - timedelta(days=1)).strftime("%Y%m%d")
-        prev_date = (today - timedelta(days=7)).strftime("%Y%m%d")
-    elif period_type == "weekly":
-        end_date = today.strftime("%Y%m%d")
-        start_date = (today - timedelta(days=7)).strftime("%Y%m%d")
-        prev_date = (today - timedelta(days=14)).strftime("%Y%m%d")
-    else:
-        end_date = today.strftime("%Y%m%d")
-        start_date = (today - timedelta(days=30)).strftime("%Y%m%d")
-        prev_date = (today - timedelta(days=60)).strftime("%Y%m%d")
-        
-    def fetch_summary_for_date_backwards(target_date_str, max_days_back=7):
-        target_dt = datetime.strptime(target_date_str, "%Y%m%d")
-        for i in range(max_days_back):
-            d_str = (target_dt - timedelta(days=i)).strftime("%Y%m%d")
-            res = tapi.get_summary_for_period(d_str, d_str)
-            if res and len(res) > 0:
-                return res, d_str
-        return [], target_date_str
+    summary_data = resolved_dates["end_summary"]
+    prev_summary_data = resolved_dates["start_summary"]
+    actual_start_date = resolved_dates["actual_start_date"]
+    actual_end_date = resolved_dates["actual_end_date"]
 
-    logging.info(f"Fetching summary data for investor filtering...")
-    summary_data, actual_end_date = fetch_summary_for_date_backwards(end_date)
-    
-    # Recalculate start_date based on the confirmed actual_end_date to avoid holiday/weekend traps
-    actual_end_dt = datetime.strptime(actual_end_date, "%Y%m%d")
-    if period_type == "daily":
-        target_start = (actual_end_dt - timedelta(days=1)).strftime("%Y%m%d")
-    elif period_type == "weekly":
-        target_start = (actual_end_dt - timedelta(days=7)).strftime("%Y%m%d")
-    else:
-        target_start = (actual_end_dt - timedelta(days=30)).strftime("%Y%m%d")
-
-    logging.info(f"Fetching previous summary data...")
-    prev_summary_data, actual_start_date = fetch_summary_for_date_backwards(target_start, max_days_back=10)
-    
-    prev_inv_map = {}
-    if prev_summary_data:
-        for item in prev_summary_data:
-            prev_inv_map[item['fonKodu']] = item.get('kisiSayisi', 0)
-    
-    logging.info(f"Fetching flow data from {actual_start_date} to {actual_end_date}...")
-    flow_data = tapi.get_fund_size_history("", actual_start_date, actual_end_date)
-    
-    results_all = []
-    code_to_type = {}
-    
-    # Map investor data
-    inv_map = {item['fonKodu']: item for item in summary_data} if summary_data else {}
-    
-    if not flow_data:
-        logging.error("No flow data received from TEFAS!")
+    if not summary_data or not prev_summary_data:
+        logging.error("No summary data received from TEFAS!")
         return [], [], [], [], [], [], [], [], [], [], [], [], "Hata: TEFAS verisi alınamadı."
 
-    for f_item in flow_data:
-        code = f_item['fonKodu']
-        code_to_type[code] = f_item.get('fonTurAciklama', 'Diğer')
-        
-        investors = 0
-        inv_change = 0
-        inv_change_pct = 0
-        
-        if inv_map:
-            inv_item = inv_map.get(code)
-            if inv_item:
-                investors = inv_item.get('kisiSayisi', 0)
-            else:
-                investors = 0
-                
-            # 500+ INVESTOR FILTER
-            if investors < 500:
-                continue
-                
-            inv_prev = prev_inv_map.get(code, 0)
-            inv_change = investors - inv_prev if inv_prev > 0 else 0
-            inv_change_pct = (inv_change / inv_prev * 100) if inv_prev > 0 else 0
-        else:
-            # Fallback: if summary_data failed, we assume all funds are valid to avoid empty screen
-            investors = 1000 
-            
-        son_pay = f_item.get('sonPayAdedi', 0)
-        ilk_pay = f_item.get('ilkPayAdedi', 0)
-        son_size = f_item.get('sonPortfoyDegeri', 0)
-        return_pct = float(f_item.get('netGetiriOrani', 0))
-        
-        if son_pay > 0:
-            net_flow = (son_pay - ilk_pay) * (son_size / son_pay)
-            flow_pct = f_item.get('payAdetDegisim', 0)
-            
-            results_all.append({
-                'fund_code': code,
-                'name': f_item.get('fonUnvan', ''),
-                'net_flow': float(net_flow),
-                'fund_size': float(son_size),
-                'flow_pct': float(flow_pct),
-                'return_pct': return_pct,
-                'investors': investors,
-                'inv_change': inv_change,
-                'inv_change_pct': inv_change_pct
-            })
-                
+    prev_inv_map = {item['fonKodu']: item.get('kisiSayisi', 0) for item in prev_summary_data}
+    prev_map = {item['fonKodu']: item for item in prev_summary_data}
+    results_all = []
+    code_to_type = {}
+
+    for end_item in summary_data:
+        code = end_item['fonKodu']
+        start_item = prev_map.get(code)
+        if not start_item:
+            continue
+
+        code_to_type[code] = end_item.get('fonTurAciklama', 'Diğer')
+        investors = int(end_item.get('kisiSayisi', 0) or 0)
+        if investors < 500:
+            continue
+
+        inv_prev = prev_inv_map.get(code, 0)
+        inv_change = investors - inv_prev if inv_prev > 0 else 0
+        inv_change_pct = (inv_change / inv_prev * 100) if inv_prev > 0 else 0
+
+        end_price = float(end_item.get('fiyat', 0) or 0)
+        start_price = float(start_item.get('fiyat', 0) or 0)
+        end_shares = float(end_item.get('tedPaySayisi', 0) or 0)
+        start_shares = float(start_item.get('tedPaySayisi', 0) or 0)
+        end_size = float(end_item.get('portfoyBuyukluk', 0) or 0)
+        start_size = float(start_item.get('portfoyBuyukluk', 0) or 0)
+        if end_shares <= 0 or start_shares <= 0:
+            continue
+
+        net_flow = (end_shares - start_shares) * end_price
+        flow_pct = (net_flow / start_size * 100) if start_size > 0 else 0
+        return_pct = ((end_price - start_price) / start_price * 100) if start_price > 0 else 0
+
+        results_all.append({
+            'fund_code': code,
+            'name': end_item.get('fonUnvan', ''),
+            'net_flow': float(net_flow),
+            'fund_size': float(end_size),
+            'flow_pct': float(flow_pct),
+            'return_pct': return_pct,
+            'investors': investors,
+            'inv_change': int(inv_change),
+            'inv_change_pct': float(inv_change_pct)
+        })
+
     results_filtered = []
     if selected_cats:
         for r in results_all:
@@ -463,7 +507,8 @@ def fetch_all_flows(period_type, selected_cats=None, sort_mode='tl'):
         for r in results_all:
             code = r['fund_code']
             ftype = code_to_type.get(code, 'Diğer').lower()
-            if "para piyasası" in ftype or "döviz" in ftype: continue
+            if "para piyasası" in ftype or "döviz" in ftype:
+                continue
             results_filtered.append(r)
     
     # SORT LEADERS
@@ -489,10 +534,6 @@ def fetch_all_flows(period_type, selected_cats=None, sort_mode='tl'):
     top_inv_in = inv_gainers[:5]
     top_inv_out = inv_losers[:5]
     
-    divergent_signals = []
-    momentum_scores = []
-    crowding_signals = []
-
     # Category flows
     cat_flows = {}
     for res in results_all:
@@ -509,7 +550,6 @@ def fetch_all_flows(period_type, selected_cats=None, sort_mode='tl'):
     cat_list = list(cat_flows.values())
     cat_list_in = sorted([c for c in cat_list if c['net_flow'] > 0], key=lambda x: x['net_flow'], reverse=True)[:5]
     cat_list_out = sorted([c for c in cat_list if c['net_flow'] < 0], key=lambda x: x['net_flow'])[:5]
-    category_rotation = []
     
     # Footer
     if selected_cats:
@@ -522,11 +562,14 @@ def fetch_all_flows(period_type, selected_cats=None, sort_mode='tl'):
     return top_inflows, top_outflows, cat_list_in, cat_list_out, top_inv_in, top_inv_out, top_gainers, top_losers, [], [], [], [], footer_note
 
 
-def build_fund_report_history(df, period_type):
+def build_fund_report_history(df, period_type, custom_range=False):
     if df.empty or len(df) < 2:
         return [], "Performans Eğrisi"
 
-    if period_type == "daily":
+    if custom_range:
+        chart_df = df
+        title = "Seçilen Aralık Performansı"
+    elif period_type == "daily":
         chart_df = df.tail(min(len(df), 22))
         title = "Son 1 Ay Performans Eğrisi"
     elif period_type == "weekly":
@@ -556,61 +599,58 @@ def build_fund_report_history(df, period_type):
     return history, title
 
 
-def fetch_tracked_funds(tracked_codes, period_type):
+def fetch_tracked_funds(tracked_codes, period_type, resolved_dates):
     tracked_data = {}
-    period_months = 2 if period_type == "monthly" else 1
+    custom_range = resolved_dates.get("period_key") == "custom"
+    actual_start_date = resolved_dates["actual_start_date"]
+    actual_end_date = resolved_dates["actual_end_date"]
+
     for code in tracked_codes:
         try:
-            df = tapi.get_fund_history(code, period_months=period_months)
-            if df.empty or len(df) < 2: continue
-            
+            if custom_range:
+                df = tapi.get_fund_history_between(code, actual_start_date, actual_end_date)
+            else:
+                period_months = 2 if period_type == "monthly" else 1
+                df = tapi.get_fund_history(code, period_months=period_months)
+
+            if df is None or df.empty or len(df) < 2:
+                continue
+
             latest = df.iloc[-1]
             info = tapi.get_fund_info(code)
-            prev = get_prev_row(df, period_type)
-            return_pct = ((latest['Price'] - prev['Price']) / prev['Price']) * 100
-            
+            prev = df.iloc[0] if custom_range else get_prev_row(df, period_type)
+            return_pct = ((latest['Price'] - prev['Price']) / prev['Price']) * 100 if prev['Price'] > 0 else 0
+
             prev_shares = 0
-            prev_investors = 0
+            latest_shares = 0
+            flow = 0
+            flow_pct = 0
+            inv_latest = int(info.get('yatirimciSayi', 0)) if info else int(latest.get('Investors', 0) or 0)
+            inv_prev = int(prev.get('Investors', 0) or 0)
+            inv_change = inv_latest - inv_prev if inv_prev > 0 else 0
+            inv_change_pct = (inv_change / inv_prev * 100) if inv_prev > 0 else 0
+
             if len(df) >= 2:
-                # Use get_prev_row to find the correct starting point for the period
-                prev_row = get_prev_row(df, period_type)
-                start_date_str = prev_row.name.strftime("%Y%m%d")
-                end_date_str = df.index[-1].strftime("%Y%m%d")
+                start_date_str = prev.name.strftime("%Y%m%d")
+                end_date_str = latest.name.strftime("%Y%m%d")
                 size_data = tapi.get_fund_size_history(code, start_date_str, end_date_str)
-                # Filter for the specific fund code
                 fund_item = next((x for x in size_data if x['fonKodu'] == code), None)
                 if fund_item:
-                    item = fund_item
-                    prev_shares = item.get('ilkPayAdedi', 0)
-                    latest_shares = item.get('sonPayAdedi', 0)
-                    
-                    son_size = item.get('sonPortfoyDegeri', 0)
+                    prev_shares = fund_item.get('ilkPayAdedi', 0)
+                    latest_shares = fund_item.get('sonPayAdedi', 0)
+                    son_size = fund_item.get('sonPortfoyDegeri', 0)
                     latest_price = (son_size / latest_shares) if latest_shares > 0 else latest['Price']
                     flow = (latest_shares - prev_shares) * latest_price if prev_shares > 0 else 0
-                    flow_pct = item.get('payAdetDegisim', 0)
-                    inv_latest = info.get('yatirimciSayi', 0) if info else latest.get('Investors', 0)
-                    inv_prev = prev.get('Investors', 0)
-                    inv_change = inv_latest - inv_prev if inv_prev > 0 else 0
-                    inv_change_pct = (inv_change / inv_prev * 100) if inv_prev > 0 else 0
-            else:
-                latest_shares = info.get('payAdet', 0) if info else latest.get('Shares', latest['Price'])
-                flow = 0
-                flow_pct = 0
-                inv_latest = info.get('yatirimciSayi', 0) if info else latest.get('Investors', 0)
-                inv_change = 0
-                inv_change_pct = 0
-            
-            # Per investor value calculation
+                    flow_pct = fund_item.get('payAdetDegisim', 0)
+
             latest_fund_size = info.get('portBuyukluk', 0) if info else float(latest['FundSize'])
             per_inv_value = latest_fund_size / inv_latest if inv_latest > 0 else 0
-            
+
             prev_fund_size = prev.get('FundSize', 0)
-            prev_investors = prev.get('Investors', 0)
-            per_inv_value_prev = prev_fund_size / prev_investors if prev_investors > 0 else 0
-            
+            per_inv_value_prev = prev_fund_size / inv_prev if inv_prev > 0 else 0
+
             per_inv_change_pct = ((per_inv_value - per_inv_value_prev) / per_inv_value_prev * 100) if per_inv_value_prev > 0 else 0
-            
-            # Build price history for chart (from period start to latest)
+
             prev_date = prev.name if hasattr(prev, 'name') else df.index[0]
             history_df = df[df.index >= prev_date]
             base_price = float(prev['Price'])
@@ -624,16 +664,18 @@ def fetch_tracked_funds(tracked_codes, period_type):
                     "cum_return_pct": round(cum_ret, 4)
                 })
 
-            fund_report_history, fund_report_history_title = build_fund_report_history(df, period_type)
+            fund_report_history, fund_report_history_title = build_fund_report_history(df, period_type, custom_range=custom_range)
 
             tracked_data[code] = {
-                'fund_code': code, 
-                'name': info.get('fonUnvan', '') if info else code, 
+                'fund_code': code,
+                'name': info.get('fonUnvan', '') if info else code,
                 'price': float(latest['Price']),
-                'fund_size': info.get('portBuyukluk', 0) if info else float(latest['FundSize']), 
+                'fund_size': float(latest_fund_size),
                 'investors': int(inv_latest),
-                'period_flow': float(flow), 'period_flow_pct': float(flow_pct),
-                'period_investor_change': int(inv_change), 'period_investor_pct': float(inv_change_pct),
+                'period_flow': float(flow),
+                'period_flow_pct': float(flow_pct),
+                'period_investor_change': int(inv_change),
+                'period_investor_pct': float(inv_change_pct),
                 'period_return_pct': float(return_pct),
                 'per_investor_value': float(per_inv_value),
                 'per_investor_value_prev': float(per_inv_value_prev),
@@ -647,21 +689,13 @@ def fetch_tracked_funds(tracked_codes, period_type):
     return tracked_data
 
 
-def fetch_allocation_diff(fund_code, period_type="daily"):
+def fetch_allocation_diff(fund_code, period_type, resolved_dates):
     try:
-        # Get history to find the dates
-        period_months = 2 if period_type == "monthly" else 1
-        df_hist = tapi.get_fund_history(fund_code, period_months=period_months)
-        if df_hist.empty or len(df_hist) < 2:
-            return None
-            
-        latest_date_str = df_hist.index[-1].strftime("%Y%m%d")
-        prev_row = get_prev_row(df_hist, period_type)
-        prev_date = prev_row.name if hasattr(prev_row, "name") else df_hist.index[-2]
-        prev_date_str = prev_date.strftime("%Y%m%d")
+        start_date_str = resolved_dates["actual_start_date"]
+        end_date_str = resolved_dates["actual_end_date"]
         
-        dist_latest = tapi.get_portfolio_distribution(fund_code, latest_date_str)
-        dist_prev = tapi.get_portfolio_distribution(fund_code, prev_date_str)
+        dist_latest = tapi.get_portfolio_distribution(fund_code, end_date_str)
+        dist_prev = tapi.get_portfolio_distribution(fund_code, start_date_str)
         
         if not dist_latest or not dist_prev:
             return None
@@ -698,6 +732,8 @@ if __name__ == "__main__":
     parser.add_argument("tracked", default="TLY, DFI, PHE", nargs="?")
     parser.add_argument("cats", default="", nargs="?")
     parser.add_argument("--sort", choices=["tl", "pct"], default="tl")
+    parser.add_argument("--start-date", dest="start_date")
+    parser.add_argument("--end-date", dest="end_date")
     args = parser.parse_args()
     
     selected_cats = [c.strip() for c in args.cats.split(",") if c.strip()]
@@ -705,24 +741,37 @@ if __name__ == "__main__":
     tracked_codes = [code.strip().upper() for code in raw_tracked if code.strip()]
     if not tracked_codes: tracked_codes = ['TLY', 'DFI', 'PHE']
         
-    tracked_data = fetch_tracked_funds(tracked_codes, args.period)
+    resolved_dates = resolve_period_dates(args.period, args.start_date, args.end_date)
+    log_resolved_range(resolved_dates)
+    
+    tracked_data = fetch_tracked_funds(tracked_codes, args.period, resolved_dates)
 
     # Fetch allocation diffs early before heavier market-wide calls trigger rate limits
     allocation_diffs = {}
     for code in tracked_codes:
-        diff_data = fetch_allocation_diff(code, args.period)
+        diff_data = fetch_allocation_diff(code, args.period, resolved_dates)
         if diff_data:
             allocation_diffs[code] = diff_data
 
-    top_inflows, top_outflows, top_cat_in, top_cat_out, top_inv_in, top_inv_out, top_gainers, top_losers, divergent_signals, momentum_scores, crowding_signals, category_rotation, footer_note = fetch_all_flows(args.period, selected_cats, args.sort)
+    top_inflows, top_outflows, top_cat_in, top_cat_out, top_inv_in, top_inv_out, top_gainers, top_losers, divergent_signals, momentum_scores, crowding_signals, category_rotation, footer_note = fetch_all_flows(
+        args.period,
+        selected_cats,
+        args.sort,
+        resolved_dates
+    )
 
     tracked_relative_strength = build_relative_strength(tracked_data)
     manager_actions = build_manager_actions(allocation_diffs, tracked_data)
+    period_key = resolved_dates.get("period_key", args.period)
     
     output = {
         'date': datetime.now().strftime("%Y-%m-%d"),
-        'period_type': args.period,
+        'period_type': period_key,
         'sort_mode': args.sort,
+        'requested_start_date': resolved_dates.get("requested_start_date"),
+        'requested_end_date': resolved_dates.get("requested_end_date"),
+        'actual_start_date': resolved_dates.get("actual_start_date"),
+        'actual_end_date': resolved_dates.get("actual_end_date"),
         'top_inflows': top_inflows,
         'top_outflows': top_outflows,
         'top_cat_in': top_cat_in,

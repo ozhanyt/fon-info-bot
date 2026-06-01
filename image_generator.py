@@ -23,11 +23,15 @@ def format_turkish_date(date_str):
         "05": "Mayıs", "06": "Haziran", "07": "Temmuz", "08": "Ağustos",
         "09": "Eylül", "10": "Ekim", "11": "Kasım", "12": "Aralık"
     }
-    try:
-        dt = datetime.strptime(date_str, "%Y-%m-%d")
-        return f"{dt.day} {months[dt.strftime('%m')]} {dt.year}"
-    except:
-        return date_str
+    if not date_str:
+        return ""
+    for fmt in ("%Y-%m-%d", "%Y%m%d"):
+        try:
+            dt = datetime.strptime(date_str, fmt)
+            return f"{dt.day} {months[dt.strftime('%m')]} {dt.year}"
+        except:
+            pass
+    return date_str
 
 def generate_fund_list_html(funds, is_inflow=True, sort_mode='tl'):
     html = ""
@@ -852,6 +856,8 @@ async def main():
             
     date_str = data['date']
     period_type = data.get('period_type', 'daily')
+    actual_start_date = data.get('actual_start_date')
+    actual_end_date = data.get('actual_end_date')
     
     if period_type == "daily":
         title = "GÜNLÜK TEFAS ÖZETİ"
@@ -861,6 +867,13 @@ async def main():
         title = "HAFTALIK TEFAS ÖZETİ"
         period_label = "Haftalık"
         period_note = "(Geçen Haftaya Göre)"
+    elif period_type == "custom":
+        title = "TEFAS TARİH ARALIĞI ÖZETİ"
+        period_label = "Özel Aralık"
+        if actual_start_date and actual_end_date:
+            period_note = f"({format_turkish_date(actual_start_date)} - {format_turkish_date(actual_end_date)})"
+        else:
+            period_note = "(Seçilen Tarih Aralığı)"
     else:
         title = "AYLIK TEFAS ÖZETİ"
         period_label = "Aylık"

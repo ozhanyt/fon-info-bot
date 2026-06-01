@@ -82,6 +82,8 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
             def_sort_mode = db_config.get("sort_mode", "tl")
             def_pred_title = db_config.get("pred_title", "Getiri Tahmini")
             def_port_cols = db_config.get("portfolio_diff_cols", 1)
+            def_custom_start_date = db_config.get("custom_start_date", "")
+            def_custom_end_date = db_config.get("custom_end_date", "")
             
             # Position defaults
             def_pos = db_config.get("positions", {})
@@ -172,6 +174,17 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                             <div class="input-group">
                                 <label for="bgUrl">Arka Plan Resmi URL:</label>
                                 <input type="text" id="bgUrl" value="{{BG_URL}}" placeholder="URL linkini buraya yapıştırın...">
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                <div class="input-group">
+                                    <label for="customStartDate">Başlangıç Tarihi (Opsiyonel):</label>
+                                    <input type="date" id="customStartDate" value="{{CUSTOM_START_DATE}}">
+                                </div>
+                                <div class="input-group">
+                                    <label for="customEndDate">Bitiş Tarihi (Opsiyonel):</label>
+                                    <input type="date" id="customEndDate" value="{{CUSTOM_END_DATE}}">
+                                </div>
                             </div>
 
                             <div class="input-group">
@@ -341,6 +354,8 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                         const resultLink = document.getElementById('resultLink');
                         
                         const bgUrl = document.getElementById('bgUrl').value;
+                        const customStartDate = document.getElementById('customStartDate').value;
+                        const customEndDate = document.getElementById('customEndDate').value;
                         const sections = [];
                         ['inflows', 'outflows', 'cat_in', 'cat_out', 'inv_in', 'inv_out', 'divergent', 'momentum', 'crowding', 'category_rotation', 'tracked', 'tracked_rs', 'manager_actions', 'predictions', 'portfolio_diff', 'per_investor_value', 'fund_report', 'top_gainers', 'top_losers', 'return_chart'].forEach(s => {
                             const chk = document.getElementById('chk-' + s);
@@ -388,6 +403,8 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                                 period: period === 'predictions' ? 'daily' : period,
+                                custom_start_date: customStartDate,
+                                custom_end_date: customEndDate,
                                 tracked_funds: document.getElementById('trackedFunds').value,
                                 bg_url: bgUrl,
                                 sections: finalSections.join(','),
@@ -566,6 +583,8 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
             html = html.replace("{{ITEM_FONT_SIZE}}", str(def_item_font_size))
             html = html.replace("{{PERIOD_FONT_SIZE}}", str(def_period_font_size))
             html = html.replace("{{TCODE_FONT_SIZE}}", str(def_tcode_font_size))
+            html = html.replace("{{CUSTOM_START_DATE}}", str(def_custom_start_date))
+            html = html.replace("{{CUSTOM_END_DATE}}", str(def_custom_end_date))
             # Removed standard SHOW_CHART_CHECKED as it's now a section
             html = html.replace("{{PRED_SECTION_TITLE}}", str(def_pred_title))
             
@@ -613,6 +632,8 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
             portfolio_diff_fund = req_data.get('portfolio_diff_fund', 'PHE')
             portfolio_diff_cols = int(req_data.get('portfolio_diff_cols', 1))
             fund_report_fund = req_data.get('fund_report_fund', 'PHE')
+            custom_start_date = req_data.get('custom_start_date', '')
+            custom_end_date = req_data.get('custom_end_date', '')
             predictions = req_data.get('predictions', [])
             positions = req_data.get('positions', {})
             
@@ -629,6 +650,8 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                     "show_chart": bool(show_chart),
                     "watermark_anchor": watermark_anchor, "header_show_main": header_show_main,
                     "header_show_sub": header_show_sub, "pred_title": pred_title, "pred_cols": pred_cols,
+                    "custom_start_date": custom_start_date,
+                    "custom_end_date": custom_end_date,
                     "portfolio_diff_fund": portfolio_diff_fund,
                     "portfolio_diff_cols": int(req_data.get('portfolio_diff_cols', 1)),
                     "fund_report_fund": fund_report_fund,
@@ -660,7 +683,10 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                     tracked_funds = ", ".join(current_tracked)
 
                     print(f"Running data fetcher for {period}...")
-                    subprocess.run(["python", os.path.join(DIRECTORY, "data_fetcher.py"), period, tracked_funds, selected_categories, "--sort", sort_mode], check=True)
+                    cmd = ["python", os.path.join(DIRECTORY, "data_fetcher.py"), period, tracked_funds, selected_categories, "--sort", sort_mode]
+                    if custom_start_date and custom_end_date:
+                        cmd.extend(["--start-date", custom_start_date, "--end-date", custom_end_date])
+                    subprocess.run(cmd, check=True)
                 
                 # Write runtime config
                 runtime_path = os.path.join(DIRECTORY, "runtime_config.json")
@@ -674,6 +700,8 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                         "watermark_anchor": watermark_anchor, "main_title": main_title_custom,
                         "subtitle": subtitle_custom, "header_show_main": header_show_main,
                         "header_show_sub": header_show_sub, "pred_title": pred_title,
+                        "custom_start_date": custom_start_date,
+                        "custom_end_date": custom_end_date,
                         "portfolio_diff_fund": portfolio_diff_fund,
                         "portfolio_diff_cols": portfolio_diff_cols,
                         "fund_report_fund": fund_report_fund,

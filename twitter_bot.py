@@ -27,8 +27,8 @@ ACCESS_SECRET= os.environ.get("TW_ACCESS_SECRET","YOUR_ACCESS_SECRET")
 BEARER_TOKEN = os.environ.get("TW_BEARER_TOKEN", "YOUR_BEARER_TOKEN")
 
 # ─── Formatting helpers ───────────────────────────────────────────────────────
-PERIOD_TR = {"daily": "Düne Göre", "weekly": "Haftaya Göre", "monthly": "Aya Göre"}
-PERIOD_LABEL = {"daily": "Günlük", "weekly": "Haftalık", "monthly": "Aylık"}
+PERIOD_TR = {"daily": "Düne Göre", "weekly": "Haftaya Göre", "monthly": "Aya Göre", "custom": "Seçilen Aralığa Göre"}
+PERIOD_LABEL = {"daily": "Günlük", "weekly": "Haftalık", "monthly": "Aylık", "custom": "Özel Aralık"}
 
 def fmt_money(val):
     """₺639.9M  veya  -₺456.7M"""

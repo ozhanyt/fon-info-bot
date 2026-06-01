@@ -95,11 +95,17 @@ class TefasAPI:
             return df
         return pd.DataFrame()
 
-    def get_fund_history(self, fund_code, period_months=3):
+    def get_fund_history_between(self, fund_code, start_date, end_date):
         import pandas as pd
 
-        end_dt = datetime.now()
-        start_dt = end_dt - timedelta(days=period_months * 30)
+        if isinstance(start_date, str):
+            start_dt = datetime.strptime(start_date, "%Y%m%d")
+        else:
+            start_dt = start_date
+        if isinstance(end_date, str):
+            end_dt = datetime.strptime(end_date, "%Y%m%d")
+        else:
+            end_dt = end_date
         total_days = max((end_dt - start_dt).days, 1)
 
         if total_days <= 30:
@@ -143,6 +149,15 @@ class TefasAPI:
                 df.at[last_idx, "Shares"] = info.get("payAdet", 0)
 
         return df
+
+    def get_fund_history(self, fund_code, period_months=3):
+        end_dt = datetime.now()
+        start_dt = end_dt - timedelta(days=period_months * 30)
+        return self.get_fund_history_between(
+            fund_code,
+            start_dt.strftime("%Y%m%d"),
+            end_dt.strftime("%Y%m%d"),
+        )
 
     def get_fund_details_for_date(self, fund_code, date_str):
         # date_str should be YYYYMMDD
