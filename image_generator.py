@@ -410,6 +410,82 @@ def generate_manager_actions_html(items):
         """
     return html
 
+
+def generate_holdings_breakdown_html(holdings_data):
+    """En çok kazandıran ve kaybettiren varlıkları etkileri ile listeler."""
+    if not holdings_data:
+        return ""
+
+    fund_code    = holdings_data.get('fund_code', '')
+    total_return = holdings_data.get('total_return_pct', 0)
+    top_gainers  = holdings_data.get('top_gainers', [])
+    top_losers   = holdings_data.get('top_losers', [])
+    fetched_at   = holdings_data.get('fetched_at', '')
+    ret_class    = "trend-up" if total_return >= 0 else "trend-down"
+    ret_sign     = "+" if total_return >= 0 else ""
+
+    def item_html(item, is_gainer):
+        impact = item.get('impact_pct', 0)
+        ret    = item.get('return_pct', 0)
+        weight = item.get('weight_pct', 0)
+        code   = item.get('code', '')
+        name   = item.get('name', '') or ''
+        ic     = "trend-up" if impact >= 0 else "trend-down"
+        impact_str = f"{'+' if impact >= 0 else ''}{format_pct(impact, 2)}"
+        ret_str    = f"Getiri {'+' if ret >= 0 else ''}{format_pct(ret, 2)}"
+        weight_str = f"Tahmini Ağırlık %{weight:.2f}".replace('.', ',')
+        return f"""
+        <li class="fund-item signal-item">
+            <div class="f-left">
+                <div class="signal-code-row">
+                    <span class="f-code">{code}</span>
+                    <span class="signal-fund-name">{name[:30]}</span>
+                </div>
+                <span class="f-name">{weight_str}</span>
+            </div>
+            <div class="f-right">
+                <span class="f-val {ic}">{impact_str}</span>
+                <span class="signal-meta">{ret_str}</span>
+            </div>
+        </li>
+        """
+
+    gainers_html = "".join(item_html(i, True)  for i in top_gainers) or "<li class='fund-item'><div class='f-left'><span class='f-name'>Veri yok</span></div></li>"
+    losers_html  = "".join(item_html(i, False) for i in top_losers)  or "<li class='fund-item'><div class='f-left'><span class='f-name'>Veri yok</span></div></li>"
+
+    time_str = ""
+    if fetched_at:
+        try:
+            from datetime import datetime, timezone
+            dt = datetime.fromisoformat(fetched_at.replace('Z', '+00:00'))
+            time_str = dt.strftime('%H:%M')
+        except:
+            pass
+
+    return f"""
+    <div class="holdings-breakdown-body">
+        <div class="holdings-cols">
+            <div class="holdings-col">
+                <div class="holdings-col-title trend-up">▲ En Çok Katkı Sağlayan</div>
+                <ul class="fund-list">{gainers_html}</ul>
+            </div>
+            <div class="holdings-col">
+                <div class="holdings-col-title trend-down">▼ En Çok Kaybettiren</div>
+                <ul class="fund-list">{losers_html}</ul>
+            </div>
+        </div>
+        
+        <!-- Büyük KPI Alanı -->
+        <div class="holdings-kpi-card" style="margin-top: 28px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 32px; text-align: center;">
+            <span style="font-size: calc(var(--item-font-size) * 0.8); color: rgba(255, 255, 255, 0.4); text-transform: uppercase; font-weight: 700; letter-spacing: 2px; margin-bottom: 12px;">TAHMİNİ GETİRİ</span>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 24px;">
+                <span style="font-size: calc(var(--item-font-size) * 5); font-weight: 800; opacity: 0.1; color: #fff; font-family: 'Space Grotesk', sans-serif;">{fund_code}</span>
+                <span class="{ret_class}" style="font-size: calc(var(--item-font-size) * 3); font-weight: 800; font-family: 'Space Grotesk', sans-serif; line-height: 1;">{ret_sign}{format_pct(total_return, 4)}</span>
+            </div>
+        </div>
+    </div>
+    """
+
 def generate_per_investor_html(tracked_dict):
     html = ""
     for code, data in tracked_dict.items():
@@ -940,6 +1016,7 @@ async def main():
     predictions_html = generate_predictions_html(predictions) if "predictions" in sections else ""
     
     per_investor_html = generate_per_investor_html(data.get('tracked', {})) if "per_investor_value" in sections else ""
+    holdings_breakdown_html = generate_holdings_breakdown_html(data.get('holdings_breakdown')) if "holdings_breakdown" in sections else ""
     
     bg_url = config.get("bg_url", "")
     if not bg_url:
@@ -960,6 +1037,9 @@ async def main():
     # Header Visibility
     show_main = config.get("header_show_main", True)
     show_sub = config.get("header_show_sub", True)
+    if len(sections) == 1 and "holdings_breakdown" in sections:
+        show_main = False
+        show_sub = False
     template = template.replace("{{SHOW_MAIN}}", "" if show_main else "hidden")
     template = template.replace("{{SHOW_SUB}}", "" if show_sub else "hidden")
     template = template.replace("{{TOP_INFLOWS_HTML}}", inflows_html)
@@ -983,6 +1063,7 @@ async def main():
     template = template.replace("{{TOP_LOSERS_HTML}}", top_losers_html)
     template = template.replace("{{PREDICTIONS_HTML}}", predictions_html)
     template = template.replace("{{PER_INVESTOR_HTML}}", per_investor_html)
+    template = template.replace("{{HOLDINGS_BREAKDOWN_HTML}}", holdings_breakdown_html)
     template = template.replace("{{PRED_TITLE}}", config.get("pred_title", "Getiri Tahmini"))
     
     # Handle layout mode class
@@ -997,12 +1078,14 @@ async def main():
             if not target_fund:
                 target_fund = list(diffs.keys())[0] if diffs else ""
             template = template.replace(config.get("main_title") if config.get("main_title") else title, f"{target_fund} Portföy Dağılımı")
+    elif len(sections) == 1 and "holdings_breakdown" in sections:
+        layout_mode_class = "holdings-only-layout"
     else:
         layout_mode_class = "normal-layout"
     template = template.replace("{{LAYOUT_MODE_CLASS}}", layout_mode_class)
     
     # Conditional Visibility and Positioning
-    for s_name in ["inflows", "outflows", "cat_in", "cat_out", "inv_in", "inv_out", "divergent", "momentum", "crowding", "category_rotation", "tracked", "tracked_rs", "manager_actions", "predictions", "portfolio_diff", "fund_report", "top_gainers", "top_losers", "return_chart", "per_investor_value"]:
+    for s_name in ["inflows", "outflows", "cat_in", "cat_out", "inv_in", "inv_out", "divergent", "momentum", "crowding", "category_rotation", "tracked", "tracked_rs", "manager_actions", "predictions", "portfolio_diff", "fund_report", "top_gainers", "top_losers", "return_chart", "per_investor_value", "holdings_breakdown"]:
         placeholder_show = f"{{{{SHOW_{s_name.upper()}}}}}"
         placeholder_pos = f"/* POS_{s_name.upper()} */"
         
@@ -1021,8 +1104,8 @@ async def main():
             else:
                 template = template.replace(placeholder_pos, "")
 
-    # Hide footer if ONLY predictions are shown
-    show_footer = "hidden" if len(sections) == 1 and "predictions" in sections else ""
+    # Hide footer if ONLY predictions or holdings_breakdown are shown
+    show_footer = "hidden" if len(sections) == 1 and ("predictions" in sections or "holdings_breakdown" in sections) else ""
     if show_footer:
         template = template.replace("{{SHOW_FOOTER}}", "hidden")
         # Also hide via inline if possible or just rely on class
@@ -1046,7 +1129,7 @@ async def main():
     print(f"DEBUG: pred_cols from config is: {config.get('pred_cols')} (type: {type(config.get('pred_cols'))})")
     template = template.replace("{{PRED_COLS_CLASS}}", "cols-2" if int(config.get("pred_cols", 1)) == 2 else "cols-1")
     long_footer_sections = {"inflows", "outflows", "inv_in", "inv_out", "top_gainers", "top_losers", "cat_in", "cat_out"}
-    short_footer_sections = {"tracked", "per_investor_value", "portfolio_diff", "fund_report"}
+    short_footer_sections = {"tracked", "per_investor_value", "portfolio_diff", "fund_report", "holdings_breakdown"}
 
     if any(s in long_footer_sections for s in sections):
         footer_note = clean_footer_note(data.get("footer_note", "* Veriler TEFAS üzerinden alınmıştır."))
@@ -1108,6 +1191,7 @@ async def main():
     template = template.replace("/* POS_FUND_REPORT */", get_grid_pos("fund_report"))
     template = template.replace("/* POS_TOP_GAINERS */", get_grid_pos("top_gainers"))
     template = template.replace("/* POS_TOP_LOSERS */", get_grid_pos("top_losers"))
+    template = template.replace("/* POS_HOLDINGS_BREAKDOWN */", get_grid_pos("holdings_breakdown"))
     
     # Watermark position is now handled relatively in index.html
     # We clear the placeholder to avoid CSS errors

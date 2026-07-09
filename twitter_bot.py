@@ -300,6 +300,37 @@ def tweet_allocation_diff(data, config):
     return "\n".join(lines)
 
 
+def tweet_holdings_breakdown(data, config):
+    hb = data.get("holdings_breakdown", {})
+    if not hb:
+        return "Etki analizi verisi bulunamadı."
+
+    fund_code = hb.get("fund_code", "FON").upper()
+    date = tr_date(data.get("date", ""))
+
+    lines = [f"📊 #{fund_code} Portföy İçi Getiri Etki Analizi — {date}\n"]
+
+    gainers = hb.get("top_gainers", [])[:3]
+    if gainers:
+        lines.append("🟢 En Çok Katkı Sağlayanlar:")
+        for i, item in enumerate(gainers, 1):
+            code = item.get("code", "")
+            impact = item.get("impact_pct", 0)
+            lines.append(f"  {i}. #{code}  {fmt_pct(impact)}")
+
+    losers = hb.get("top_losers", [])[:3]
+    if losers:
+        lines.append("\n🔴 En Çok Kaybettirenler:")
+        for i, item in enumerate(losers, 1):
+            code = item.get("code", "")
+            impact = item.get("impact_pct", 0)
+            lines.append(f"  {i}. #{code}  {fmt_pct(impact)}")
+
+    lines.append("\n📈 Detaylar görselde ↓")
+    lines.append("#TEFAS #FonYatırımı #Borsa #Yatırım")
+    return "\n".join(lines)
+
+
 def tweet_top_returns(data, period):
     """En Çok Kazandıranlar + En Çok Kaybedenler"""
     gainers = data.get("top_gainers", [])[:3]
@@ -447,6 +478,9 @@ def generate_tweet_text(data, sections, config=None):
     if has("portfolio_diff") and len(sections) == 1:
         return tweet_allocation_diff(data, config)
 
+    if has("holdings_breakdown") and len(sections) == 1:
+        return tweet_holdings_breakdown(data, config)
+
     if has("predictions") and len(sections) == 1:
         return tweet_predictions(data, config)
 
@@ -536,6 +570,9 @@ def generate_tweet_text(data, sections, config=None):
 
     if has("outflows") and not has("inflows"):
         return tweet_outflows_only(data, period)
+
+    if has("holdings_breakdown"):
+        return tweet_holdings_breakdown(data, config)
 
     # Fallback: her şey varsa inflows+outflows özeti
     return tweet_inflows_outflows(data, period)

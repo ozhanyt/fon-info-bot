@@ -297,6 +297,8 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                             {{PRED_ROWS}}
                         </div>
                         <button class="add-btn" onclick="addPredictionRow()">+ Satır Ekle</button>
+                        <button class="add-btn" onclick="fetchPredictionsFromTracker()" style="background:#5AC8FA; color:#000; margin-left: 10px;">🔮 Tahminleri Getir</button>
+                        <span id="predFetchStatus" style="font-size:13px; color:#8e8e93; margin-left:10px;"></span>
                         
                         <div style="margin-top:20px;">
                             <label>Tahmin Bölümü Sütun Sayısı</label>
@@ -304,6 +306,28 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                                 <option value="1" {{SEL_PRED_COL_1}}>1 Sütun (Dikey)</option>
                                 <option value="2" {{SEL_PRED_COL_2}}>2 Sütun (Yan Yana)</option>
                             </select>
+                        </div>
+                    </div>
+
+                    <!-- Fon İçi Etki Analizi paneli -->
+                    <div class="pred-section" style="margin-top:30px; border-top:1px solid rgba(255,255,255,0.05); padding-top:30px;">
+                        <span class="section-title">FON İÇİ ETKİ ANALİZİ</span>
+                        <p style="color:#8e8e93; font-size:13px; margin-bottom:18px;">fon-portfoy-tracker (localhost:3032) üzerinden veri çeker. <b>holdings_breakdown</b> bölümünü açık tutun.</p>
+                        <div style="display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap;">
+                            <div style="display:flex; flex-direction:column; gap:6px;">
+                                <label style="font-size:12px; color:#8e8e93; font-weight:700;">FON KODU</label>
+                                <input type="text" id="holdingsFundCode" value="TLY" placeholder="TLY" style="width:90px; padding:10px 12px; font-size:15px; font-weight:800; text-transform:uppercase; background:#000; border:1px solid #333; border-radius:10px; color:#fff; text-align:center;">
+                            </div>
+                            <div style="display:flex; flex-direction:column; gap:6px;">
+                                <label style="font-size:12px; color:#8e8e93; font-weight:700;">FON TOPLAM DEĞERİ (₺, opsiyonel)</label>
+                                <input type="text" id="holdingsFonToplam" value="" placeholder="220.000.000.000" style="width:200px; padding:10px 12px; font-size:14px; background:#000; border:1px solid #333; border-radius:10px; color:#fff;">
+                            </div>
+                            <div style="display:flex; flex-direction:column; gap:6px;">
+                                <label style="font-size:12px; color:#8e8e93; font-weight:700;">TOP N</label>
+                                <input type="number" id="holdingsTopN" value="5" min="1" max="10" style="width:70px; padding:10px; font-size:14px; background:#000; border:1px solid #333; border-radius:10px; color:#fff; text-align:center;">
+                            </div>
+                            <button onclick="fetchHoldings()" style="background:#5AC8FA; color:#000; border:none; padding:12px 22px; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; letter-spacing:0.3px;">📊 Portföy Verisi Çek</button>
+                            <span id="holdingsStatus" style="font-size:13px; color:#8e8e93;"></span>
                         </div>
                     </div>
 
@@ -346,6 +370,93 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                         container.appendChild(row);
                     };
 
+                    async function fetchPredictionsFromTracker() {
+                        const rows = document.querySelectorAll('.pred-row');
+                        let funds = Array.from(rows)
+                            .map(row => row.querySelector('.pred-code').value.trim().toUpperCase())
+                            .filter(Boolean)
+                            .join(',');
+                        
+                        if (!funds) {
+                            // Fallback to trackedFunds input if table is empty
+                            funds = (document.getElementById('trackedFunds').value || '').trim();
+                        }
+                        
+                        if (!funds) {
+                            alert("Lütfen önce tablodaki 'FON KODU' alanlarını doldurun veya 'Takipteki Fon Kodları' alanını girin.");
+                            return;
+                        }
+                        
+                        const statusEl = document.getElementById('predFetchStatus');
+                        statusEl.textContent = '⏳ Çekiliyor...';
+                        statusEl.style.color = '#8e8e93';
+                        try {
+                            const resp = await fetch('/api/fetch-predictions', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({funds: funds})
+                            });
+                            const d = await resp.json();
+                            if (d.success) {
+                                // Map predictions by uppercase fund code
+                                const predMap = {};
+                                d.predictions.forEach(p => {
+                                    predMap[p.code.toUpperCase()] = p;
+                                });
+                                
+                                // Update existing rows in place
+                                let updatedCount = 0;
+                                rows.forEach(row => {
+                                    const codeInput = row.querySelector('.pred-code');
+                                    const valInput = row.querySelector('.pred-val');
+                                    const descInput = row.querySelector('.pred-desc');
+                                    const code = codeInput.value.trim().toUpperCase();
+                                    if (code && predMap[code]) {
+                                        valInput.value = predMap[code].val;
+                                        updatedCount++;
+                                    }
+                                });
+                                
+                                statusEl.textContent = `✅ Tahminler güncellendi (${updatedCount} fon)`;
+                                statusEl.style.color = '#32d74b';
+                            } else {
+                                statusEl.textContent = '❌ ' + (d.error || 'Hata');
+                                statusEl.style.color = '#ff453a';
+                            }
+                        } catch(e) {
+                            statusEl.textContent = '❌ Bağlantı hatası: ' + e;
+                            statusEl.style.color = '#ff453a';
+                        }
+                    }
+
+                    async function fetchHoldings() {
+                        const fundCode  = (document.getElementById('holdingsFundCode').value || 'TLY').trim().toUpperCase();
+                        const fonToplam = document.getElementById('holdingsFonToplam').value.trim().replace(/\./g,'').replace(',','.');
+                        const topN      = document.getElementById('holdingsTopN').value || '5';
+                        const statusEl  = document.getElementById('holdingsStatus');
+                        statusEl.textContent = '⏳ Çekiliyor...';
+                        statusEl.style.color = '#8e8e93';
+                        try {
+                            const resp = await fetch('/api/fetch-holdings', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({fund_code: fundCode, fon_toplam: fonToplam, top_n: topN})
+                            });
+                            const d = await resp.json();
+                            if (d.success) {
+                                const t = d.fetched_at ? new Date(d.fetched_at).toLocaleTimeString('tr-TR') : '';
+                                statusEl.textContent = `✅ ${fundCode} — ${d.item_count} kalem${t ? ' | ' + t : ''}`;
+                                statusEl.style.color = '#32d74b';
+                            } else {
+                                statusEl.textContent = '❌ ' + (d.error || 'Hata');
+                                statusEl.style.color = '#ff453a';
+                            }
+                        } catch(e) {
+                            statusEl.textContent = '❌ Bağlantı hatası: ' + e;
+                            statusEl.style.color = '#ff453a';
+                        }
+                    }
+
                     function generate(period) {
                         const btnId = period === 'predictions' ? 'btn-preds' : 'btn-' + period;
                         const btn = document.getElementById(btnId);
@@ -357,7 +468,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                         const customStartDate = document.getElementById('customStartDate').value;
                         const customEndDate = document.getElementById('customEndDate').value;
                         const sections = [];
-                        ['inflows', 'outflows', 'cat_in', 'cat_out', 'inv_in', 'inv_out', 'divergent', 'momentum', 'crowding', 'category_rotation', 'tracked', 'tracked_rs', 'manager_actions', 'predictions', 'portfolio_diff', 'per_investor_value', 'fund_report', 'top_gainers', 'top_losers', 'return_chart'].forEach(s => {
+                        ['inflows', 'outflows', 'cat_in', 'cat_out', 'inv_in', 'inv_out', 'divergent', 'momentum', 'crowding', 'category_rotation', 'tracked', 'tracked_rs', 'manager_actions', 'predictions', 'portfolio_diff', 'per_investor_value', 'fund_report', 'top_gainers', 'top_losers', 'return_chart', 'holdings_breakdown'].forEach(s => {
                             const chk = document.getElementById('chk-' + s);
                             if (chk && chk.checked) sections.push(s);
                         });
@@ -383,7 +494,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                         const selectedCats = Array.from(document.querySelectorAll('.cat-chk:checked')).map(c => c.value);
                         
                         const positions = {};
-                        ['inflows', 'outflows', 'cat_in', 'cat_out', 'inv_in', 'inv_out', 'divergent', 'momentum', 'crowding', 'category_rotation', 'tracked', 'tracked_rs', 'manager_actions', 'predictions', 'portfolio_diff', 'per_investor_value', 'fund_report', 'top_gainers', 'top_losers', 'return_chart'].forEach(s => {
+                        ['inflows', 'outflows', 'cat_in', 'cat_out', 'inv_in', 'inv_out', 'divergent', 'momentum', 'crowding', 'category_rotation', 'tracked', 'tracked_rs', 'manager_actions', 'predictions', 'portfolio_diff', 'per_investor_value', 'fund_report', 'top_gainers', 'top_losers', 'return_chart', 'holdings_breakdown'].forEach(s => {
                             const chk = document.getElementById('chk-' + s);
                             if (chk) {
                                 const r = document.getElementById('pos-' + s + '-r').value;
@@ -520,7 +631,8 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                 "per_investor_value": "Kişi Başı Yatırım Değeri",
                 "fund_report": "Fon Karnesi",
                 "predictions": "Tahminler (Serbest Bölüm)", 
-                "portfolio_diff": "Portföy Değişimleri"
+                "portfolio_diff": "Portföy Değişimleri",
+                "holdings_breakdown": "Fon İçi Etki Analizi"
             }
             pos_rows_html = ""
             for key, label in pos_labels.items():
@@ -721,6 +833,71 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                 print(f"Error: {e}")
                 self.wfile.write(json.dumps({"success": False, "error": str(e)}).encode('utf-8'))
             return
+
+        if self.path == '/api/fetch-holdings':
+            import urllib.request as _req
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            req_data = json.loads(post_data.decode('utf-8'))
+            fund_code  = req_data.get('fund_code', 'TLY').strip().upper()
+            fon_toplam = str(req_data.get('fon_toplam', '')).strip()
+            top_n      = str(req_data.get('top_n', '5')).strip()
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json; charset=utf-8')
+            self.end_headers()
+            try:
+                url = f"http://localhost:3032/api/portfolio/{fund_code}/top-holdings?topN={top_n}"
+                if fon_toplam:
+                    url += f"&fonToplam={fon_toplam}"
+                print(f"[fetch-holdings] Fetching: {url}")
+                with _req.urlopen(url, timeout=30) as resp:
+                    holdings = json.loads(resp.read().decode('utf-8'))
+                data_path = os.path.join(DIRECTORY, "data.json")
+                with open(data_path, "r", encoding="utf-8") as f:
+                    data_json = json.load(f)
+                data_json["holdings_breakdown"] = holdings
+                with open(data_path, "w", encoding="utf-8") as f:
+                    json.dump(data_json, f, ensure_ascii=False, indent=2)
+                print(f"[fetch-holdings] OK: {holdings.get('item_count', 0)} items for {fund_code}")
+                self.wfile.write(json.dumps({
+                    "success": True,
+                    "fund_code": fund_code,
+                    "item_count": holdings.get("item_count", 0),
+                    "fetched_at": holdings.get("fetched_at", "")
+                }, ensure_ascii=False).encode('utf-8'))
+            except Exception as e:
+                print(f"[fetch-holdings] Error: {e}")
+                self.wfile.write(json.dumps({"success": False, "error": str(e)}).encode('utf-8'))
+            return
+
+        if self.path == '/api/fetch-predictions':
+            import urllib.request as _req
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            req_data = json.loads(post_data.decode('utf-8'))
+            funds = req_data.get('funds', 'TLY, DFI, PHE').strip()
+
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json; charset=utf-8')
+            self.end_headers()
+
+            try:
+                # URL encode the funds query param
+                encoded_funds = urllib.parse.quote(funds)
+                url = f"http://localhost:3032/api/portfolio/all-predictions?funds={encoded_funds}"
+                print(f"[fetch-predictions] Fetching: {url}")
+                with _req.urlopen(url, timeout=30) as resp:
+                    res_data = json.loads(resp.read().decode('utf-8'))
+                
+                self.wfile.write(json.dumps({
+                    "success": True,
+                    "predictions": res_data.get("predictions", [])
+                }, ensure_ascii=False).encode('utf-8'))
+            except Exception as e:
+                print(f"[fetch-predictions] Error: {e}")
+                self.wfile.write(json.dumps({"success": False, "error": str(e)}).encode('utf-8'))
+            return
+
 
 def pget(key, sub):
     CONFIG_FILE = os.path.join(DIRECTORY, "dashboard_config.json")

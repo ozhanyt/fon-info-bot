@@ -1241,6 +1241,17 @@
             <div class="card glass-card fund-report {{SHOW_FUND_REPORT}}" style="/* POS_FUND_REPORT */">
                 {{FUND_REPORT_HTML}}
             </div>
+
+            <!-- holdings_breakdown -->
+            <div class="card glass-card holdings-breakdown {{SHOW_HOLDINGS_BREAKDOWN}}" style="/* POS_HOLDINGS_BREAKDOWN */; padding:0;">
+                <style>
+                    .holdings-breakdown-body { padding: 30px; }
+                    .holdings-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; }
+                    .holdings-cols { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+                    .holdings-col-title { font-size:calc(var(--item-font-size)*0.8); font-weight:800; text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; padding-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.08); }
+                </style>
+                {{HOLDINGS_BREAKDOWN_HTML}}
+            </div>
         </div>
 
         <!-- tracked -->
