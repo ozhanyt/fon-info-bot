@@ -428,12 +428,16 @@ def generate_holdings_breakdown_html(holdings_data):
         impact = item.get('impact_pct', 0)
         ret    = item.get('return_pct', 0)
         weight = item.get('weight_pct', 0)
+        current_weight = item.get('current_weight_pct', weight)
         code   = item.get('code', '')
         name   = item.get('name', '') or ''
         ic     = "trend-up" if impact >= 0 else "trend-down"
         impact_str = f"{'+' if impact >= 0 else ''}{format_pct(impact, 2)}"
         ret_str    = f"Getiri {'+' if ret >= 0 else ''}{format_pct(ret, 2)}"
-        weight_str = f"Tahmini Ağırlık %{weight:.2f}".replace('.', ',')
+        if abs(weight - current_weight) >= 0.005:
+            weight_str = f"Tahmini Ağırlık %{weight:.2f} ➔ %{current_weight:.2f}".replace('.', ',')
+        else:
+            weight_str = f"Tahmini Ağırlık %{weight:.2f}".replace('.', ',')
         return f"""
         <li class="fund-item signal-item">
             <div class="f-left">

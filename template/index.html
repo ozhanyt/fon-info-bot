@@ -424,6 +424,13 @@
             /* removed nowrap and ellipsis so text wraps */
         }
 
+        .signal-item .f-name {
+            font-size: 16.5px !important;
+            font-weight: 700;
+            letter-spacing: -0.2px;
+            white-space: nowrap;
+        }
+
         .f-right {
             display: flex;
             flex-direction: column;
@@ -437,6 +444,10 @@
             font-family: 'Space Grotesk', sans-serif;
             font-size: calc(var(--item-font-size) * 1.4);
             font-weight: 700;
+        }
+
+        .holdings-breakdown .f-val {
+            font-size: calc(var(--item-font-size) * 1);
         }
 
         .f-pct {
@@ -471,7 +482,7 @@
 
         .signal-meta {
             font-family: 'Space Grotesk', sans-serif;
-            font-size: calc(var(--item-font-size) * 0.62);
+            font-size: calc(var(--item-font-size) * 0.7);
             font-weight: 700;
             opacity: 0.95;
         }

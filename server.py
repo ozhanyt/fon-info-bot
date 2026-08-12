@@ -371,58 +371,96 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                     };
 
                     async function fetchPredictionsFromTracker() {
+                        // Servisten gelmeyen, manuel girilen fonlar
+                        const MANUAL_FUNDS = ['BIST100'];
+
                         const rows = document.querySelectorAll('.pred-row');
-                        let funds = Array.from(rows)
+                        let allFunds = Array.from(rows)
                             .map(row => row.querySelector('.pred-code').value.trim().toUpperCase())
                             .filter(Boolean)
-                            .join(',');
+                            .filter(f => !MANUAL_FUNDS.includes(f));
                         
-                        if (!funds) {
-                            // Fallback to trackedFunds input if table is empty
-                            funds = (document.getElementById('trackedFunds').value || '').trim();
+                        if (!allFunds.length) {
+                            const raw = (document.getElementById('trackedFunds').value || '').trim();
+                            allFunds = raw.split(/[,\s]+/).map(f => f.trim().toUpperCase()).filter(Boolean).filter(f => !MANUAL_FUNDS.includes(f));
                         }
+
                         
-                        if (!funds) {
+                        if (!allFunds.length) {
                             alert("Lütfen önce tablodaki 'FON KODU' alanlarını doldurun veya 'Takipteki Fon Kodları' alanını girin.");
                             return;
                         }
                         
                         const statusEl = document.getElementById('predFetchStatus');
-                        statusEl.textContent = '⏳ Çekiliyor...';
-                        statusEl.style.color = '#8e8e93';
-                        try {
+                        const MAX_RETRIES = 5;
+                        const RETRY_DELAY_MS = 1000;
+                        const predMap = {};
+                        let attempt = 0;
+                        let pendingFunds = [...allFunds];
+
+                        const doFetch = async (funds) => {
                             const resp = await fetch('/api/fetch-predictions', {
                                 method: 'POST',
                                 headers: {'Content-Type': 'application/json'},
-                                body: JSON.stringify({funds: funds})
+                                body: JSON.stringify({funds: funds.join(','), batch_size: 5, timeout: 20})
                             });
-                            const d = await resp.json();
-                            if (d.success) {
-                                // Map predictions by uppercase fund code
-                                const predMap = {};
-                                d.predictions.forEach(p => {
+                            return resp.json();
+                        };
+
+                        const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+                        try {
+                            while (pendingFunds.length > 0 && attempt <= MAX_RETRIES) {
+                                if (attempt === 0) {
+                                    statusEl.textContent = `⏳ Çekiliyor... (${pendingFunds.length} fon)`;
+                                } else {
+                                    statusEl.textContent = `🔄 Retry ${attempt}/${MAX_RETRIES} — eksik ${pendingFunds.length} fon yeniden deneniyor...`;
+                                }
+                                statusEl.style.color = '#8e8e93';
+
+                                const d = await doFetch(pendingFunds);
+
+                                if (!d.success) {
+                                    statusEl.textContent = '❌ ' + (d.error || 'Hata');
+                                    statusEl.style.color = '#ff453a';
+                                    return;
+                                }
+
+                                // Gelen tahminleri predMap'e ekle
+                                (d.predictions || []).forEach(p => {
                                     predMap[p.code.toUpperCase()] = p;
                                 });
-                                
-                                // Update existing rows in place
-                                let updatedCount = 0;
-                                rows.forEach(row => {
-                                    const codeInput = row.querySelector('.pred-code');
-                                    const valInput = row.querySelector('.pred-val');
-                                    const descInput = row.querySelector('.pred-desc');
-                                    const code = codeInput.value.trim().toUpperCase();
-                                    if (code && predMap[code]) {
-                                        valInput.value = predMap[code].val;
-                                        updatedCount++;
-                                    }
-                                });
-                                
-                                statusEl.textContent = `✅ Tahminler güncellendi (${updatedCount} fon)`;
-                                statusEl.style.color = '#32d74b';
-                            } else {
-                                statusEl.textContent = '❌ ' + (d.error || 'Hata');
-                                statusEl.style.color = '#ff453a';
+
+                                // Hâlâ eksik olanları bul
+                                pendingFunds = allFunds.filter(f => !predMap[f]);
+
+                                attempt++;
+                                if (pendingFunds.length > 0 && attempt <= MAX_RETRIES) {
+                                    await sleep(RETRY_DELAY_MS);
+                                }
                             }
+
+                            // Satırları güncelle
+                            let updatedCount = 0;
+                            rows.forEach(row => {
+                                const code = row.querySelector('.pred-code').value.trim().toUpperCase();
+                                if (code && predMap[code]) {
+                                    row.querySelector('.pred-val').value = predMap[code].val;
+                                    updatedCount++;
+                                }
+                            });
+
+                            const missing = allFunds.filter(f => !predMap[f]);
+                            let msg = `✅ ${updatedCount}/${allFunds.length} fon güncellendi`;
+                            if (attempt > 1) msg += ` (${attempt} deneme)`;
+                            let color = '#32d74b';
+                            if (missing.length > 0) {
+                                msg += ` ⚠️ Gelmeyenler: ${missing.join(', ')}`;
+                                color = '#ff9f0a';
+                            }
+                            statusEl.textContent = msg;
+                            statusEl.style.color = color;
+
                         } catch(e) {
                             statusEl.textContent = '❌ Bağlantı hatası: ' + e;
                             statusEl.style.color = '#ff453a';
@@ -872,29 +910,62 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
 
         if self.path == '/api/fetch-predictions':
             import urllib.request as _req
+            import concurrent.futures
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length)
             req_data = json.loads(post_data.decode('utf-8'))
-            funds = req_data.get('funds', 'TLY, DFI, PHE').strip()
+            funds_raw = req_data.get('funds', 'TLY, DFI, PHE').strip()
+            batch_size = int(req_data.get('batch_size', 5))
+            timeout_per_batch = int(req_data.get('timeout', 45))
 
             self.send_response(200)
             self.send_header('Content-Type', 'application/json; charset=utf-8')
             self.end_headers()
 
             try:
-                # URL encode the funds query param
-                encoded_funds = urllib.parse.quote(funds)
-                url = f"http://localhost:3032/api/portfolio/all-predictions?funds={encoded_funds}"
-                print(f"[fetch-predictions] Fetching: {url}")
-                with _req.urlopen(url, timeout=30) as resp:
-                    res_data = json.loads(resp.read().decode('utf-8'))
-                
-                self.wfile.write(json.dumps({
+                fund_list = [f.strip().upper() for f in funds_raw.replace(',', ' ').split() if f.strip()]
+                batches = [fund_list[i:i+batch_size] for i in range(0, len(fund_list), batch_size)]
+
+                def fetch_batch(batch):
+                    batch_str = ','.join(batch)
+                    encoded = urllib.parse.quote(batch_str)
+                    url = f"http://localhost:3032/api/portfolio/all-predictions?funds={encoded}"
+                    print(f"[fetch-predictions] → {batch_str}")
+                    try:
+                        with _req.urlopen(url, timeout=timeout_per_batch) as resp:
+                            res_data = json.loads(resp.read().decode('utf-8'))
+                            preds = res_data.get("predictions", [])
+                            print(f"[fetch-predictions] ✓ {batch_str}: {len(preds)} predictions")
+                            return preds, None
+                    except Exception as e:
+                        print(f"[fetch-predictions] ✗ {batch_str}: {e}")
+                        return [], batch_str
+
+                all_predictions = []
+                failed_batches = []
+
+                # Tüm batch'leri aynı anda (paralel) ateşle
+                with concurrent.futures.ThreadPoolExecutor(max_workers=len(batches)) as executor:
+                    futures = {executor.submit(fetch_batch, batch): batch for batch in batches}
+                    for future in concurrent.futures.as_completed(futures):
+                        preds, failed = future.result()
+                        all_predictions.extend(preds)
+                        if failed:
+                            failed_batches.append(failed)
+
+                result = {
                     "success": True,
-                    "predictions": res_data.get("predictions", [])
-                }, ensure_ascii=False).encode('utf-8'))
+                    "predictions": all_predictions,
+                    "total": len(all_predictions),
+                    "batches_total": len(batches),
+                    "batches_failed": len(failed_batches),
+                }
+                if failed_batches:
+                    result["warning"] = f"Başarısız batch'ler: {' | '.join(failed_batches)}"
+                print(f"[fetch-predictions] Done: {len(all_predictions)} total, {len(failed_batches)} failed batches")
+                self.wfile.write(json.dumps(result, ensure_ascii=False).encode('utf-8'))
             except Exception as e:
-                print(f"[fetch-predictions] Error: {e}")
+                print(f"[fetch-predictions] Fatal: {e}")
                 self.wfile.write(json.dumps({"success": False, "error": str(e)}).encode('utf-8'))
             return
 
