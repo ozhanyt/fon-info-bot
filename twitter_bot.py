@@ -452,7 +452,7 @@ def tweet_comparison_chart(data, period):
     )
     for i, (code, f) in enumerate(sorted_tracked, 1):
         ret_pct = f.get("period_return_pct", 0)
-        lines.append(f"  {i}. #{code}  {fmt_pct(ret_pct)}")
+        lines.append(f"  {i}. #{code}  {'+' if ret_pct >= 0 else ''}{ret_pct:.4f}%".replace('.', ','))
 
     lines.append("\n📈 Detaylar görselde ↓")
     lines.append("#TEFAS #FonYatırımı #Borsa")

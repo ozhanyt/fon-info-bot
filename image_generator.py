@@ -954,7 +954,7 @@ def generate_comparison_chart_html(tracked_dict, period_label):
         color = item['color']
         badge_y = item['target_y']
         final_ret = f['final_return']
-        ret_str = f"{'+' if final_ret >= 0 else ''}{final_ret:.2f}%".replace('.', ',')
+        ret_str = f"{'+' if final_ret >= 0 else ''}{final_ret:.4f}%".replace('.', ',')
         
         end_tags_svg += f"""
         <circle cx="{last_pt[0]:.1f}" cy="{last_pt[1]:.1f}" r="5.5" fill="{color}" stroke="#000" stroke-width="1.5" />
@@ -1003,7 +1003,7 @@ def generate_comparison_chart_html(tracked_dict, period_label):
             
         ret = f['final_return']
         badge_cls = "trend-up" if ret >= 0 else "trend-down"
-        ret_formatted = f"{'+' if ret >= 0 else ''}{ret:.2f}%".replace('.', ',')
+        ret_formatted = f"{'+' if ret >= 0 else ''}{ret:.4f}%".replace('.', ',')
         
         # Mini bar
         max_abs = max(abs(max_v), abs(min_v), 1.0)
