@@ -683,7 +683,10 @@ def fetch_tracked_funds(tracked_codes, period_type, resolved_dates):
                 price_history.append({
                     "date": date_str,
                     "price": float(row['Price']),
-                    "cum_return_pct": round(cum_ret, 4)
+                    "cum_return_pct": round(cum_ret, 4),
+                    "shares": float(row.get('Shares', 0)),
+                    "investors": int(row.get('Investors', 0)),
+                    "fund_size": float(row.get('FundSize', 0))
                 })
 
             fund_report_history, fund_report_history_title = build_fund_report_history(df, period_type, custom_range=custom_range)

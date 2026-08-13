@@ -1051,6 +1051,569 @@ def generate_comparison_chart_html(tracked_dict, period_label):
     
     return card_body
 
+def format_flow_value_short(val):
+    sign = "+" if val >= 0.01 else ("-" if val < -0.01 else "")
+    abs_val = abs(val)
+    if abs_val >= 1_000_000_000:
+        return f"{sign}{abs_val / 1_000_000_000:.1f} Mr".replace('.', ',')
+    elif abs_val >= 1_000_000:
+        return f"{sign}{abs_val / 1_000_000:.1f} Mn".replace('.', ',')
+    elif abs_val >= 1000:
+        return f"{sign}{abs_val / 1000:.1f} Bin".replace('.', ',')
+    else:
+        return f"{sign}{int(abs_val)}"
+
+def format_flow_value_full(val):
+    sign = "+" if val >= 0 else "-"
+    abs_val = abs(val)
+    if abs_val >= 1_000_000_000:
+        return f"{sign}{abs_val / 1_000_000_000:.2f} Milyar ₺".replace('.', ',')
+    elif abs_val >= 1_000_000:
+        return f"{sign}{abs_val / 1_000_000:.2f} Milyon ₺".replace('.', ',')
+    else:
+        return f"{sign}{int(abs_val):,} ₺".replace(',', '.')
+
+def format_investor_value_short(val):
+    sign = "+" if val >= 0.01 else ("-" if val < -0.01 else "")
+    abs_val = abs(val)
+    return f"{sign}{int(abs_val):,}".replace(',', '.')
+
+def format_investor_value_full(val):
+    sign = "+" if val >= 0 else ""
+    return f"{sign}{int(val):,}".replace(',', '.')
+
+def generate_flow_chart_html(tracked_dict, period_label):
+    if not tracked_dict:
+        return '<div class="comp-empty">Takip listesinde veri bulunamadı.</div>'
+        
+    funds_data = []
+    all_dates_set = set()
+    
+    for code, data in tracked_dict.items():
+        history = sorted(data.get('price_history', []), key=lambda x: x['date'])
+        if not history or len(history) < 2:
+            continue
+            
+        cum_flow = 0.0
+        prev_shares = None
+        flow_history = []
+        
+        for p in history:
+            all_dates_set.add(p['date'])
+            shares = float(p.get('shares', 0) or 0)
+            price = float(p.get('price', 0) or 0)
+            
+            if prev_shares is None:
+                prev_shares = shares
+                flow_history.append({
+                    "date": p["date"],
+                    "value": 0.0
+                })
+            else:
+                daily_flow = (shares - prev_shares) * price
+                cum_flow += daily_flow
+                prev_shares = shares
+                flow_history.append({
+                    "date": p["date"],
+                    "value": cum_flow
+                })
+                
+        funds_data.append({
+            'code': code,
+            'name': data.get('name', code),
+            'history': flow_history,
+            'final_value': cum_flow
+        })
+        
+    if not funds_data:
+        return '<div class="comp-empty">Para akış grafiği için en az 2 günlük veri gereklidir.</div>'
+        
+    all_dates = sorted(list(all_dates_set))
+    if len(all_dates) < 2:
+        return '<div class="comp-empty">Para akış grafiği için en az 2 farklı tarih gereklidir.</div>'
+        
+    funds_data.sort(key=lambda x: x['final_value'], reverse=True)
+    
+    for i, f in enumerate(funds_data):
+        f['color'] = COMP_COLORS[i % len(COMP_COLORS)]
+        
+    all_vals = []
+    for f in funds_data:
+        for p in f['history']:
+            all_vals.append(p['value'])
+            
+    min_v = min(all_vals)
+    max_v = max(all_vals)
+    min_v = min(min_v, 0.0)
+    max_v = max(max_v, 0.0)
+    
+    span = max_v - min_v
+    if span <= 0:
+        span = 1.0
+    pad_span = max(span * 0.15, 1000.0)
+    y_min = min_v - pad_span
+    y_max = max_v + pad_span
+    total_y_range = y_max - y_min
+    
+    width = 1000
+    height = 430
+    pad_l = 95
+    pad_r = 145
+    pad_t = 30
+    pad_b = 45
+    usable_w = width - pad_l - pad_r
+    usable_h = height - pad_t - pad_b
+    
+    def get_x(date_str):
+        if date_str not in all_dates:
+            return pad_l
+        idx = all_dates.index(date_str)
+        return pad_l + (usable_w * idx / (len(all_dates) - 1))
+        
+    def get_y(val):
+        return pad_t + usable_h - ((val - y_min) / total_y_range) * usable_h
+        
+    y_zero = get_y(0.0)
+    num_ticks = 5
+    y_ticks = []
+    for i in range(num_ticks):
+        v = y_min + (total_y_range * i / (num_ticks - 1))
+        y_ticks.append(v)
+        
+    grid_svg = ""
+    for v in y_ticks:
+        y_pos = get_y(v)
+        flow_lbl = format_flow_value_short(v)
+        grid_svg += f'<line x1="{pad_l}" y1="{y_pos:.1f}" x2="{width-pad_r}" y2="{y_pos:.1f}" stroke="rgba(255,255,255,0.08)" stroke-width="1" />'
+        grid_svg += f'<text x="{pad_l-12}" y="{y_pos+4:.1f}" fill="rgba(255,255,255,0.45)" font-size="13" font-family="Space Grotesk, sans-serif" font-weight="600" text-anchor="end">{flow_lbl}</text>'
+        
+    zero_line_svg = f"""
+    <line x1="{pad_l}" y1="{y_zero:.1f}" x2="{width-pad_r}" y2="{y_zero:.1f}" stroke="rgba(255,255,255,0.30)" stroke-width="1.5" stroke-dasharray="5,4" />
+    """
+    
+    x_ticks_svg = ""
+    date_step = max(1, len(all_dates) // 6)
+    display_date_indices = list(range(0, len(all_dates), date_step))
+    if (len(all_dates) - 1) not in display_date_indices:
+        display_date_indices.append(len(all_dates) - 1)
+        
+    for idx in display_date_indices:
+        d_str = all_dates[idx]
+        x_pos = pad_l + (usable_w * idx / (len(all_dates) - 1))
+        try:
+            formatted_date = datetime.strptime(d_str, "%Y-%m-%d").strftime("%d.%m")
+        except:
+            formatted_date = d_str[-5:]
+        x_ticks_svg += f'<text x="{x_pos:.1f}" y="{height-14}" fill="rgba(255,255,255,0.55)" font-size="13" font-family="Space Grotesk, sans-serif" font-weight="600" text-anchor="middle">{formatted_date}</text>'
+        x_ticks_svg += f'<line x1="{x_pos:.1f}" y1="{height-pad_b}" x2="{x_pos:.1f}" y2="{height-pad_b+6}" stroke="rgba(255,255,255,0.25)" stroke-width="1" />'
+
+    curves_svg = ""
+    end_tags_svg = ""
+    
+    end_positions = []
+    for f in funds_data:
+        h = f['history']
+        coords = []
+        for p in h:
+            cx = get_x(p['date'])
+            cy = get_y(p['value'])
+            coords.append((cx, cy))
+            
+        if not coords:
+            continue
+            
+        if len(coords) == 2:
+            d_path = f"M {coords[0][0]:.1f},{coords[0][1]:.1f} L {coords[1][0]:.1f},{coords[1][1]:.1f}"
+        else:
+            d_path = f"M {coords[0][0]:.1f},{coords[0][1]:.1f}"
+            for i in range(len(coords) - 1):
+                p0 = coords[i]
+                p1 = coords[i+1]
+                mid_x = (p0[0] + p1[0]) / 2.0
+                d_path += f" C {mid_x:.1f},{p0[1]:.1f} {mid_x:.1f},{p1[1]:.1f} {p1[0]:.1f},{p1[1]:.1f}"
+                
+        color = f['color']
+        curves_svg += f'<path d="{d_path}" fill="none" stroke="{color}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow-flow-{f["code"]})" />'
+        
+        last_pt = coords[-1]
+        end_positions.append({
+            'fund': f,
+            'last_pt': last_pt,
+            'color': color,
+            'target_y': last_pt[1] - 11.0
+        })
+
+    min_gap = 25.0
+    for i in range(1, len(end_positions)):
+        prev_y = end_positions[i-1]['target_y']
+        curr_y = end_positions[i]['target_y']
+        if curr_y - prev_y < min_gap:
+            end_positions[i]['target_y'] = prev_y + min_gap
+            
+    for item in end_positions:
+        f = item['fund']
+        last_pt = item['last_pt']
+        color = item['color']
+        badge_y = item['target_y']
+        final_val = f['final_value']
+        val_str = format_flow_value_short(final_val)
+        
+        end_tags_svg += f"""
+        <circle cx="{last_pt[0]:.1f}" cy="{last_pt[1]:.1f}" r="5.5" fill="{color}" stroke="#000" stroke-width="1.5" />
+        <g transform="translate({last_pt[0]+8:.1f}, {badge_y:.1f})">
+            <rect x="0" y="0" width="88" height="22" rx="6" fill="rgba(15,15,22,0.92)" stroke="{color}" stroke-width="1" />
+            <text x="6" y="15" fill="#fff" font-size="11" font-family="Space Grotesk, sans-serif" font-weight="700">{f['code']}</text>
+            <text x="82" y="15" fill="{color}" font-size="10" font-family="Space Grotesk, sans-serif" font-weight="700" text-anchor="end">{val_str}</text>
+        </g>
+        """
+
+    filters_svg = "<defs>"
+    for f in funds_data:
+        filters_svg += f"""
+        <filter id="glow-flow-{f['code']}" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="{f['color']}" flood-opacity="0.65"/>
+        </filter>
+        """
+    filters_svg += "</defs>"
+
+    svg_full = f"""
+    <div class="comp-chart-canvas-wrap">
+        <svg viewBox="0 0 {width} {height}" class="comp-svg-chart" xmlns="http://www.w3.org/2000/svg">
+            {filters_svg}
+            {grid_svg}
+            {zero_line_svg}
+            {x_ticks_svg}
+            {curves_svg}
+            {end_tags_svg}
+        </svg>
+    </div>
+    """
+    
+    leaderboard_cards = ""
+    for idx, f in enumerate(funds_data):
+        rank = idx + 1
+        if rank == 1:
+            rank_html = '<span class="flow-rank-badge rank-gold">🥇 1</span>'
+        elif rank == 2:
+            rank_html = '<span class="flow-rank-badge rank-silver">🥈 2</span>'
+        elif rank == 3:
+            rank_html = '<span class="flow-rank-badge rank-bronze">🥉 3</span>'
+        else:
+            rank_html = f'<span class="flow-rank-badge">{rank}</span>'
+            
+        val = f['final_value']
+        badge_cls = "trend-up" if val >= 0 else "trend-down"
+        val_formatted = format_flow_value_full(val)
+        
+        max_abs = max(abs(max_v), abs(min_v), 1.0)
+        bar_pct = min(100, max(8, (abs(val) / max_abs) * 100))
+        bar_color = f['color']
+        
+        leaderboard_cards += f"""
+        <div class="comp-leader-card">
+            <div class="comp-leader-top">
+                <div class="comp-leader-left">
+                    {rank_html}
+                    <span class="comp-dot" style="background:{f['color']};"></span>
+                    <span class="flow-code">{f['code']}</span>
+                </div>
+                <span class="flow-return-badge {badge_cls}">{val_formatted}</span>
+            </div>
+            <div class="comp-bar-track">
+                <div class="comp-bar-fill" style="width:{bar_pct}%; background:{bar_color};"></div>
+            </div>
+        </div>
+        """
+
+    card_body = f"""
+    <div class="comp-card-body">
+        <div class="comp-card-header">
+            <div class="comp-title-group">
+                <div class="header-icon" style="background:rgba(10,132,255,0.18); color:#0A84FF;">📈</div>
+                <div>
+                    <h2>Fon Kümülatif Para Giriş/Çıkışı</h2>
+                    <span class="comp-subtitle">{period_label}</span>
+                </div>
+            </div>
+        </div>
+        
+        {svg_full}
+        
+        <div class="comp-leaderboard-section">
+            <div class="comp-section-title">🏆 DÖNEM NET NAKİT AKIŞ LİDERLİK TABLOSU</div>
+            <div class="comp-leaderboard-grid">
+                {leaderboard_cards}
+            </div>
+        </div>
+    </div>
+    """
+    
+    return card_body
+
+def generate_investor_chart_html(tracked_dict, period_label):
+    if not tracked_dict:
+        return '<div class="comp-empty">Takip listesinde veri bulunamadı.</div>'
+        
+    funds_data = []
+    all_dates_set = set()
+    
+    for code, data in tracked_dict.items():
+        history = sorted(data.get('price_history', []), key=lambda x: x['date'])
+        if not history or len(history) < 2:
+            continue
+            
+        start_investors = None
+        investor_history = []
+        
+        for p in history:
+            all_dates_set.add(p['date'])
+            investors = int(p.get('investors', 0) or 0)
+            
+            if start_investors is None:
+                start_investors = investors
+                investor_history.append({
+                    "date": p["date"],
+                    "value": 0
+                })
+            else:
+                cum_inv = investors - start_investors
+                investor_history.append({
+                    "date": p["date"],
+                    "value": cum_inv
+                })
+                
+        funds_data.append({
+            'code': code,
+            'name': data.get('name', code),
+            'history': investor_history,
+            'final_value': investor_history[-1]['value']
+        })
+        
+    if not funds_data:
+        return '<div class="comp-empty">Yatırımcı grafiği için en az 2 günlük veri gereklidir.</div>'
+        
+    all_dates = sorted(list(all_dates_set))
+    if len(all_dates) < 2:
+        return '<div class="comp-empty">Yatırımcı grafiği için en az 2 farklı tarih gereklidir.</div>'
+        
+    funds_data.sort(key=lambda x: x['final_value'], reverse=True)
+    
+    for i, f in enumerate(funds_data):
+        f['color'] = COMP_COLORS[i % len(COMP_COLORS)]
+        
+    all_vals = []
+    for f in funds_data:
+        for p in f['history']:
+            all_vals.append(p['value'])
+            
+    min_v = min(all_vals)
+    max_v = max(all_vals)
+    min_v = min(min_v, 0)
+    max_v = max(max_v, 0)
+    
+    span = max_v - min_v
+    if span <= 0:
+        span = 1.0
+    pad_span = max(span * 0.15, 5.0)
+    y_min = min_v - pad_span
+    y_max = max_v + pad_span
+    total_y_range = y_max - y_min
+    
+    width = 1000
+    height = 430
+    pad_l = 85
+    pad_r = 135
+    pad_t = 30
+    pad_b = 45
+    usable_w = width - pad_l - pad_r
+    usable_h = height - pad_t - pad_b
+    
+    def get_x(date_str):
+        if date_str not in all_dates:
+            return pad_l
+        idx = all_dates.index(date_str)
+        return pad_l + (usable_w * idx / (len(all_dates) - 1))
+        
+    def get_y(val):
+        return pad_t + usable_h - ((val - y_min) / total_y_range) * usable_h
+        
+    y_zero = get_y(0.0)
+    num_ticks = 5
+    y_ticks = []
+    for i in range(num_ticks):
+        v = y_min + (total_y_range * i / (num_ticks - 1))
+        y_ticks.append(v)
+        
+    grid_svg = ""
+    for v in y_ticks:
+        y_pos = get_y(v)
+        inv_lbl = format_investor_value_short(v)
+        grid_svg += f'<line x1="{pad_l}" y1="{y_pos:.1f}" x2="{width-pad_r}" y2="{y_pos:.1f}" stroke="rgba(255,255,255,0.08)" stroke-width="1" />'
+        grid_svg += f'<text x="{pad_l-12}" y="{y_pos+4:.1f}" fill="rgba(255,255,255,0.45)" font-size="13" font-family="Space Grotesk, sans-serif" font-weight="600" text-anchor="end">{inv_lbl}</text>'
+        
+    zero_line_svg = f"""
+    <line x1="{pad_l}" y1="{y_zero:.1f}" x2="{width-pad_r}" y2="{y_zero:.1f}" stroke="rgba(255,255,255,0.30)" stroke-width="1.5" stroke-dasharray="5,4" />
+    """
+    
+    x_ticks_svg = ""
+    date_step = max(1, len(all_dates) // 6)
+    display_date_indices = list(range(0, len(all_dates), date_step))
+    if (len(all_dates) - 1) not in display_date_indices:
+        display_date_indices.append(len(all_dates) - 1)
+        
+    for idx in display_date_indices:
+        d_str = all_dates[idx]
+        x_pos = pad_l + (usable_w * idx / (len(all_dates) - 1))
+        try:
+            formatted_date = datetime.strptime(d_str, "%Y-%m-%d").strftime("%d.%m")
+        except:
+            formatted_date = d_str[-5:]
+        x_ticks_svg += f'<text x="{x_pos:.1f}" y="{height-14}" fill="rgba(255,255,255,0.55)" font-size="13" font-family="Space Grotesk, sans-serif" font-weight="600" text-anchor="middle">{formatted_date}</text>'
+        x_ticks_svg += f'<line x1="{x_pos:.1f}" y1="{height-pad_b}" x2="{x_pos:.1f}" y2="{height-pad_b+6}" stroke="rgba(255,255,255,0.25)" stroke-width="1" />'
+
+    curves_svg = ""
+    end_tags_svg = ""
+    
+    end_positions = []
+    for f in funds_data:
+        h = f['history']
+        coords = []
+        for p in h:
+            cx = get_x(p['date'])
+            cy = get_y(p['value'])
+            coords.append((cx, cy))
+            
+        if not coords:
+            continue
+            
+        if len(coords) == 2:
+            d_path = f"M {coords[0][0]:.1f},{coords[0][1]:.1f} L {coords[1][0]:.1f},{coords[1][1]:.1f}"
+        else:
+            d_path = f"M {coords[0][0]:.1f},{coords[0][1]:.1f}"
+            for i in range(len(coords) - 1):
+                p0 = coords[i]
+                p1 = coords[i+1]
+                mid_x = (p0[0] + p1[0]) / 2.0
+                d_path += f" C {mid_x:.1f},{p0[1]:.1f} {mid_x:.1f},{p1[1]:.1f} {p1[0]:.1f},{p1[1]:.1f}"
+                
+        color = f['color']
+        curves_svg += f'<path d="{d_path}" fill="none" stroke="{color}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow-inv-{f["code"]})" />'
+        
+        last_pt = coords[-1]
+        end_positions.append({
+            'fund': f,
+            'last_pt': last_pt,
+            'color': color,
+            'target_y': last_pt[1] - 11.0
+        })
+
+    min_gap = 25.0
+    for i in range(1, len(end_positions)):
+        prev_y = end_positions[i-1]['target_y']
+        curr_y = end_positions[i]['target_y']
+        if curr_y - prev_y < min_gap:
+            end_positions[i]['target_y'] = prev_y + min_gap
+            
+    for item in end_positions:
+        f = item['fund']
+        last_pt = item['last_pt']
+        color = item['color']
+        badge_y = item['target_y']
+        final_val = f['final_value']
+        val_str = format_investor_value_short(final_val)
+        
+        end_tags_svg += f"""
+        <circle cx="{last_pt[0]:.1f}" cy="{last_pt[1]:.1f}" r="5.5" fill="{color}" stroke="#000" stroke-width="1.5" />
+        <g transform="translate({last_pt[0]+8:.1f}, {badge_y:.1f})">
+            <rect x="0" y="0" width="88" height="22" rx="6" fill="rgba(15,15,22,0.92)" stroke="{color}" stroke-width="1" />
+            <text x="6" y="15" fill="#fff" font-size="11" font-family="Space Grotesk, sans-serif" font-weight="700">{f['code']}</text>
+            <text x="82" y="15" fill="{color}" font-size="10" font-family="Space Grotesk, sans-serif" font-weight="700" text-anchor="end">{val_str}</text>
+        </g>
+        """
+
+    filters_svg = "<defs>"
+    for f in funds_data:
+        filters_svg += f"""
+        <filter id="glow-inv-{f['code']}" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="{f['color']}" flood-opacity="0.65"/>
+        </filter>
+        """
+    filters_svg += "</defs>"
+
+    svg_full = f"""
+    <div class="comp-chart-canvas-wrap">
+        <svg viewBox="0 0 {width} {height}" class="comp-svg-chart" xmlns="http://www.w3.org/2000/svg">
+            {filters_svg}
+            {grid_svg}
+            {zero_line_svg}
+            {x_ticks_svg}
+            {curves_svg}
+            {end_tags_svg}
+        </svg>
+    </div>
+    """
+    
+    leaderboard_cards = ""
+    for idx, f in enumerate(funds_data):
+        rank = idx + 1
+        if rank == 1:
+            rank_html = '<span class="inv-rank-badge rank-gold">🥇 1</span>'
+        elif rank == 2:
+            rank_html = '<span class="inv-rank-badge rank-silver">🥈 2</span>'
+        elif rank == 3:
+            rank_html = '<span class="inv-rank-badge rank-bronze">🥉 3</span>'
+        else:
+            rank_html = f'<span class="inv-rank-badge">{rank}</span>'
+            
+        val = f['final_value']
+        badge_cls = "trend-up" if val >= 0 else "trend-down"
+        val_formatted = format_investor_value_full(val)
+        
+        max_abs = max(abs(max_v), abs(min_v), 1.0)
+        bar_pct = min(100, max(8, (abs(val) / max_abs) * 100))
+        bar_color = f['color']
+        
+        leaderboard_cards += f"""
+        <div class="comp-leader-card">
+            <div class="comp-leader-top">
+                <div class="comp-leader-left">
+                    {rank_html}
+                    <span class="comp-dot" style="background:{f['color']};"></span>
+                    <span class="inv-code">{f['code']}</span>
+                </div>
+                <span class="inv-return-badge {badge_cls}">{val_formatted}</span>
+            </div>
+            <div class="comp-bar-track">
+                <div class="comp-bar-fill" style="width:{bar_pct}%; background:{bar_color};"></div>
+            </div>
+        </div>
+        """
+
+    card_body = f"""
+    <div class="comp-card-body">
+        <div class="comp-card-header">
+            <div class="comp-title-group">
+                <div class="header-icon" style="background:rgba(52,199,89,0.18); color:#34C759;">👥</div>
+                <div>
+                    <h2>Fon Kümülatif Yatırımcı Sayısı Değişimi</h2>
+                    <span class="comp-subtitle">{period_label}</span>
+                </div>
+            </div>
+        </div>
+        
+        {svg_full}
+        
+        <div class="comp-leaderboard-section">
+            <div class="comp-section-title">🏆 DÖNEM KÜMÜLATİF YATIRIMCI DEĞİŞİM LİDERLİK TABLOSU</div>
+            <div class="comp-leaderboard-grid">
+                {leaderboard_cards}
+            </div>
+        </div>
+    </div>
+    """
+    
+    return card_body
+
 # Backwards compatibility alias
 def generate_combined_chart_html(tracked_dict, period_label):
     return generate_comparison_chart_html(tracked_dict, period_label), []
@@ -1145,9 +1708,15 @@ async def main():
     manager_actions_html = generate_manager_actions_html(data.get('manager_actions', [])) if "manager_actions" in sections else ""
     # Comparison chart section
     comparison_chart_html = ""
+    flow_chart_html = ""
+    investor_chart_html = ""
     tracked_data = data.get('tracked', {})
     if ("comparison_chart" in sections or "return_chart" in sections) and tracked_data:
         comparison_chart_html = generate_comparison_chart_html(tracked_data, period_label)
+    if "flow_chart" in sections and tracked_data:
+        flow_chart_html = generate_flow_chart_html(tracked_data, period_label)
+    if "investor_chart" in sections and tracked_data:
+        investor_chart_html = generate_investor_chart_html(tracked_data, period_label)
     
     portfolio_diff_html = generate_portfolio_diff_html(data.get('allocation_diffs', {}), config) if "portfolio_diff" in sections else ""
     fund_report_html = generate_fund_report_html(data.get('tracked', {}), data.get('allocation_diffs', {}), config, period_label) if "fund_report" in sections else ""
@@ -1188,7 +1757,7 @@ async def main():
     header_show_sub = config.get("header_show_sub", True)
     show_main = header_show_main if isinstance(header_show_main, bool) else (str(header_show_main).lower() == "true")
     show_sub = header_show_sub if isinstance(header_show_sub, bool) else (str(header_show_sub).lower() == "true")
-    if len(sections) == 1 and ("predictions" in sections or "holdings_breakdown" in sections or "comparison_chart" in sections):
+    if len(sections) == 1 and ("predictions" in sections or "holdings_breakdown" in sections or "comparison_chart" in sections or "flow_chart" in sections or "investor_chart" in sections):
         show_main = False
         show_sub = False
     template = template.replace("{{SHOW_MAIN}}", "" if show_main else "hidden")
@@ -1208,6 +1777,8 @@ async def main():
     template = template.replace("{{MANAGER_ACTIONS_HTML}}", manager_actions_html)
     template = template.replace("{{COMPARISON_CHART_HTML}}", comparison_chart_html)
     template = template.replace("{{RETURN_CHART_HTML}}", comparison_chart_html)
+    template = template.replace("{{FLOW_CHART_HTML}}", flow_chart_html)
+    template = template.replace("{{INVESTOR_CHART_HTML}}", investor_chart_html)
     template = template.replace("{{PORTFOLIO_DIFF_HTML}}", portfolio_diff_html)
     template = template.replace("{{PORTFOLIO_COLS_CLASS}}", "cols-2" if int(config.get("portfolio_diff_cols", 1)) == 2 else "cols-1")
     template = template.replace("{{FUND_REPORT_HTML}}", fund_report_html)
@@ -1227,12 +1798,16 @@ async def main():
         layout_mode_class = "holdings-only-layout"
     elif len(sections) == 1 and "comparison_chart" in sections:
         layout_mode_class = "comparison-only-layout"
+    elif len(sections) == 1 and "flow_chart" in sections:
+        layout_mode_class = "flow-only-layout"
+    elif len(sections) == 1 and "investor_chart" in sections:
+        layout_mode_class = "investor-only-layout"
     else:
         layout_mode_class = "normal-layout"
     template = template.replace("{{LAYOUT_MODE_CLASS}}", layout_mode_class)
     
     # Conditional Visibility and Positioning
-    for s_name in ["inflows", "outflows", "cat_in", "cat_out", "inv_in", "inv_out", "divergent", "momentum", "crowding", "category_rotation", "tracked", "tracked_rs", "manager_actions", "predictions", "portfolio_diff", "fund_report", "top_gainers", "top_losers", "comparison_chart", "return_chart", "per_investor_value", "holdings_breakdown"]:
+    for s_name in ["inflows", "outflows", "cat_in", "cat_out", "inv_in", "inv_out", "divergent", "momentum", "crowding", "category_rotation", "tracked", "tracked_rs", "manager_actions", "predictions", "portfolio_diff", "fund_report", "top_gainers", "top_losers", "comparison_chart", "return_chart", "per_investor_value", "holdings_breakdown", "flow_chart", "investor_chart"]:
         placeholder_show = f"{{{{SHOW_{s_name.upper()}}}}}"
         placeholder_pos = f"/* POS_{s_name.upper()} */"
         
@@ -1278,7 +1853,7 @@ async def main():
     print(f"DEBUG: pred_cols from config is: {config.get('pred_cols')} (type: {type(config.get('pred_cols'))})")
     template = template.replace("{{PRED_COLS_CLASS}}", "cols-2" if int(config.get("pred_cols", 1)) == 2 else "cols-1")
     long_footer_sections = {"inflows", "outflows", "inv_in", "inv_out", "top_gainers", "top_losers", "cat_in", "cat_out"}
-    short_footer_sections = {"tracked", "per_investor_value", "portfolio_diff", "fund_report", "holdings_breakdown", "comparison_chart", "return_chart"}
+    short_footer_sections = {"tracked", "per_investor_value", "portfolio_diff", "fund_report", "holdings_breakdown", "comparison_chart", "return_chart", "flow_chart", "investor_chart"}
 
     if any(s in short_footer_sections for s in sections) and not any(s in long_footer_sections for s in sections):
         footer_note = "* Veriler TEFAS üzerinden alınmıştır."

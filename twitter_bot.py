@@ -439,6 +439,65 @@ def tweet_manager_actions(data, period):
     return "\n".join(lines)
 
 
+def tweet_comparison_chart(data, period):
+    tracked = data.get("tracked", {})
+    date = tr_date(data["date"])
+    lbl  = PERIOD_LABEL.get(period, "Günlük")
+
+    lines = [f"📊 TEFAS {lbl} Getiri Performansları — {date}\n"]
+    sorted_tracked = sorted(
+        tracked.items(),
+        key=lambda x: x[1].get("period_return_pct", 0),
+        reverse=True
+    )
+    for i, (code, f) in enumerate(sorted_tracked, 1):
+        ret_pct = f.get("period_return_pct", 0)
+        lines.append(f"  {i}. #{code}  {fmt_pct(ret_pct)}")
+
+    lines.append("\n📈 Detaylar görselde ↓")
+    lines.append("#TEFAS #FonYatırımı #Borsa")
+    return "\n".join(lines)
+
+def tweet_flow_chart(data, period):
+    tracked = data.get("tracked", {})
+    date = tr_date(data["date"])
+    lbl  = PERIOD_LABEL.get(period, "Günlük")
+
+    lines = [f"📊 TEFAS {lbl} Kümülatif Para Giriş/Çıkışı — {date}\n"]
+    sorted_tracked = sorted(
+        tracked.items(),
+        key=lambda x: x[1].get("period_flow", 0),
+        reverse=True
+    )
+    for i, (code, f) in enumerate(sorted_tracked, 1):
+        flow_val = f.get("period_flow", 0)
+        lines.append(f"  {i}. #{code}  {fmt_money(flow_val)}")
+
+    lines.append("\n📈 Detaylar görselde ↓")
+    lines.append("#TEFAS #FonYatırımı #ParaAkışı")
+    return "\n".join(lines)
+
+def tweet_investor_chart(data, period):
+    tracked = data.get("tracked", {})
+    date = tr_date(data["date"])
+    lbl  = PERIOD_LABEL.get(period, "Günlük")
+
+    lines = [f"👥 TEFAS {lbl} Kümülatif Yatırımcı Değişimi — {date}\n"]
+    sorted_tracked = sorted(
+        tracked.items(),
+        key=lambda x: x[1].get("period_investor_change", 0),
+        reverse=True
+    )
+    for i, (code, f) in enumerate(sorted_tracked, 1):
+        inv_chg = f.get("period_investor_change", 0)
+        pct = fmt_pct(f.get("period_investor_pct", 0))
+        lines.append(f"  {i}. #{code}  {inv_chg:+d} kişi  ({pct})")
+
+    lines.append("\n📈 Detaylar görselde ↓")
+    lines.append("#TEFAS #FonYatırımı #Yatırımcı")
+    return "\n".join(lines)
+
+
 # ─── Main Tweet Builder ───────────────────────────────────────────────────────
 
 def generate_tweet_text(data, sections, config=None):
@@ -471,6 +530,18 @@ def generate_tweet_text(data, sections, config=None):
                 PERIOD_LABEL["custom"] = f"{parsed_start.strftime('%d.%m.%Y')} - {parsed_end.strftime('%d.%m.%Y')}"
 
     has = lambda s: s in sections
+
+    # ==========================
+    # Grafik Modülleri Yönlendirmeleri
+    # ==========================
+    chart_sections = [s for s in sections if s in ("comparison_chart", "flow_chart", "investor_chart")]
+    if len(chart_sections) > 0 and len(sections) == len(chart_sections):
+        if "flow_chart" in chart_sections:
+            return tweet_flow_chart(data, period)
+        elif "investor_chart" in chart_sections:
+            return tweet_investor_chart(data, period)
+        else:
+            return tweet_comparison_chart(data, period)
 
     # ==========================
     # Tekil Şablon Seçimleri

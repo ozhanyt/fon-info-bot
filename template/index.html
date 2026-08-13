@@ -1461,6 +1461,124 @@
             </div>
         </div>
 
+        <!-- flow_chart -->
+        <div class="card glass-card flow-chart {{SHOW_FLOW_CHART}}" style="/* POS_FLOW_CHART */; padding:0;">
+            <style>
+                .flow-code {
+                    font-family: 'Space Grotesk', sans-serif;
+                    font-size: 30px;
+                    font-weight: 800;
+                    color: #fff;
+                }
+                .flow-return-badge {
+                    font-family: 'Space Grotesk', sans-serif;
+                    font-size: 30px;
+                    font-weight: 800;
+                    padding: 4px 12px;
+                    border-radius: 10px;
+                }
+                .flow-return-badge.trend-up {
+                    color: #30D158;
+                    background: rgba(48, 209, 88, 0.12);
+                    border: 1px solid rgba(48, 209, 88, 0.25);
+                }
+                .flow-return-badge.trend-down {
+                    color: #FF453A;
+                    background: rgba(255, 69, 58, 0.12);
+                    border: 1px solid rgba(255, 69, 58, 0.25);
+                }
+                .flow-rank-badge {
+                    font-size: 16px;
+                    font-weight: 800;
+                    padding: 4px 0;
+                    width: 62px;
+                    border-radius: 8px;
+                    background: rgba(255, 255, 255, 0.08);
+                    color: #fff;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                    box-sizing: border-box;
+                }
+                .flow-rank-badge.rank-gold {
+                    background: rgba(255, 214, 10, 0.2);
+                    color: #FFD60A;
+                    border: 1px solid rgba(255, 214, 10, 0.4);
+                }
+                .flow-rank-badge.rank-silver {
+                    background: rgba(220, 220, 230, 0.2);
+                    color: #E5E5EA;
+                    border: 1px solid rgba(220, 220, 230, 0.4);
+                }
+                .flow-rank-badge.rank-bronze {
+                    background: rgba(205, 127, 50, 0.2);
+                    color: #FF9F0A;
+                    border: 1px solid rgba(205, 127, 50, 0.4);
+                }
+            </style>
+            {{FLOW_CHART_HTML}}
+        </div>
+
+        <!-- investor_chart -->
+        <div class="card glass-card investor-chart {{SHOW_INVESTOR_CHART}}" style="/* POS_INVESTOR_CHART */; padding:0;">
+            <style>
+                .inv-code {
+                    font-family: 'Space Grotesk', sans-serif;
+                    font-size: 30px;
+                    font-weight: 800;
+                    color: #fff;
+                }
+                .inv-return-badge {
+                    font-family: 'Space Grotesk', sans-serif;
+                    font-size: 30px;
+                    font-weight: 800;
+                    padding: 4px 12px;
+                    border-radius: 10px;
+                }
+                .inv-return-badge.trend-up {
+                    color: #30D158;
+                    background: rgba(48, 209, 88, 0.12);
+                    border: 1px solid rgba(48, 209, 88, 0.25);
+                }
+                .inv-return-badge.trend-down {
+                    color: #FF453A;
+                    background: rgba(255, 69, 58, 0.12);
+                    border: 1px solid rgba(255, 69, 58, 0.25);
+                }
+                .inv-rank-badge {
+                    font-size: 16px;
+                    font-weight: 800;
+                    padding: 4px 0;
+                    width: 62px;
+                    border-radius: 8px;
+                    background: rgba(255, 255, 255, 0.08);
+                    color: #fff;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                    box-sizing: border-box;
+                }
+                .inv-rank-badge.rank-gold {
+                    background: rgba(255, 214, 10, 0.2);
+                    color: #FFD60A;
+                    border: 1px solid rgba(255, 214, 10, 0.4);
+                }
+                .inv-rank-badge.rank-silver {
+                    background: rgba(220, 220, 230, 0.2);
+                    color: #E5E5EA;
+                    border: 1px solid rgba(220, 220, 230, 0.4);
+                }
+                .inv-rank-badge.rank-bronze {
+                    background: rgba(205, 127, 50, 0.2);
+                    color: #FF9F0A;
+                    border: 1px solid rgba(205, 127, 50, 0.4);
+                }
+            </style>
+            {{INVESTOR_CHART_HTML}}
+        </div>
+
         <!-- tracked -->
         <div class="card glass-card tracked-funds {{SHOW_TRACKED}}" style="/* POS_TRACKED */">
             <div class="card-header">
