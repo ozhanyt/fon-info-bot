@@ -777,143 +777,286 @@ def generate_tracked_html(tracked_dict, period_label, show_chart=False):
     return html
 
 
-# Distinct colors for each fund line
-CHART_COLORS = ["#5AC8FA", "#30D158", "#BF5AF2", "#FF9F0A", "#FF453A", "#64D2FF", "#FFD60A", "#FF6482"]
+# Rich Neon Palette for multi-fund comparison
+COMP_COLORS = [
+    "#FF9500",  # Neon Orange
+    "#00C7BE",  # Bright Teal
+    "#30D158",  # Vibrant Green
+    "#0A84FF",  # Electric Blue
+    "#FF375F",  # Vivid Pink
+    "#BF5AF2",  # Purple
+    "#FFD60A",  # Gold Yellow
+    "#64D2FF",  # Sky Blue
+    "#FF6482",  # Coral Rose
+    "#34C759",  # Mint
+    "#AF52DE",  # Violet
+    "#5856D6"   # Indigo
+]
 
-def generate_combined_chart_html(tracked_dict, period_label):
-    """Generate a single combined chart card showing all funds' cumulative returns."""
-    datasets = []
+def generate_comparison_chart_html(tracked_dict, period_label):
+    if not tracked_dict:
+        return '<div class="comp-empty">Takip listesinde veri bulunamadı.</div>'
+        
+    funds_data = []
+    all_dates_set = set()
     
-    for i, (code, data) in enumerate(tracked_dict.items()):
+    for code, data in tracked_dict.items():
         history = data.get('price_history', [])
-        if len(history) < 2:
+        if not history or len(history) < 2:
             continue
-        color = CHART_COLORS[i % len(CHART_COLORS)]
-        datasets.append({
-            "code": code,
-            "labels": [p["date"][-5:] for p in history],
-            "values": [p["cum_return_pct"] for p in history],
-            "color": color
+        for p in history:
+            all_dates_set.add(p['date'])
+        funds_data.append({
+            'code': code,
+            'name': data.get('name', code),
+            'history': history,
+            'final_return': float(history[-1].get('cum_return_pct', 0))
         })
+        
+    if not funds_data:
+        return '<div class="comp-empty">Karşılaştırma grafiği için en az 2 günlük veri gereklidir.</div>'
+        
+    all_dates = sorted(list(all_dates_set))
+    if len(all_dates) < 2:
+        return '<div class="comp-empty">Karşılaştırma grafiği için en az 2 farklı tarih gereklidir.</div>'
+        
+    # Sort funds by final return descending for leaderboard
+    funds_data.sort(key=lambda x: x['final_return'], reverse=True)
     
-    if not datasets:
-        return "", ""
+    # Assign colors
+    for i, f in enumerate(funds_data):
+        f['color'] = COMP_COLORS[i % len(COMP_COLORS)]
+        
+    # Calculate min & max for Y-Axis
+    all_vals = []
+    for f in funds_data:
+        for p in f['history']:
+            all_vals.append(float(p.get('cum_return_pct', 0)))
+            
+    min_v = min(all_vals)
+    max_v = max(all_vals)
+    min_v = min(min_v, 0.0)
+    max_v = max(max_v, 0.0)
     
-    # Build legend HTML
-    legend_items = []
-    for ds in datasets:
-        legend_items.append(
-            f'<span class="chart-legend-item">'
-            f'<span class="chart-legend-dot" style="background:{ds["color"]};"></span>'
-            f'{ds["code"]}</span>'
-        )
-    legend_html = " ".join(legend_items)
+    span = max_v - min_v
+    if span <= 0:
+        span = 1.0
+    pad_span = max(span * 0.15, 0.4)
+    y_min = min_v - pad_span
+    y_max = max_v + pad_span
+    total_y_range = y_max - y_min
     
-    chart_card_html = f"""
-    <div class="t-chart-card">
-        <div class="t-chart-header">
-            <span class="t-chart-title">Karşılaştırmalı {period_label} Getiri (%)</span>
-            <div class="t-chart-legend">{legend_html}</div>
-        </div>
-        <div class="t-chart-container">
-            <canvas id="combined-return-chart"></canvas>
-        </div>
-    </div>"""
+    # SVG Dimensions
+    width = 1000
+    height = 430
+    pad_l = 85
+    pad_r = 135
+    pad_t = 30
+    pad_b = 45
+    usable_w = width - pad_l - pad_r
+    usable_h = height - pad_t - pad_b
     
-    return chart_card_html, datasets
+    def get_x(date_str):
+        if date_str not in all_dates:
+            return pad_l
+        idx = all_dates.index(date_str)
+        return pad_l + (usable_w * idx / (len(all_dates) - 1))
+        
+    def get_y(val):
+        return pad_t + usable_h - ((val - y_min) / total_y_range) * usable_h
+        
+    # Y-Grid lines & labels
+    y_zero = get_y(0.0)
+    num_ticks = 5
+    y_ticks = []
+    for i in range(num_ticks):
+        v = y_min + (total_y_range * i / (num_ticks - 1))
+        y_ticks.append(v)
+        
+    grid_svg = ""
+    for v in y_ticks:
+        y_pos = get_y(v)
+        pct_label = f"{'+' if v > 0.01 else ''}{v:.1f}%".replace('.', ',')
+        grid_svg += f'<line x1="{pad_l}" y1="{y_pos:.1f}" x2="{width-pad_r}" y2="{y_pos:.1f}" stroke="rgba(255,255,255,0.08)" stroke-width="1" />'
+        grid_svg += f'<text x="{pad_l-12}" y="{y_pos+4:.1f}" fill="rgba(255,255,255,0.45)" font-size="13" font-family="Space Grotesk, sans-serif" font-weight="600" text-anchor="end">{pct_label}</text>'
+        
+    # Prominent 0.0% Baseline
+    zero_line_svg = f"""
+    <line x1="{pad_l}" y1="{y_zero:.1f}" x2="{width-pad_r}" y2="{y_zero:.1f}" stroke="rgba(255,255,255,0.30)" stroke-width="1.5" stroke-dasharray="5,4" />
+    """
+    
+    # X-Axis date ticks
+    x_ticks_svg = ""
+    date_step = max(1, len(all_dates) // 6)
+    display_date_indices = list(range(0, len(all_dates), date_step))
+    if (len(all_dates) - 1) not in display_date_indices:
+        display_date_indices.append(len(all_dates) - 1)
+        
+    for idx in display_date_indices:
+        d_str = all_dates[idx]
+        x_pos = pad_l + (usable_w * idx / (len(all_dates) - 1))
+        try:
+            formatted_date = datetime.strptime(d_str, "%Y-%m-%d").strftime("%d.%m")
+        except:
+            formatted_date = d_str[-5:]
+        x_ticks_svg += f'<text x="{x_pos:.1f}" y="{height-14}" fill="rgba(255,255,255,0.55)" font-size="13" font-family="Space Grotesk, sans-serif" font-weight="600" text-anchor="middle">{formatted_date}</text>'
+        x_ticks_svg += f'<line x1="{x_pos:.1f}" y1="{height-pad_b}" x2="{x_pos:.1f}" y2="{height-pad_b+6}" stroke="rgba(255,255,255,0.25)" stroke-width="1" />'
 
+    # Draw Fund Lines & End Tags
+    curves_svg = ""
+    end_tags_svg = ""
+    
+    # Calculate end label positions with collision avoidance
+    end_positions = []
+    for f in funds_data:
+        h = f['history']
+        coords = []
+        for p in h:
+            cx = get_x(p['date'])
+            cy = get_y(float(p.get('cum_return_pct', 0)))
+            coords.append((cx, cy))
+            
+        if not coords:
+            continue
+            
+        if len(coords) == 2:
+            d_path = f"M {coords[0][0]:.1f},{coords[0][1]:.1f} L {coords[1][0]:.1f},{coords[1][1]:.1f}"
+        else:
+            d_path = f"M {coords[0][0]:.1f},{coords[0][1]:.1f}"
+            for i in range(len(coords) - 1):
+                p0 = coords[i]
+                p1 = coords[i+1]
+                mid_x = (p0[0] + p1[0]) / 2.0
+                d_path += f" C {mid_x:.1f},{p0[1]:.1f} {mid_x:.1f},{p1[1]:.1f} {p1[0]:.1f},{p1[1]:.1f}"
+                
+        color = f['color']
+        curves_svg += f'<path d="{d_path}" fill="none" stroke="{color}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow-{f["code"]})" />'
+        
+        last_pt = coords[-1]
+        end_positions.append({
+            'fund': f,
+            'last_pt': last_pt,
+            'color': color,
+            'target_y': last_pt[1] - 11.0
+        })
+
+    # Collision resolution for end badges
+    min_gap = 25.0
+    for i in range(1, len(end_positions)):
+        prev_y = end_positions[i-1]['target_y']
+        curr_y = end_positions[i]['target_y']
+        if curr_y - prev_y < min_gap:
+            end_positions[i]['target_y'] = prev_y + min_gap
+            
+    for item in end_positions:
+        f = item['fund']
+        last_pt = item['last_pt']
+        color = item['color']
+        badge_y = item['target_y']
+        final_ret = f['final_return']
+        ret_str = f"{'+' if final_ret >= 0 else ''}{final_ret:.2f}%".replace('.', ',')
+        
+        end_tags_svg += f"""
+        <circle cx="{last_pt[0]:.1f}" cy="{last_pt[1]:.1f}" r="5.5" fill="{color}" stroke="#000" stroke-width="1.5" />
+        <g transform="translate({last_pt[0]+8:.1f}, {badge_y:.1f})">
+            <rect x="0" y="0" width="88" height="22" rx="6" fill="rgba(15,15,22,0.92)" stroke="{color}" stroke-width="1" />
+            <text x="6" y="15" fill="#fff" font-size="11" font-family="Space Grotesk, sans-serif" font-weight="700">{f['code']}</text>
+            <text x="82" y="15" fill="{color}" font-size="11" font-family="Space Grotesk, sans-serif" font-weight="700" text-anchor="end">{ret_str}</text>
+        </g>
+        """
+
+    # SVG Filters
+    filters_svg = "<defs>"
+    for f in funds_data:
+        filters_svg += f"""
+        <filter id="glow-{f['code']}" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="{f['color']}" flood-opacity="0.65"/>
+        </filter>
+        """
+    filters_svg += "</defs>"
+
+    svg_full = f"""
+    <div class="comp-chart-canvas-wrap">
+        <svg viewBox="0 0 {width} {height}" class="comp-svg-chart" xmlns="http://www.w3.org/2000/svg">
+            {filters_svg}
+            {grid_svg}
+            {zero_line_svg}
+            {x_ticks_svg}
+            {curves_svg}
+            {end_tags_svg}
+        </svg>
+    </div>
+    """
+    
+    # Leaderboard HTML
+    leaderboard_cards = ""
+    for idx, f in enumerate(funds_data):
+        rank = idx + 1
+        if rank == 1:
+            rank_html = '<span class="comp-rank-badge rank-gold">🥇 1</span>'
+        elif rank == 2:
+            rank_html = '<span class="comp-rank-badge rank-silver">🥈 2</span>'
+        elif rank == 3:
+            rank_html = '<span class="comp-rank-badge rank-bronze">🥉 3</span>'
+        else:
+            rank_html = f'<span class="comp-rank-badge">{rank}</span>'
+            
+        ret = f['final_return']
+        badge_cls = "trend-up" if ret >= 0 else "trend-down"
+        ret_formatted = f"{'+' if ret >= 0 else ''}{ret:.2f}%".replace('.', ',')
+        
+        # Mini bar
+        max_abs = max(abs(max_v), abs(min_v), 1.0)
+        bar_pct = min(100, max(8, (abs(ret) / max_abs) * 100))
+        bar_color = f['color']
+        
+        leaderboard_cards += f"""
+        <div class="comp-leader-card">
+            <div class="comp-leader-top">
+                <div class="comp-leader-left">
+                    {rank_html}
+                    <span class="comp-dot" style="background:{f['color']};"></span>
+                    <span class="comp-code">{f['code']}</span>
+                </div>
+                <span class="comp-return-badge {badge_cls}">{ret_formatted}</span>
+            </div>
+            <div class="comp-bar-track">
+                <div class="comp-bar-fill" style="width:{bar_pct}%; background:{bar_color};"></div>
+            </div>
+        </div>
+        """
+
+    card_body = f"""
+    <div class="comp-card-body">
+        <div class="comp-card-header">
+            <div class="comp-title-group">
+                <div class="header-icon" style="background:rgba(255,149,0,0.18); color:#FF9500;">📈</div>
+                <div>
+                    <h2>Fon Kümülatif Getiri Karşılaştırması</h2>
+                    <span class="comp-subtitle">{period_label}</span>
+                </div>
+            </div>
+        </div>
+        
+        {svg_full}
+        
+        <div class="comp-leaderboard-section">
+            <div class="comp-section-title">🏆 DÖNEM GETİRİ LİDERLİK TABLOSU</div>
+            <div class="comp-leaderboard-grid">
+                {leaderboard_cards}
+            </div>
+        </div>
+    </div>
+    """
+    
+    return card_body
+
+# Backwards compatibility alias
+def generate_combined_chart_html(tracked_dict, period_label):
+    return generate_comparison_chart_html(tracked_dict, period_label), []
 
 def generate_chart_script(datasets):
-    """Generate a <script> block that renders a single combined Chart.js line chart."""
-    if not datasets:
-        return ""
-    
-    import json as _json
-    datasets_json = _json.dumps(datasets, ensure_ascii=False)
-    
-    return f"""
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {{
-    const fundData = {datasets_json};
-    
-    // Merge all unique labels in order
-    const allLabels = [];
-    fundData.forEach(function(fd) {{
-        fd.labels.forEach(function(l) {{
-            if (allLabels.indexOf(l) === -1) allLabels.push(l);
-        }});
-    }});
-    allLabels.sort();
-    
-    const chartDatasets = fundData.map(function(fd) {{
-        const mappedValues = allLabels.map(function(l) {{
-            const idx = fd.labels.indexOf(l);
-            return idx >= 0 ? fd.values[idx] : null;
-        }});
-        return {{
-            label: fd.code,
-            data: mappedValues,
-            borderColor: fd.color,
-            backgroundColor: 'transparent',
-            borderWidth: 2.5,
-            pointRadius: 0,
-            pointHoverRadius: 5,
-            fill: false,
-            tension: 0.3,
-            spanGaps: true
-        }};
-    }});
-    
-    const ctx = document.getElementById('combined-return-chart');
-    if (!ctx) return;
-    
-    new Chart(ctx, {{
-        type: 'line',
-        data: {{
-            labels: allLabels,
-            datasets: chartDatasets
-        }},
-        options: {{
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {{ mode: 'index', intersect: false }},
-            plugins: {{
-                legend: {{ display: false }},
-                tooltip: {{
-                    backgroundColor: 'rgba(0,0,0,0.85)',
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    borderColor: 'rgba(255,255,255,0.1)',
-                    borderWidth: 1,
-                    padding: 12,
-                    bodyFont: {{ size: 13 }},
-                    callbacks: {{
-                        label: function(ctx) {{
-                            return ' ' + ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + '%';
-                        }}
-                    }}
-                }}
-            }},
-            scales: {{
-                x: {{
-                    ticks: {{ color: 'rgba(255,255,255,0.5)', font: {{ size: 11 }}, maxRotation: 0 }},
-                    grid: {{ color: 'rgba(255,255,255,0.06)' }}
-                }},
-                y: {{
-                    position: 'right',
-                    ticks: {{
-                        color: 'rgba(255,255,255,0.5)',
-                        font: {{ size: 11 }},
-                        callback: function(v) {{ return v.toFixed(1) + '%'; }}
-                    }},
-                    grid: {{ color: 'rgba(255,255,255,0.06)' }}
-                }}
-            }}
-        }}
-    }});
-}});
-</script>"""
+    return ""
 
 
 async def main():
@@ -1000,15 +1143,11 @@ async def main():
     tracked_html = generate_tracked_html(data.get('tracked', {}), period_label) if "tracked" in sections else ""
     tracked_rs_html = generate_relative_strength_html(data.get('tracked_relative_strength', [])) if "tracked_rs" in sections else ""
     manager_actions_html = generate_manager_actions_html(data.get('manager_actions', [])) if "manager_actions" in sections else ""
-
-    # Combined chart as SEPARATE section
-    chart_card_html = ""
-    chart_script = ""
+    # Comparison chart section
+    comparison_chart_html = ""
     tracked_data = data.get('tracked', {})
-    if "return_chart" in sections and tracked_data:
-        chart_card_html, chart_datasets = generate_combined_chart_html(tracked_data, period_label)
-        chart_script = generate_chart_script(chart_datasets)
-    
+    if ("comparison_chart" in sections or "return_chart" in sections) and tracked_data:
+        comparison_chart_html = generate_comparison_chart_html(tracked_data, period_label)
     
     portfolio_diff_html = generate_portfolio_diff_html(data.get('allocation_diffs', {}), config) if "portfolio_diff" in sections else ""
     fund_report_html = generate_fund_report_html(data.get('tracked', {}), data.get('allocation_diffs', {}), config, period_label) if "fund_report" in sections else ""
@@ -1024,24 +1163,32 @@ async def main():
     
     bg_url = config.get("bg_url", "")
     if not bg_url:
-        bg_url = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop"
-    
-    print(f"DEBUG: Generating image with sections: {sections}")
-    print(f"DEBUG: Background URL: {bg_url}")
-
+        bg_url = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=2070&auto=format&fit=crop"
+        
     with open(template_path, "r", encoding="utf-8") as f:
         template = f.read()
         
-    template = template.replace("{{TITLE}}", config.get("main_title") if config.get("main_title") else title)
+    template = template.replace("{{BG_URL}}", bg_url)
+    actual_title = config.get("main_title") if config.get("main_title") else title
+    if len(sections) == 1 and "portfolio_diff" in sections:
+        diffs = data.get('allocation_diffs', {})
+        if diffs:
+            target_fund = config.get("portfolio_diff_fund", "").upper()
+            if not target_fund:
+                target_fund = list(diffs.keys())[0] if diffs else ""
+            actual_title = f"{target_fund} Portföy Dağılımı"
+            
+    template = template.replace("{{TITLE}}", actual_title)
     template = template.replace("{{SUBTITLE}}", config.get("subtitle") if config.get("subtitle") else "Paranın Yönü Nereye?")
     template = template.replace("{{DATE}}", format_turkish_date(date_str))
+    template = template.replace("{{PERIOD_TYPE_LABEL}}", period_label)
     template = template.replace("{{PERIOD_NOTE}}", period_note)
-    template = template.replace("({{PERIOD_TYPE_LABEL}})", f"({period_label})")
     
-    # Header Visibility
-    show_main = config.get("header_show_main", True)
-    show_sub = config.get("header_show_sub", True)
-    if len(sections) == 1 and "holdings_breakdown" in sections:
+    header_show_main = config.get("header_show_main", True)
+    header_show_sub = config.get("header_show_sub", True)
+    show_main = header_show_main if isinstance(header_show_main, bool) else (str(header_show_main).lower() == "true")
+    show_sub = header_show_sub if isinstance(header_show_sub, bool) else (str(header_show_sub).lower() == "true")
+    if len(sections) == 1 and ("predictions" in sections or "holdings_breakdown" in sections or "comparison_chart" in sections):
         show_main = False
         show_sub = False
     template = template.replace("{{SHOW_MAIN}}", "" if show_main else "hidden")
@@ -1059,7 +1206,8 @@ async def main():
     template = template.replace("{{TRACKED_FUNDS_HTML}}", tracked_html)
     template = template.replace("{{TRACKED_RS_HTML}}", tracked_rs_html)
     template = template.replace("{{MANAGER_ACTIONS_HTML}}", manager_actions_html)
-    template = template.replace("{{RETURN_CHART_HTML}}", chart_card_html)
+    template = template.replace("{{COMPARISON_CHART_HTML}}", comparison_chart_html)
+    template = template.replace("{{RETURN_CHART_HTML}}", comparison_chart_html)
     template = template.replace("{{PORTFOLIO_DIFF_HTML}}", portfolio_diff_html)
     template = template.replace("{{PORTFOLIO_COLS_CLASS}}", "cols-2" if int(config.get("portfolio_diff_cols", 1)) == 2 else "cols-1")
     template = template.replace("{{FUND_REPORT_HTML}}", fund_report_html)
@@ -1075,25 +1223,20 @@ async def main():
         layout_mode_class = "pred-only-layout"
     elif len(sections) == 1 and "portfolio_diff" in sections:
         layout_mode_class = "portfolio-only-layout"
-        # Override title to be dynamic for portfolio diff
-        diffs = data.get('allocation_diffs', {})
-        if diffs:
-            target_fund = config.get("portfolio_diff_fund", "").upper()
-            if not target_fund:
-                target_fund = list(diffs.keys())[0] if diffs else ""
-            template = template.replace(config.get("main_title") if config.get("main_title") else title, f"{target_fund} Portföy Dağılımı")
     elif len(sections) == 1 and "holdings_breakdown" in sections:
         layout_mode_class = "holdings-only-layout"
+    elif len(sections) == 1 and "comparison_chart" in sections:
+        layout_mode_class = "comparison-only-layout"
     else:
         layout_mode_class = "normal-layout"
     template = template.replace("{{LAYOUT_MODE_CLASS}}", layout_mode_class)
     
     # Conditional Visibility and Positioning
-    for s_name in ["inflows", "outflows", "cat_in", "cat_out", "inv_in", "inv_out", "divergent", "momentum", "crowding", "category_rotation", "tracked", "tracked_rs", "manager_actions", "predictions", "portfolio_diff", "fund_report", "top_gainers", "top_losers", "return_chart", "per_investor_value", "holdings_breakdown"]:
+    for s_name in ["inflows", "outflows", "cat_in", "cat_out", "inv_in", "inv_out", "divergent", "momentum", "crowding", "category_rotation", "tracked", "tracked_rs", "manager_actions", "predictions", "portfolio_diff", "fund_report", "top_gainers", "top_losers", "comparison_chart", "return_chart", "per_investor_value", "holdings_breakdown"]:
         placeholder_show = f"{{{{SHOW_{s_name.upper()}}}}}"
         placeholder_pos = f"/* POS_{s_name.upper()} */"
         
-        is_enabled = s_name in sections
+        is_enabled = (s_name in sections) or (s_name == "comparison_chart" and "return_chart" in sections) or (s_name == "return_chart" and "comparison_chart" in sections)
         template = template.replace(placeholder_show, "" if is_enabled else "hidden")
         
         # Aggressive hiding via inline style if disabled
@@ -1102,6 +1245,8 @@ async def main():
         else:
             # If enabled, handle positioning for normal mode
             pos_val = config.get("positions", {}).get(s_name, "")
+            if not pos_val and s_name == "comparison_chart":
+                pos_val = config.get("positions", {}).get("return_chart", "")
             if pos_val and "," in pos_val:
                 row, col = pos_val.split(",")
                 template = template.replace(placeholder_pos, f"grid-row: {row}; grid-column: {col};")
@@ -1133,14 +1278,14 @@ async def main():
     print(f"DEBUG: pred_cols from config is: {config.get('pred_cols')} (type: {type(config.get('pred_cols'))})")
     template = template.replace("{{PRED_COLS_CLASS}}", "cols-2" if int(config.get("pred_cols", 1)) == 2 else "cols-1")
     long_footer_sections = {"inflows", "outflows", "inv_in", "inv_out", "top_gainers", "top_losers", "cat_in", "cat_out"}
-    short_footer_sections = {"tracked", "per_investor_value", "portfolio_diff", "fund_report", "holdings_breakdown"}
+    short_footer_sections = {"tracked", "per_investor_value", "portfolio_diff", "fund_report", "holdings_breakdown", "comparison_chart", "return_chart"}
 
-    if any(s in long_footer_sections for s in sections):
-        footer_note = clean_footer_note(data.get("footer_note", "* Veriler TEFAS üzerinden alınmıştır."))
-    elif any(s in short_footer_sections for s in sections):
+    if any(s in short_footer_sections for s in sections) and not any(s in long_footer_sections for s in sections):
         footer_note = "* Veriler TEFAS üzerinden alınmıştır."
-    else:
+    elif any(s in long_footer_sections for s in sections):
         footer_note = clean_footer_note(data.get("footer_note", "* Veriler TEFAS üzerinden alınmıştır."))
+    else:
+        footer_note = "* Veriler TEFAS üzerinden alınmıştır."
 
     template = template.replace("{{FOOTER_NOTE}}", footer_note)
     
@@ -1201,10 +1346,6 @@ async def main():
     # We clear the placeholder to avoid CSS errors
     template = template.replace("/* POS_WATERMARK */", "")
 
-    # Inject chart script before </body> if charts are enabled
-    if chart_script:
-        template = template.replace("</body>", chart_script + "\n</body>")
-
     with open(output_html_path, "w", encoding="utf-8") as f:
         f.write(template)
         
@@ -1230,11 +1371,6 @@ async def main():
         box = await container.bounding_box()
         if box:
             await page.set_viewport_size({"width": c_width, "height": int(box['height'])})
-        
-        # If charts are present, wait a bit for Chart.js to render
-        if chart_script:
-            import asyncio as _asyncio
-            await _asyncio.sleep(1.5)
 
         await page.screenshot(path=output_img_path)
         await browser.close()

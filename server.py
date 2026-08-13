@@ -95,7 +95,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header('Content-Security-Policy', "default-src 'self' 'unsafe-inline' https: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; img-src 'self' https: data:; style-src 'self' 'unsafe-inline' https:;")
             self.end_headers()
             
-            html = """
+            html = r"""
             <!DOCTYPE html>
             <html lang="tr">
             <head>
@@ -506,7 +506,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                         const customStartDate = document.getElementById('customStartDate').value;
                         const customEndDate = document.getElementById('customEndDate').value;
                         const sections = [];
-                        ['inflows', 'outflows', 'cat_in', 'cat_out', 'inv_in', 'inv_out', 'divergent', 'momentum', 'crowding', 'category_rotation', 'tracked', 'tracked_rs', 'manager_actions', 'predictions', 'portfolio_diff', 'per_investor_value', 'fund_report', 'top_gainers', 'top_losers', 'return_chart', 'holdings_breakdown'].forEach(s => {
+                        ['inflows', 'outflows', 'cat_in', 'cat_out', 'inv_in', 'inv_out', 'divergent', 'momentum', 'crowding', 'category_rotation', 'tracked', 'tracked_rs', 'manager_actions', 'predictions', 'portfolio_diff', 'per_investor_value', 'fund_report', 'top_gainers', 'top_losers', 'comparison_chart', 'return_chart', 'holdings_breakdown'].forEach(s => {
                             const chk = document.getElementById('chk-' + s);
                             if (chk && chk.checked) sections.push(s);
                         });
@@ -532,7 +532,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                         const selectedCats = Array.from(document.querySelectorAll('.cat-chk:checked')).map(c => c.value);
                         
                         const positions = {};
-                        ['inflows', 'outflows', 'cat_in', 'cat_out', 'inv_in', 'inv_out', 'divergent', 'momentum', 'crowding', 'category_rotation', 'tracked', 'tracked_rs', 'manager_actions', 'predictions', 'portfolio_diff', 'per_investor_value', 'fund_report', 'top_gainers', 'top_losers', 'return_chart', 'holdings_breakdown'].forEach(s => {
+                        ['inflows', 'outflows', 'cat_in', 'cat_out', 'inv_in', 'inv_out', 'divergent', 'momentum', 'crowding', 'category_rotation', 'tracked', 'tracked_rs', 'manager_actions', 'predictions', 'portfolio_diff', 'per_investor_value', 'fund_report', 'top_gainers', 'top_losers', 'comparison_chart', 'return_chart', 'holdings_breakdown'].forEach(s => {
                             const chk = document.getElementById('chk-' + s);
                             if (chk) {
                                 const r = document.getElementById('pos-' + s + '-r').value;
@@ -666,6 +666,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                 "top_gainers": "En Çok Kazandıranlar", 
                 "top_losers": "En Çok Kaybedenler",
                 "tracked": "Takipteki Fonlar", 
+                "comparison_chart": "📈 Fon Karşılaştırma Grafiği",
                 "per_investor_value": "Kişi Başı Yatırım Değeri",
                 "fund_report": "Fon Karnesi",
                 "predictions": "Tahminler (Serbest Bölüm)", 
@@ -815,7 +816,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
             try:
                 # 1. Run Data Fetcher
                 # Ensure data fetcher runs if any Tefas section is requested
-                tefas_sections = ["inflows", "outflows", "cat_in", "cat_out", "inv_in", "inv_out", "divergent", "momentum", "crowding", "category_rotation", "tracked", "tracked_rs", "manager_actions", "portfolio_diff", "per_investor_value", "fund_report", "top_gainers", "top_losers", "return_chart"]
+                tefas_sections = ["inflows", "outflows", "cat_in", "cat_out", "inv_in", "inv_out", "divergent", "momentum", "crowding", "category_rotation", "tracked", "tracked_rs", "manager_actions", "portfolio_diff", "per_investor_value", "fund_report", "top_gainers", "top_losers", "comparison_chart", "return_chart"]
                 section_list = sections.split(",")
                 needs_data = any(s in section_list for s in tefas_sections)
                 
