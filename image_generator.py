@@ -1094,8 +1094,7 @@ def generate_flow_chart_html(tracked_dict, period_label):
         if not history or len(history) < 2:
             continue
             
-        cum_flow = 0.0
-        prev_shares = None
+        start_shares = None
         flow_history = []
         
         for p in history:
@@ -1103,21 +1102,20 @@ def generate_flow_chart_html(tracked_dict, period_label):
             shares = float(p.get('shares', 0) or 0)
             price = float(p.get('price', 0) or 0)
             
-            if prev_shares is None:
-                prev_shares = shares
+            if start_shares is None:
+                start_shares = shares
                 flow_history.append({
                     "date": p["date"],
                     "value": 0.0
                 })
             else:
-                daily_flow = (shares - prev_shares) * price
-                cum_flow += daily_flow
-                prev_shares = shares
+                flow_val = (shares - start_shares) * price
                 flow_history.append({
                     "date": p["date"],
-                    "value": cum_flow
+                    "value": flow_val
                 })
                 
+        cum_flow = flow_history[-1]["value"] if flow_history else 0.0
         funds_data.append({
             'code': code,
             'name': data.get('name', code),
