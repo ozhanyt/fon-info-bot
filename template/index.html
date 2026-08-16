@@ -1264,6 +1264,123 @@
                 {{HOLDINGS_BREAKDOWN_HTML}}
             </div>
 
+            <!-- fund_takas_diff -->
+            <div class="card glass-card fund-takas-diff {{SHOW_FUND_TAKAS_DIFF}}" style="/* POS_FUND_TAKAS_DIFF */; padding:0;">
+                <style>
+                    .takas-diff-body {
+                        padding: 30px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 15px;
+                    }
+                    .takas-diff-row-card {
+                        background: rgba(255, 255, 255, 0.02);
+                        border: 1px solid rgba(255, 255, 255, 0.06);
+                        border-radius: 16px;
+                        padding: 18px 24px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        gap: 20px;
+                    }
+                    .takas-diff-meta {
+                        display: flex;
+                        align-items: center;
+                        width: 150px;
+                        flex-shrink: 0;
+                    }
+                    .takas-diff-code-group {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 2px;
+                    }
+                    .takas-diff-subtitle {
+                        font-size: calc(var(--item-font-size) * 0.35);
+                        color: #f59e0b;
+                        font-weight: 700;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+                    .takas-diff-pct-group {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: 4px;
+                        width: 180px;
+                        flex-shrink: 0;
+                    }
+                    .takas-diff-pct-flow {
+                        font-size: calc(var(--item-font-size) * 0.42);
+                        color: rgba(255, 255, 255, 0.7);
+                        font-weight: 600;
+                        font-family: 'Space Grotesk', sans-serif;
+                    }
+                    .takas-diff-metric {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: flex-end;
+                        gap: 4px;
+                        width: 180px;
+                        flex-shrink: 0;
+                    }
+                    .metric-label {
+                        font-size: calc(var(--item-font-size) * 0.3);
+                        color: rgba(255, 255, 255, 0.4);
+                        font-weight: 700;
+                        letter-spacing: 0.5px;
+                    }
+                    .metric-val {
+                        font-size: calc(var(--item-font-size) * 0.52);
+                        color: #fff;
+                        font-weight: 700;
+                        font-family: 'Space Grotesk', sans-serif;
+                    }
+                    .bist-ticker-badge {
+                        background: rgba(255, 255, 255, 0.05);
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        color: #fff;
+                        padding: 4px 12px;
+                        border-radius: 8px;
+                        font-size: calc(var(--item-font-size) * 0.5);
+                        font-weight: 800;
+                        font-family: 'Space Grotesk', sans-serif;
+                        text-align: center;
+                    }
+                    .status-badge {
+                        padding: 3px 8px;
+                        border-radius: 6px;
+                        font-size: calc(var(--item-font-size) * 0.32);
+                        font-weight: 800;
+                        text-transform: uppercase;
+                    }
+                    .status-badge.trend-up {
+                        background: rgba(16, 185, 129, 0.08);
+                        border: 1px solid rgba(16, 185, 129, 0.2);
+                        color: #10b981;
+                    }
+                    .status-badge.trend-down {
+                        background: rgba(239, 68, 68, 0.08);
+                        border: 1px solid rgba(239, 68, 68, 0.2);
+                        color: #ef4444;
+                    }
+                    .metric-val.trend-up {
+                        color: #10b981;
+                    }
+                    .metric-val.trend-down {
+                        color: #ef4444;
+                    }
+                </style>
+                <div class="card-header" style="border-bottom:1px solid rgba(255,255,255,0.06); padding: 22px 30px;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span style="font-size:26px;">🏢</span>
+                        <h2 style="font-size:24px; font-weight:800; letter-spacing:-0.5px; color:#fff; margin:0;">Yatırım Fonları Takas Akış & Anomali Analizi</h2>
+                    </div>
+                </div>
+                <div class="takas-diff-body">
+                    {{FUND_TAKAS_DIFF_HTML}}
+                </div>
+            </div>
+
             <!-- comparison_chart -->
             <div class="card glass-card comparison-chart {{SHOW_COMPARISON_CHART}}" style="/* POS_COMPARISON_CHART */; padding:0;">
                 <style>
