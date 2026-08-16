@@ -112,20 +112,20 @@ def seed_database():
     logging.info("Seeding initial historical data into fintables_history.json...")
     seed_data = {
         "2026-08-13": {
-            "HEDEF": { "lot": 211930000.0, "val": 3348494000.0, "price": 15.80 },
+            "HEDEF": { "lot": 499246098.0, "val": 78880883484.0, "price": 158.00 },
             "ERBOS": { "lot": 3818141.0, "val": 603266278.0, "price": 158.00 },
             "BURVA": { "lot": 1073003.0, "val": 156658438.0, "price": 146.00 },
             "FZLGY": { "lot": 113112895.0, "val": 1023671700.0, "price": 9.05 },
-            "CWENE": { "lot": 95515700.0, "val": 19580718500.0, "price": 205.00 },
+            "CWENE": { "lot": 95515700.0, "val": 3534080900.0, "price": 37.00 },
             "BAYRK": { "lot": 19078738.0, "val": 438810974.0, "price": 23.00 },
             "ACSEL": { "lot": 5360850.0, "val": 455672250.0, "price": 85.00 }
         },
         "2026-08-14": {
-            "HEDEF": { "lot": 237951193.0, "val": 3759628849.4, "price": 15.80 },
+            "HEDEF": { "lot": 525267291.0, "val": 82992232018.0, "price": 158.00 },
             "ERBOS": { "lot": 3950000.0, "val": 624100000.0, "price": 158.00 },
             "BURVA": { "lot": 1120000.0, "val": 163520000.0, "price": 146.00 },
             "FZLGY": { "lot": 118000000.0, "val": 1067900000.0, "price": 9.05 },
-            "CWENE": { "lot": 97800000.0, "val": 20049000000.0, "price": 205.00 },
+            "CWENE": { "lot": 93231400.0, "val": 3449561800.0, "price": 37.00 },
             "BAYRK": { "lot": 19500000.0, "val": 448500000.0, "price": 23.00 },
             "ACSEL": { "lot": 5420000.0, "val": 460700000.0, "price": 85.00 }
         }

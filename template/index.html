@@ -1268,90 +1268,133 @@
             <div class="card glass-card fund-takas-diff {{SHOW_FUND_TAKAS_DIFF}}" style="/* POS_FUND_TAKAS_DIFF */; padding:0;">
                 <style>
                     .takas-diff-body {
-                        padding: 30px;
+                        padding: 24px;
+                    }
+                    .takas-columns-container {
+                        display: flex;
+                        gap: 16px;
+                        width: 100%;
+                    }
+                    .takas-column {
+                        flex: 1;
                         display: flex;
                         flex-direction: column;
-                        gap: 15px;
+                        gap: 12px;
+                    }
+                    .column-title-bar {
+                        font-size: 16px;
+                        font-weight: 800;
+                        letter-spacing: 0.5px;
+                        padding: 10px 14px;
+                        border-radius: 10px;
+                        margin-bottom: 6px;
+                        text-align: center;
+                    }
+                    .column-title-bar.green-title {
+                        background: rgba(16, 185, 129, 0.08);
+                        color: #10b981;
+                        border: 1px solid rgba(16, 185, 129, 0.15);
+                    }
+                    .column-title-bar.red-title {
+                        background: rgba(239, 68, 68, 0.08);
+                        color: #ef4444;
+                        border: 1px solid rgba(239, 68, 68, 0.15);
+                    }
+                    .column-rows {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 12px;
                     }
                     .takas-diff-row-card {
                         background: rgba(255, 255, 255, 0.02);
-                        border: 1px solid rgba(255, 255, 255, 0.06);
-                        border-radius: 16px;
-                        padding: 18px 24px;
+                        border: 1px solid rgba(255, 255, 255, 0.05);
+                        border-radius: 12px;
+                        padding: 12px 16px;
                         display: flex;
                         justify-content: space-between;
                         align-items: center;
-                        gap: 20px;
+                        gap: 12px;
+                        transition: all 0.2s ease;
                     }
-                    .takas-diff-meta {
+                    .takas-diff-row-card:hover {
+                        background: rgba(255, 255, 255, 0.04);
+                        border-color: rgba(255, 255, 255, 0.1);
+                    }
+                    .row-left {
                         display: flex;
+                        flex-direction: column;
                         align-items: center;
-                        width: 150px;
-                        flex-shrink: 0;
-                    }
-                    .takas-diff-code-group {
-                        display: flex;
-                        flex-direction: column;
-                        gap: 2px;
-                    }
-                    .takas-diff-subtitle {
-                        font-size: calc(var(--item-font-size) * 0.35);
-                        color: #f59e0b;
-                        font-weight: 700;
-                        text-transform: uppercase;
-                        letter-spacing: 0.5px;
-                    }
-                    .takas-diff-pct-group {
-                        display: flex;
-                        flex-direction: column;
-                        align-items: flex-start;
                         gap: 4px;
-                        width: 180px;
+                        width: 90px;
                         flex-shrink: 0;
-                    }
-                    .takas-diff-pct-flow {
-                        font-size: calc(var(--item-font-size) * 0.42);
-                        color: rgba(255, 255, 255, 0.7);
-                        font-weight: 600;
-                        font-family: 'Space Grotesk', sans-serif;
-                    }
-                    .takas-diff-metric {
-                        display: flex;
-                        flex-direction: column;
-                        align-items: flex-end;
-                        gap: 4px;
-                        width: 180px;
-                        flex-shrink: 0;
-                    }
-                    .metric-label {
-                        font-size: calc(var(--item-font-size) * 0.3);
-                        color: rgba(255, 255, 255, 0.4);
-                        font-weight: 700;
-                        letter-spacing: 0.5px;
-                    }
-                    .metric-val {
-                        font-size: calc(var(--item-font-size) * 0.52);
-                        color: #fff;
-                        font-weight: 700;
-                        font-family: 'Space Grotesk', sans-serif;
                     }
                     .bist-ticker-badge {
                         background: rgba(255, 255, 255, 0.05);
                         border: 1px solid rgba(255, 255, 255, 0.1);
                         color: #fff;
-                        padding: 4px 12px;
-                        border-radius: 8px;
-                        font-size: calc(var(--item-font-size) * 0.5);
-                        font-weight: 800;
-                        font-family: 'Space Grotesk', sans-serif;
-                        text-align: center;
-                    }
-                    .status-badge {
                         padding: 3px 8px;
                         border-radius: 6px;
-                        font-size: calc(var(--item-font-size) * 0.32);
+                        font-size: 16px;
+                        font-weight: 800;
+                        font-family: 'Space Grotesk', sans-serif;
+                        width: 78px;
+                        text-align: center;
+                        display: inline-block;
+                    }
+                    .row-price {
+                        font-size: 13px;
+                        color: rgba(255, 255, 255, 0.50);
+                        font-family: 'Space Grotesk', sans-serif;
+                        font-weight: 600;
+                        padding-left: 0;
+                        text-align: center;
+                    }
+                    .row-middle {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: 1px;
+                        width: 160px;
+                        flex-shrink: 0;
+                    }
+                    .row-pct-change {
+                        font-size: 16px;
+                        color: rgba(255, 255, 255, 0.7);
+                        font-family: 'Space Grotesk', sans-serif;
+                        font-weight: 600;
+                    }
+                    .row-lot-change {
+                        font-size: 13px;
+                        color: rgba(255, 255, 255, 0.35);
+                        font-family: 'Space Grotesk', sans-serif;
+                        font-weight: 500;
+                    }
+                    .row-right {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: flex-end;
+                        gap: 2px;
+                        width: 140px;
+                        flex-shrink: 0;
+                    }
+                    .row-flow-val {
+                        font-size: 16px;
+                        font-weight: 700;
+                        font-family: 'Space Grotesk', sans-serif;
+                    }
+                    .row-flow-val.trend-up {
+                        color: #10b981;
+                    }
+                    .row-flow-val.trend-down {
+                        color: #ef4444;
+                    }
+                    .status-badge {
+                        padding: 2px 6px;
+                        border-radius: 4px;
+                        font-size: 13px;
                         font-weight: 800;
                         text-transform: uppercase;
+                        display: inline-block;
                     }
                     .status-badge.trend-up {
                         background: rgba(16, 185, 129, 0.08);
@@ -1363,21 +1406,30 @@
                         border: 1px solid rgba(239, 68, 68, 0.2);
                         color: #ef4444;
                     }
-                    .metric-val.trend-up {
-                        color: #10b981;
-                    }
-                    .metric-val.trend-down {
-                        color: #ef4444;
-                    }
                 </style>
-                <div class="card-header" style="border-bottom:1px solid rgba(255,255,255,0.06); padding: 22px 30px;">
+                <div class="card-header" style="border-bottom:1px solid rgba(255,255,255,0.06); padding: 22px 30px; display: flex; justify-content: space-between; align-items: center; width: 100%;">
                     <div style="display:flex; align-items:center; gap:12px;">
                         <span style="font-size:26px;">🏢</span>
                         <h2 style="font-size:24px; font-weight:800; letter-spacing:-0.5px; color:#fff; margin:0;">Yatırım Fonları Takas Akış & Anomali Analizi</h2>
                     </div>
+                    <span class="period-label" style="font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px;">{{TAKAS_PERIOD_NOTE}}</span>
                 </div>
                 <div class="takas-diff-body">
                     {{FUND_TAKAS_DIFF_HTML}}
+                </div>
+            </div>
+
+            <!-- fund_takas_diff_pct -->
+            <div class="card glass-card fund-takas-diff-pct {{SHOW_FUND_TAKAS_DIFF_PCT}}" style="/* POS_FUND_TAKAS_DIFF_PCT */; padding:0;">
+                <div class="card-header" style="border-bottom:1px solid rgba(255,255,255,0.06); padding: 22px 30px; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span style="font-size:26px;">📊</span>
+                        <h2 style="font-size:24px; font-weight:800; letter-spacing:-0.5px; color:#fff; margin:0;">Yatırım Fonları Takas Oran Değişim Analizi</h2>
+                    </div>
+                    <span class="period-label" style="font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px;">{{TAKAS_PCT_PERIOD_NOTE}}</span>
+                </div>
+                <div class="takas-diff-body">
+                    {{FUND_TAKAS_DIFF_PCT_HTML}}
                 </div>
             </div>
 

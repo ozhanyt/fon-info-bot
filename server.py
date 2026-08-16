@@ -756,7 +756,121 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
         
         return super().do_GET()
 
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.send_header('Content-Length', '0')
+        self.end_headers()
+
     def do_POST(self):
+        if self.path == '/api/save_takas':
+            from datetime import datetime
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            req_data = json.loads(post_data.decode('utf-8'))
+            rows = req_data.get('rows', [])
+            dates = req_data.get('dates', {})
+            
+            # Map exact dates from extension, fallback to estimated or today
+            base_date_str = dates.get("today")
+            if not base_date_str:
+                base_date_str = datetime.now().strftime("%Y-%m-%d")
+                
+            dates_mapping = {
+                "today": base_date_str,
+                "yesterday": dates.get("yesterday") or base_date_str,
+                "weekly": dates.get("weekly") or base_date_str,
+                "monthly": dates.get("monthly") or base_date_str,
+                "three_month": dates.get("three_month") or base_date_str,
+            }
+            
+            db_path = os.path.join(DIRECTORY, "fintables_history.json")
+            history = {}
+            if os.path.exists(db_path):
+                try:
+                    with open(db_path, "r", encoding="utf-8") as f:
+                        history = json.load(f)
+                except:
+                    pass
+                    
+            for d_str in dates_mapping.values():
+                if d_str not in history:
+                    history[d_str] = {}
+                    
+            for r in rows:
+                code = r.get("code")
+                lot = float(r.get("lot", 0.0))
+                val = float(r.get("val", 0.0))
+                price = (val / lot) if lot > 0 else 0.0
+                
+                daily_chg = float(r.get("daily_chg", 0.0))
+                weekly_chg = float(r.get("weekly_chg", 0.0))
+                monthly_chg = float(r.get("monthly_chg", 0.0))
+                three_month_chg = float(r.get("three_month_chg", 0.0))
+                
+                if not code or lot <= 0:
+                    continue
+                    
+                # Today
+                history[dates_mapping["today"]][code] = {
+                    "lot": lot,
+                    "val": val,
+                    "price": price
+                }
+                
+                # Yesterday
+                if dates.get("yesterday"):
+                    lot_y = lot - daily_chg
+                    if lot_y > 0:
+                        history[dates_mapping["yesterday"]][code] = {
+                            "lot": lot_y,
+                            "val": lot_y * price,
+                            "price": price
+                        }
+                    
+                # Weekly
+                if dates.get("weekly"):
+                    lot_w = lot - weekly_chg
+                    if lot_w > 0:
+                        history[dates_mapping["weekly"]][code] = {
+                            "lot": lot_w,
+                            "val": lot_w * price,
+                            "price": price
+                        }
+                    
+                # Monthly
+                if dates.get("monthly"):
+                    lot_m = lot - monthly_chg
+                    if lot_m > 0:
+                        history[dates_mapping["monthly"]][code] = {
+                            "lot": lot_m,
+                            "val": lot_m * price,
+                            "price": price
+                        }
+                    
+                # Three Month
+                if dates.get("three_month"):
+                    lot_3m = lot - three_month_chg
+                    if lot_3m > 0:
+                        history[dates_mapping["three_month"]][code] = {
+                            "lot": lot_3m,
+                            "val": lot_3m * price,
+                            "price": price
+                        }
+            
+            if rows:
+                with open(db_path, "w", encoding="utf-8") as f:
+                    json.dump(history, f, ensure_ascii=False, indent=4)
+                    
+            self.send_response(200)
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({"status": "success", "message": f"Successfully saved {len(rows)} rows for {base_date_str} to database."}).encode('utf-8'))
+            return
+
         if self.path == '/api/generate':
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length)
@@ -819,14 +933,9 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
             try:
                 # 1. Run Data Fetcher
                 # Ensure data fetcher runs if any Tefas section is requested
-                tefas_sections = ["inflows", "outflows", "cat_in", "cat_out", "inv_in", "inv_out", "divergent", "momentum", "crowding", "category_rotation", "tracked", "tracked_rs", "manager_actions", "portfolio_diff", "per_investor_value", "fund_report", "top_gainers", "top_losers", "comparison_chart", "return_chart", "flow_chart", "investor_chart", "fund_takas_diff"]
+                tefas_sections = ["inflows", "outflows", "cat_in", "cat_out", "inv_in", "inv_out", "divergent", "momentum", "crowding", "category_rotation", "tracked", "tracked_rs", "manager_actions", "portfolio_diff", "per_investor_value", "fund_report", "top_gainers", "top_losers", "comparison_chart", "return_chart", "flow_chart", "investor_chart"]
                 section_list = sections.split(",")
                 needs_data = any(s in section_list for s in tefas_sections)
-                
-                if "fund_takas_diff" in section_list:
-                    print("Running fintables_history_fetcher.py to fetch today's data...")
-                    cmd_ft = ["python", os.path.join(DIRECTORY, "fintables_history_fetcher.py")]
-                    subprocess.run(cmd_ft)
                 
                 if needs_data:
                     # If portfolio_diff is active, make sure that fund is in tracked_funds so it is fetched properly
@@ -989,7 +1098,55 @@ def pget(key, sub):
             return pos.split(",")[0 if sub=="R" else 1]
     except: return "1"
 
+def start_capitals_updater():
+    import time
+    from datetime import datetime, timedelta
+    import threading
+    import subprocess
+    db_path = os.path.join(DIRECTORY, "bist_capitals.json")
+    script_path = os.path.join(DIRECTORY, "build_capitals_db.py")
+    
+    # 1. First run: if capitals file doesn't exist, build it immediately in background
+    if not os.path.exists(db_path) and os.path.exists(script_path):
+        def first_run():
+            print("No BIST capitals file found. Building immediately in background...")
+            try:
+                subprocess.run(["python", script_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                print("Initial BIST capitals database built successfully!")
+            except Exception as e:
+                print(f"Failed to build initial capitals database: {e}")
+        threading.Thread(target=first_run, daemon=True).start()
+
+    # 2. Start daily scheduler thread
+    def run_loop():
+        if not os.path.exists(script_path):
+            return
+        while True:
+            now = datetime.now()
+            target_time = now.replace(hour=10, minute=0, second=0, microsecond=0)
+            if now >= target_time:
+                target_time += timedelta(days=1)
+                
+            seconds_to_wait = (target_time - now).total_seconds()
+            print(f"[Capitals Updater] Next daily KAP update scheduled at {target_time.strftime('%Y-%m-%d %H:%M:%S')} (waiting {seconds_to_wait:.1f}s)")
+            
+            # Sleep in 60s intervals to remain responsive
+            slept = 0
+            while slept < seconds_to_wait:
+                time.sleep(min(60, seconds_to_wait - slept))
+                slept += 60
+                
+            print("Updating bist_capitals.json daily at 10:00 AM from KAP...")
+            try:
+                subprocess.run(["python", script_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                print("Daily KAP capitals database updated successfully!")
+            except Exception as e:
+                print(f"Failed to update daily capitals database: {e}")
+                
+    threading.Thread(target=run_loop, daemon=True).start()
+
 def start_server():
+    start_capitals_updater()
     with socketserver.TCPServer(("", PORT), WebServerHandler) as httpd:
         print(f"Server started at http://localhost:{PORT}")
         httpd.serve_forever()

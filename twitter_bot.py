@@ -530,16 +530,25 @@ def tweet_fund_takas_diff(data, config=None):
     start_data = history.get(s_date, {})
     end_data = history.get(e_date, {})
     
-    capitals = {
-        "HEDEF": 980451883.0,
-        "DSTKF": 333333333.0,
-        "ACSEL": 10721700.0,
-        "BAYRK": 250000000.0,
-        "BURVA": 7350000.0,
-        "CWENE": 1078000000.0,
-        "ERBOS": 20000000.0,
-        "FZLGY": 1250000000.0,
-    }
+    capitals_path = os.path.join(base_dir, "bist_capitals.json")
+    capitals = {}
+    if os.path.exists(capitals_path):
+        try:
+            with open(capitals_path, "r", encoding="utf-8") as f:
+                capitals = json.load(f)
+        except:
+            pass
+    if not capitals:
+        capitals = {
+            "HEDEF": 980451883.0,
+            "DSTKF": 333333333.0,
+            "ACSEL": 10721700.0,
+            "BAYRK": 250000000.0,
+            "BURVA": 7350000.0,
+            "CWENE": 1078000000.0,
+            "ERBOS": 20000000.0,
+            "FZLGY": 1250000000.0,
+        }
     
     diffs = []
     for ticker, end_info in end_data.items():

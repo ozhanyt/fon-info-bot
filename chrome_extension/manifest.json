@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Fintables Takas Gönderici",
+  "version": "1.0",
+  "description": "Fintables Pro Takas Analizi tablosundaki verileri çeker ve yerel veri tabanına kaydeder.",
+  "permissions": ["activeTab", "scripting"],
+  "host_permissions": [
+    "http://127.0.0.1:8080/*",
+    "http://localhost:8080/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

@@ -33,6 +33,9 @@ def format_turkish_date(date_str):
             pass
     return date_str
 
+calculated_takas_date_range = ""
+calculated_takas_pct_date_range = ""
+
 def format_custom_period_label(start_date, end_date):
     if not start_date or not end_date:
         return "Özel Aralık"
@@ -566,19 +569,32 @@ def generate_fund_takas_diff_html(start_date=None, end_date=None):
             if len(available_dates) > 1:
                 e_date = available_dates[1]
                 
+    global calculated_takas_date_range
+    calculated_takas_date_range = f"{format_turkish_date(s_date)} - {format_turkish_date(e_date)}"
+
     start_data = history.get(s_date, {})
     end_data = history.get(e_date, {})
     
-    capitals = {
-        "HEDEF": 980451883.0,
-        "DSTKF": 333333333.0,
-        "ACSEL": 10721700.0,
-        "BAYRK": 250000000.0,
-        "BURVA": 7350000.0,
-        "CWENE": 1078000000.0,
-        "ERBOS": 20000000.0,
-        "FZLGY": 1250000000.0,
-    }
+    capitals_path = os.path.join(base_dir, "bist_capitals.json")
+    capitals = {}
+    if os.path.exists(capitals_path):
+        try:
+            with open(capitals_path, "r", encoding="utf-8") as f:
+                capitals = json.load(f)
+        except:
+            pass
+    # Fill defaults if load failed
+    if not capitals:
+        capitals = {
+            "HEDEF": 980451883.0,
+            "DSTKF": 333333333.0,
+            "ACSEL": 10721700.0,
+            "BAYRK": 250000000.0,
+            "BURVA": 7350000.0,
+            "CWENE": 1078000000.0,
+            "ERBOS": 20000000.0,
+            "FZLGY": 1250000000.0,
+        }
     
     # Analyze differences
     diffs = []
@@ -615,64 +631,235 @@ def generate_fund_takas_diff_html(start_date=None, end_date=None):
             "tl_flow": tl_flow
         })
         
-    diffs = sorted(diffs, key=lambda x: abs(x["tl_flow"]), reverse=True)
+    inflows = [d for d in diffs if d["tl_flow"] > 0]
+    outflows = [d for d in diffs if d["tl_flow"] < 0]
     
-    if not diffs:
+    inflows = sorted(inflows, key=lambda x: x["tl_flow"], reverse=True)[:10]
+    outflows = sorted(outflows, key=lambda x: x["tl_flow"])[:10]
+    
+    if not inflows and not outflows:
         return '<div class="comp-empty">Seçilen tarihler arasında ortak takas verisi bulunmamaktadır.</div>'
         
-    html = ""
-    for d in diffs[:8]:
-        ticker = d["ticker"]
-        pct_start_str = f"{d['pct_start']:.2f}%".replace('.', ',')
-        pct_end_str = f"{d['pct_end']:.2f}%".replace('.', ',')
-        pct_diff = d["pct_diff"]
-        
-        pct_diff_sign = "+" if pct_diff >= 0 else ""
-        pct_diff_class = "trend-up" if pct_diff >= 0 else "trend-down"
-        pct_diff_str = f"{pct_diff_sign}{pct_diff:.2f}%".replace('.', ',')
-        
-        lot_diff = d["lot_diff"]
-        lot_diff_sign = "+" if lot_diff >= 0 else ""
-        lot_diff_class = "trend-up" if lot_diff >= 0 else "trend-down"
-        lot_diff_str = f"{lot_diff_sign}{lot_diff:,.0f}".replace(',', '.')
-        
-        tl_flow = d["tl_flow"]
-        tl_flow_sign = "+" if tl_flow >= 0 else ""
-        tl_flow_class = "trend-up" if tl_flow >= 0 else "trend-down"
-        tl_flow_str = f"{tl_flow_sign}₺{abs(tl_flow):,.0f}".replace(',', '.')
-        
-        price_str = f"₺{d['price']:.2f}".replace('.', ',')
-        
-        html += f"""
-        <div class="takas-diff-row-card">
-            <div class="takas-diff-meta">
-                <div class="takas-diff-code-group">
+    def generate_column_html(items):
+        html_rows = ""
+        for d in items:
+            ticker = d["ticker"]
+            pct_start_str = f"{d['pct_start']:.2f}%".replace('.', ',')
+            pct_end_str = f"{d['pct_end']:.2f}%".replace('.', ',')
+            pct_diff = d["pct_diff"]
+            
+            pct_diff_sign = "+" if pct_diff >= 0 else ""
+            pct_diff_class = "trend-up" if pct_diff >= 0 else "trend-down"
+            pct_diff_str = f"{pct_diff_sign}{pct_diff:.2f}%".replace('.', ',')
+            
+            lot_diff = d["lot_diff"]
+            lot_diff_sign = "+" if lot_diff >= 0 else ""
+            lot_diff_str = f"{lot_diff_sign}{lot_diff:,.0f}".replace(',', '.')
+            
+            tl_flow = d["tl_flow"]
+            tl_flow_sign = "+" if tl_flow >= 0 else "-"
+            tl_flow_class = "trend-up" if tl_flow >= 0 else "trend-down"
+            tl_flow_str = f"{tl_flow_sign}₺{abs(tl_flow):,.0f}".replace(',', '.')
+            
+            price_str = f"₺{d['price']:.2f}".replace('.', ',')
+            
+            html_rows += f"""
+            <div class="takas-diff-row-card">
+                <div class="row-left">
                     <span class="bist-ticker-badge">{ticker}</span>
-                    <span class="takas-diff-subtitle">Yat. Fon.</span>
+                    <span class="row-price">{price_str}</span>
+                </div>
+                <div class="row-middle">
+                    <div class="row-pct-change">{pct_start_str} ➔ {pct_end_str}</div>
+                    <div class="row-lot-change">{lot_diff_str} Lot</div>
+                </div>
+                <div class="row-right">
+                    <div class="row-flow-val {tl_flow_class}">{tl_flow_str}</div>
+                    <span class="status-badge {pct_diff_class}">{pct_diff_str} Fark</span>
                 </div>
             </div>
-            
-            <div class="takas-diff-pct-group">
-                <span class="takas-diff-pct-flow">{pct_start_str} ➔ {pct_end_str}</span>
-                <span class="status-badge {pct_diff_class}">{pct_diff_str} Fark</span>
-            </div>
-            
-            <div class="takas-diff-metric">
-                <span class="metric-label">LOT DEĞİŞİMİ</span>
-                <span class="metric-val {lot_diff_class}">{lot_diff_str}</span>
-            </div>
-            
-            <div class="takas-diff-metric">
-                <span class="metric-label">TAHMİNİ NET AKIŞ</span>
-                <span class="metric-val {tl_flow_class}">{tl_flow_str}</span>
-            </div>
-            
-            <div class="takas-diff-metric">
-                <span class="metric-label">HİSSE FİYATI</span>
-                <span class="metric-val">{price_str}</span>
-            </div>
+            """
+        return html_rows
+
+    inflow_html = generate_column_html(inflows)
+    outflow_html = generate_column_html(outflows)
+    
+    html = f"""
+    <div class="takas-columns-container">
+        <div class="takas-column">
+            <div class="column-title-bar green-title">📈 EN ÇOK GİRİŞ YAPILANLAR (TOP 10)</div>
+            <div class="column-rows">{inflow_html}</div>
         </div>
-        """
+        <div class="takas-column">
+            <div class="column-title-bar red-title">📉 EN ÇOK ÇIKIŞ YAPILANLAR (TOP 10)</div>
+            <div class="column-rows">{outflow_html}</div>
+        </div>
+    </div>
+    """
+        
+    return html
+
+
+
+def generate_fund_takas_diff_pct_html(start_date=None, end_date=None):
+    """Tarih aralığına göre Yatırım Fonları takas oran değişimlerini (yüzdesel farka göre) listeler."""
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    json_path = os.path.join(base_dir, "fintables_history.json")
+    if not os.path.exists(json_path):
+        return '<div class="comp-empty">Takas geçmiş verisi bulunamadı.</div>'
+        
+    try:
+        with open(json_path, "r", encoding="utf-8") as f:
+            history = json.load(f)
+    except Exception as e:
+        return f'<div class="comp-empty">Veri tabanı yükleme hatası: {e}</div>'
+        
+    if not history or len(history) < 2:
+        return '<div class="comp-empty">Karşılaştırma için yeterli geçmiş veri bulunmamaktadır.</div>'
+        
+    available_dates = sorted(list(history.keys()))
+    
+    s_date = start_date
+    e_date = end_date
+    if not s_date or s_date not in history:
+        s_date = available_dates[0]
+    if not e_date or e_date not in history:
+        e_date = available_dates[-1]
+        
+    if s_date == e_date:
+        s_idx = available_dates.index(s_date)
+        if s_idx > 0:
+            s_date = available_dates[s_idx - 1]
+        else:
+            s_date = available_dates[0]
+            if len(available_dates) > 1:
+                e_date = available_dates[1]
+                
+    global calculated_takas_pct_date_range
+    calculated_takas_pct_date_range = f"{format_turkish_date(s_date)} - {format_turkish_date(e_date)}"
+
+    start_data = history.get(s_date, {})
+    end_data = history.get(e_date, {})
+    
+    capitals_path = os.path.join(base_dir, "bist_capitals.json")
+    capitals = {}
+    if os.path.exists(capitals_path):
+        try:
+            with open(capitals_path, "r", encoding="utf-8") as f:
+                capitals = json.load(f)
+        except:
+            pass
+    if not capitals:
+        capitals = {
+            "HEDEF": 980451883.0,
+            "DSTKF": 333333333.0,
+            "ACSEL": 10721700.0,
+            "BAYRK": 250000000.0,
+            "BURVA": 7350000.0,
+            "CWENE": 1078000000.0,
+            "ERBOS": 20000000.0,
+            "FZLGY": 1250000000.0,
+        }
+    
+    diffs = []
+    for ticker, end_info in end_data.items():
+        start_info = start_data.get(ticker)
+        if not start_info:
+            continue
+            
+        capital = capitals.get(ticker, 100000000.0)
+        
+        lot_start = start_info.get("lot", 0.0)
+        lot_end = end_info.get("lot", 0.0)
+        lot_diff = lot_end - lot_start
+        
+        pct_start = (lot_start / capital) * 100.0
+        pct_end = (lot_end / capital) * 100.0
+        pct_diff = pct_end - pct_start
+        
+        price_end = end_info.get("price", 0.0)
+        if price_end == 0.0 and lot_end > 0:
+            price_end = end_info.get("val", 0.0) / lot_end
+            
+        tl_flow = lot_diff * price_end
+        
+        diffs.append({
+            "ticker": ticker,
+            "lot_start": lot_start,
+            "lot_end": lot_end,
+            "lot_diff": lot_diff,
+            "pct_start": pct_start,
+            "pct_end": pct_end,
+            "pct_diff": pct_diff,
+            "price": price_end,
+            "tl_flow": tl_flow
+        })
+        
+    inflows = [d for d in diffs if d["pct_diff"] > 0]
+    outflows = [d for d in diffs if d["pct_diff"] < 0]
+    
+    inflows = sorted(inflows, key=lambda x: x["pct_diff"], reverse=True)[:10]
+    outflows = sorted(outflows, key=lambda x: x["pct_diff"])[:10]
+    
+    if not inflows and not outflows:
+        return '<div class="comp-empty">Seçilen tarihler arasında ortak takas verisi bulunmamaktadır.</div>'
+        
+    def generate_column_html(items):
+        html_rows = ""
+        for d in items:
+            ticker = d["ticker"]
+            pct_start_str = f"{d['pct_start']:.2f}%".replace('.', ',')
+            pct_end_str = f"{d['pct_end']:.2f}%".replace('.', ',')
+            pct_diff = d["pct_diff"]
+            
+            pct_diff_sign = "+" if pct_diff >= 0 else ""
+            pct_diff_class = "trend-up" if pct_diff >= 0 else "trend-down"
+            pct_diff_str = f"{pct_diff_sign}{pct_diff:.2f}%".replace('.', ',')
+            
+            lot_diff = d["lot_diff"]
+            lot_diff_sign = "+" if lot_diff >= 0 else ""
+            lot_diff_str = f"{lot_diff_sign}{lot_diff:,.0f}".replace(',', '.')
+            
+            tl_flow = d["tl_flow"]
+            tl_flow_sign = "+" if tl_flow >= 0 else "-"
+            tl_flow_class = "trend-up" if tl_flow >= 0 else "trend-down"
+            tl_flow_str = f"{tl_flow_sign}₺{abs(tl_flow):,.0f}".replace(',', '.')
+            
+            price_str = f"₺{d['price']:.2f}".replace('.', ',')
+            
+            html_rows += f"""
+            <div class="takas-diff-row-card">
+                <div class="row-left">
+                    <span class="bist-ticker-badge">{ticker}</span>
+                    <span class="row-price">{price_str}</span>
+                </div>
+                <div class="row-middle">
+                    <div class="row-pct-change">{pct_start_str} ➔ {pct_end_str}</div>
+                    <div class="row-lot-change">{lot_diff_str} Lot</div>
+                </div>
+                <div class="row-right">
+                    <div class="row-flow-val {tl_flow_class}">{tl_flow_str}</div>
+                    <span class="status-badge {pct_diff_class}">{pct_diff_str} Fark</span>
+                </div>
+            </div>
+            """
+        return html_rows
+
+    inflow_html = generate_column_html(inflows)
+    outflow_html = generate_column_html(outflows)
+    
+    html = f"""
+    <div class="takas-columns-container">
+        <div class="takas-column">
+            <div class="column-title-bar green-title">📈 ORANSAL PAYI EN ÇOK ARTANLAR (TOP 10)</div>
+            <div class="column-rows">{inflow_html}</div>
+        </div>
+        <div class="takas-column">
+            <div class="column-title-bar red-title">📉 ORANSAL PAYI EN ÇOK AZALANLAR (TOP 10)</div>
+            <div class="column-rows">{outflow_html}</div>
+        </div>
+    </div>
+    """
         
     return html
 
@@ -1937,6 +2124,9 @@ async def main():
     template = template.replace("{{PER_INVESTOR_HTML}}", per_investor_html)
     template = template.replace("{{HOLDINGS_BREAKDOWN_HTML}}", holdings_breakdown_html)
     template = template.replace("{{FUND_TAKAS_DIFF_HTML}}", generate_fund_takas_diff_html(config.get("custom_start_date"), config.get("custom_end_date")))
+    template = template.replace("{{TAKAS_PERIOD_NOTE}}", calculated_takas_date_range)
+    template = template.replace("{{FUND_TAKAS_DIFF_PCT_HTML}}", generate_fund_takas_diff_pct_html(config.get("custom_start_date"), config.get("custom_end_date")))
+    template = template.replace("{{TAKAS_PCT_PERIOD_NOTE}}", calculated_takas_pct_date_range)
     template = template.replace("{{PRED_TITLE}}", config.get("pred_title", "Getiri Tahmini"))
     
     # Handle layout mode class
@@ -1957,7 +2147,7 @@ async def main():
     template = template.replace("{{LAYOUT_MODE_CLASS}}", layout_mode_class)
     
     # Conditional Visibility and Positioning
-    for s_name in ["inflows", "outflows", "cat_in", "cat_out", "inv_in", "inv_out", "divergent", "momentum", "crowding", "category_rotation", "tracked", "tracked_rs", "manager_actions", "predictions", "portfolio_diff", "fund_report", "top_gainers", "top_losers", "comparison_chart", "return_chart", "per_investor_value", "holdings_breakdown", "flow_chart", "investor_chart", "fund_takas_diff"]:
+    for s_name in ["inflows", "outflows", "cat_in", "cat_out", "inv_in", "inv_out", "divergent", "momentum", "crowding", "category_rotation", "tracked", "tracked_rs", "manager_actions", "predictions", "portfolio_diff", "fund_report", "top_gainers", "top_losers", "comparison_chart", "return_chart", "per_investor_value", "holdings_breakdown", "flow_chart", "investor_chart", "fund_takas_diff", "fund_takas_diff_pct"]:
         placeholder_show = f"{{{{SHOW_{s_name.upper()}}}}}"
         placeholder_pos = f"/* POS_{s_name.upper()} */"
         
@@ -2003,7 +2193,7 @@ async def main():
     print(f"DEBUG: pred_cols from config is: {config.get('pred_cols')} (type: {type(config.get('pred_cols'))})")
     template = template.replace("{{PRED_COLS_CLASS}}", "cols-2" if int(config.get("pred_cols", 1)) == 2 else "cols-1")
     long_footer_sections = {"inflows", "outflows", "inv_in", "inv_out", "top_gainers", "top_losers", "cat_in", "cat_out"}
-    short_footer_sections = {"tracked", "per_investor_value", "portfolio_diff", "fund_report", "holdings_breakdown", "comparison_chart", "return_chart", "flow_chart", "investor_chart", "fund_takas_diff"}
+    short_footer_sections = {"tracked", "per_investor_value", "portfolio_diff", "fund_report", "holdings_breakdown", "comparison_chart", "return_chart", "flow_chart", "investor_chart", "fund_takas_diff", "fund_takas_diff_pct"}
 
     if any(s in short_footer_sections for s in sections) and not any(s in long_footer_sections for s in sections):
         footer_note = "* Veriler TEFAS üzerinden alınmıştır."
@@ -2067,6 +2257,7 @@ async def main():
     template = template.replace("/* POS_TOP_LOSERS */", get_grid_pos("top_losers"))
     template = template.replace("/* POS_HOLDINGS_BREAKDOWN */", get_grid_pos("holdings_breakdown"))
     template = template.replace("/* POS_FUND_TAKAS_DIFF */", get_grid_pos("fund_takas_diff"))
+    template = template.replace("/* POS_FUND_TAKAS_DIFF_PCT */", get_grid_pos("fund_takas_diff_pct"))
     
     # Watermark position is now handled relatively in index.html
     # We clear the placeholder to avoid CSS errors
