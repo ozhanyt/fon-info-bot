@@ -604,23 +604,41 @@ def tweet_fund_takas_diff(data, config=None):
     if not inflows and not outflows:
         return "🏢 Hisselerdeki Yatırım Fonları Takas Akış Analizi güncellendi! Detaylar görselde ↓"
         
-    lines = [f"🏢 Yatırım Fonları Takas Akış Analizi\n📅 {s_date} - {e_date}\n"]
+    lines = [f"🏢 Fon Takas Akış Analizi\n📅 {s_date} - {e_date}\n"]
     
     if inflows:
-        lines.append("🟢 En Fazla Para Girişi")
-        for i, d in enumerate(inflows, 1):
-            lines.append(f"  {i}. #{d['ticker']}  {fmt_money(d['tl_flow'])}  ({fmt_pct(d['pct_diff'])})")
-            
+        inflow_strs = [f"#{d['ticker']} ({fmt_money(d['tl_flow'])})" for d in inflows]
+        lines.append(f"🟢 Giriş: {' '.join(inflow_strs)}")
+        
     if outflows:
-        if inflows:
-            lines.append("")
-        lines.append("🔴 En Fazla Para Çıkışı")
-        for i, d in enumerate(outflows, 1):
-            lines.append(f"  {i}. #{d['ticker']}  {fmt_money(d['tl_flow'])}  ({fmt_pct(d['pct_diff'])})")
+        outflow_strs = [f"#{d['ticker']} ({fmt_money(d['tl_flow'])})" for d in outflows]
+        lines.append(f"🔴 Çıkış: {' '.join(outflow_strs)}")
             
-    lines.append("\n📊 Detaylar ve anomali analizi görselde ↓")
-    lines.append("#Borsa #Hisse #KAP #TEFAS")
-    return "\n".join(lines)
+    lines.append("\n📊 Detaylar görselde ↓")
+    main_text = "\n".join(lines)
+    
+    # Dynamic Hashtag Builder (up to 280 chars limit)
+    sorted_diffs = sorted(diffs, key=lambda x: abs(x["tl_flow"]), reverse=True)
+    ticker_tags = [f"#{d['ticker']}" for d in sorted_diffs]
+    base_tags = ["#Borsa", "#Hisse", "#KAP", "#TEFAS"]
+    
+    unique_tags = []
+    for tag in (ticker_tags + base_tags):
+        if tag not in unique_tags:
+            unique_tags.append(tag)
+            
+    final_tags = []
+    current_len = len(main_text) + 2 # for newlines
+    for tag in unique_tags:
+        if current_len + len(tag) + 1 <= 278:
+            final_tags.append(tag)
+            current_len += len(tag) + 1
+        else:
+            break
+            
+    if final_tags:
+        return main_text + "\n\n" + " ".join(final_tags)
+    return main_text
 
 
 
@@ -686,23 +704,41 @@ def tweet_fund_takas_diff_pct(data, config=None):
     if not inflows and not outflows:
         return "🏢 Hisselerdeki Yatırım Fonları Takas Oran Değişim Analizi güncellendi! Detaylar görselde ↓"
         
-    lines = [f"🏢 Yatırım Fonları Takas Oran Değişim Analizi\n📅 {s_date} - {e_date}\n"]
+    lines = [f"🏢 Fon Takas Oran Değişimi\n📅 {s_date} - {e_date}\n"]
     
     if inflows:
-        lines.append("📈 En Fazla Oransal Artış")
-        for i, d in enumerate(inflows, 1):
-            lines.append(f"  {i}. #{d['ticker']}  {fmt_pct(d['pct_diff'])}  ({fmt_money(d['tl_flow'])})")
-            
+        inflow_strs = [f"#{d['ticker']} ({fmt_pct(d['pct_diff'])})" for d in inflows]
+        lines.append(f"🟢 Artış: {' '.join(inflow_strs)}")
+        
     if outflows:
-        if inflows:
-            lines.append("")
-        lines.append("📉 En Fazla Oransal Azalış")
-        for i, d in enumerate(outflows, 1):
-            lines.append(f"  {i}. #{d['ticker']}  {fmt_pct(d['pct_diff'])}  ({fmt_money(d['tl_flow'])})")
+        outflow_strs = [f"#{d['ticker']} ({fmt_pct(d['pct_diff'])})" for d in outflows]
+        lines.append(f"🔴 Azalış: {' '.join(outflow_strs)}")
             
-    lines.append("\n📊 Detaylar ve oran değişim analizi görselde ↓")
-    lines.append("#Borsa #Hisse #KAP #TEFAS")
-    return "\n".join(lines)
+    lines.append("\n📊 Detaylar görselde ↓")
+    main_text = "\n".join(lines)
+    
+    # Dynamic Hashtag Builder (up to 280 chars limit)
+    sorted_diffs = sorted(diffs, key=lambda x: abs(x["pct_diff"]), reverse=True)
+    ticker_tags = [f"#{d['ticker']}" for d in sorted_diffs]
+    base_tags = ["#Borsa", "#Hisse", "#KAP", "#TEFAS"]
+    
+    unique_tags = []
+    for tag in (ticker_tags + base_tags):
+        if tag not in unique_tags:
+            unique_tags.append(tag)
+            
+    final_tags = []
+    current_len = len(main_text) + 2 # for newlines
+    for tag in unique_tags:
+        if current_len + len(tag) + 1 <= 278:
+            final_tags.append(tag)
+            current_len += len(tag) + 1
+        else:
+            break
+            
+    if final_tags:
+        return main_text + "\n\n" + " ".join(final_tags)
+    return main_text
 
 
 
