@@ -515,11 +515,6 @@ def generate_per_investor_html(tracked_dict):
                 </div>
                 <span class="t-label" style="font-size:calc(var(--item-font-size) * 0.3); color:rgba(255,255,255,0.4); text-transform:uppercase; font-weight:700; letter-spacing:1px;">Kişi Başı Yatırım</span>
             </div>
-                    <span class="t-code" style="font-size:var(--tcode-font-size);">{code}</span>
-                    <span class="t-name" style="font-size:calc(var(--item-font-size) * 0.45); color:rgba(255,255,255,0.5); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">{name}</span>
-                </div>
-                <span class="t-label" style="font-size:calc(var(--item-font-size) * 0.3); color:rgba(255,255,255,0.4); text-transform:uppercase; font-weight:700; letter-spacing:1px;">Kişi Başı Yatırım</span>
-            </div>
             <div class="t-values-row" style="display:flex; justify-content:space-between; align-items:flex-end;">
                 <div style="display:flex; align-items:baseline; gap:10px;">
                     <span class="t-val-main" style="font-size:var(--item-font-size) !important; color:#fff; line-height:1;">{val_str}</span>
@@ -533,6 +528,50 @@ def generate_per_investor_html(tracked_dict):
         </div>
         """
     return html
+
+
+def load_capitals():
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    capitals_path = os.path.join(base_dir, "bist_capitals.json")
+    manual_path = os.path.join(base_dir, "manual_capitals.json")
+    
+    capitals = {}
+    if os.path.exists(capitals_path):
+        try:
+            with open(capitals_path, "r", encoding="utf-8") as f:
+                capitals = json.load(f)
+        except:
+            pass
+            
+    # Apply manual overrides in-memory at runtime
+    if os.path.exists(manual_path):
+        try:
+            with open(manual_path, "r", encoding="utf-8") as f:
+                manual_data = json.load(f)
+            for ticker, val in manual_data.items():
+                if isinstance(val, dict):
+                    bireysel = val.get("bireysel", 0.0)
+                    kurumsal = val.get("kurumsal", 0.0)
+                    total = bireysel + kurumsal
+                    if total > 0:
+                        capitals[ticker] = total
+                elif isinstance(val, (int, float)):
+                    capitals[ticker] = float(val)
+        except:
+            pass
+            
+    if not capitals:
+        capitals = {
+            "HEDEF": 347232862.0,
+            "DSTKF": 333333333.0,
+            "ACSEL": 10721700.0,
+            "BAYRK": 250000000.0,
+            "BURVA": 7350000.0,
+            "CWENE": 1078000000.0,
+            "ERBOS": 20000000.0,
+            "FZLGY": 1250000000.0,
+        }
+    return capitals
 
 
 def generate_fund_takas_diff_html(start_date=None, end_date=None):
@@ -575,26 +614,7 @@ def generate_fund_takas_diff_html(start_date=None, end_date=None):
     start_data = history.get(s_date, {})
     end_data = history.get(e_date, {})
     
-    capitals_path = os.path.join(base_dir, "bist_capitals.json")
-    capitals = {}
-    if os.path.exists(capitals_path):
-        try:
-            with open(capitals_path, "r", encoding="utf-8") as f:
-                capitals = json.load(f)
-        except:
-            pass
-    # Fill defaults if load failed
-    if not capitals:
-        capitals = {
-            "HEDEF": 980451883.0,
-            "DSTKF": 333333333.0,
-            "ACSEL": 10721700.0,
-            "BAYRK": 250000000.0,
-            "BURVA": 7350000.0,
-            "CWENE": 1078000000.0,
-            "ERBOS": 20000000.0,
-            "FZLGY": 1250000000.0,
-        }
+    capitals = load_capitals()
     
     # Analyze differences
     diffs = []
@@ -674,8 +694,8 @@ def generate_fund_takas_diff_html(start_date=None, end_date=None):
                     <div class="row-lot-change">{lot_diff_str} Lot</div>
                 </div>
                 <div class="row-right">
-                    <div class="row-flow-val {tl_flow_class}">{tl_flow_str}</div>
                     <span class="status-badge {pct_diff_class}">{pct_diff_str} Fark</span>
+                    <div class="row-flow-val {tl_flow_class}">{tl_flow_str}</div>
                 </div>
             </div>
             """
@@ -741,25 +761,7 @@ def generate_fund_takas_diff_pct_html(start_date=None, end_date=None):
     start_data = history.get(s_date, {})
     end_data = history.get(e_date, {})
     
-    capitals_path = os.path.join(base_dir, "bist_capitals.json")
-    capitals = {}
-    if os.path.exists(capitals_path):
-        try:
-            with open(capitals_path, "r", encoding="utf-8") as f:
-                capitals = json.load(f)
-        except:
-            pass
-    if not capitals:
-        capitals = {
-            "HEDEF": 980451883.0,
-            "DSTKF": 333333333.0,
-            "ACSEL": 10721700.0,
-            "BAYRK": 250000000.0,
-            "BURVA": 7350000.0,
-            "CWENE": 1078000000.0,
-            "ERBOS": 20000000.0,
-            "FZLGY": 1250000000.0,
-        }
+    capitals = load_capitals()
     
     diffs = []
     for ticker, end_info in end_data.items():
@@ -838,8 +840,8 @@ def generate_fund_takas_diff_pct_html(start_date=None, end_date=None):
                     <div class="row-lot-change">{lot_diff_str} Lot</div>
                 </div>
                 <div class="row-right">
-                    <div class="row-flow-val {tl_flow_class}">{tl_flow_str}</div>
                     <span class="status-badge {pct_diff_class}">{pct_diff_str} Fark</span>
+                    <div class="row-flow-val {tl_flow_class}">{tl_flow_str}</div>
                 </div>
             </div>
             """

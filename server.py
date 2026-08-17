@@ -506,7 +506,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                         const customStartDate = document.getElementById('customStartDate').value;
                         const customEndDate = document.getElementById('customEndDate').value;
                         const sections = [];
-                        ['inflows', 'outflows', 'cat_in', 'cat_out', 'inv_in', 'inv_out', 'divergent', 'momentum', 'crowding', 'category_rotation', 'tracked', 'tracked_rs', 'manager_actions', 'predictions', 'portfolio_diff', 'per_investor_value', 'fund_report', 'top_gainers', 'top_losers', 'comparison_chart', 'return_chart', 'holdings_breakdown', 'flow_chart', 'investor_chart', 'fund_takas_diff'].forEach(s => {
+                        ['inflows', 'outflows', 'cat_in', 'cat_out', 'inv_in', 'inv_out', 'divergent', 'momentum', 'crowding', 'category_rotation', 'tracked', 'tracked_rs', 'manager_actions', 'predictions', 'portfolio_diff', 'per_investor_value', 'fund_report', 'top_gainers', 'top_losers', 'comparison_chart', 'return_chart', 'holdings_breakdown', 'flow_chart', 'investor_chart', 'fund_takas_diff', 'fund_takas_diff_pct'].forEach(s => {
                             const chk = document.getElementById('chk-' + s);
                             if (chk && chk.checked) sections.push(s);
                         });
@@ -532,7 +532,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                         const selectedCats = Array.from(document.querySelectorAll('.cat-chk:checked')).map(c => c.value);
                         
                         const positions = {};
-                        ['inflows', 'outflows', 'cat_in', 'cat_out', 'inv_in', 'inv_out', 'divergent', 'momentum', 'crowding', 'category_rotation', 'tracked', 'tracked_rs', 'manager_actions', 'predictions', 'portfolio_diff', 'per_investor_value', 'fund_report', 'top_gainers', 'top_losers', 'comparison_chart', 'return_chart', 'holdings_breakdown', 'flow_chart', 'investor_chart', 'fund_takas_diff'].forEach(s => {
+                        ['inflows', 'outflows', 'cat_in', 'cat_out', 'inv_in', 'inv_out', 'divergent', 'momentum', 'crowding', 'category_rotation', 'tracked', 'tracked_rs', 'manager_actions', 'predictions', 'portfolio_diff', 'per_investor_value', 'fund_report', 'top_gainers', 'top_losers', 'comparison_chart', 'return_chart', 'holdings_breakdown', 'flow_chart', 'investor_chart', 'fund_takas_diff', 'fund_takas_diff_pct'].forEach(s => {
                             const chk = document.getElementById('chk-' + s);
                             if (chk) {
                                 const r = document.getElementById('pos-' + s + '-r').value;
@@ -674,7 +674,8 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                 "predictions": "Tahminler (Serbest Bölüm)", 
                 "portfolio_diff": "Portföy Değişimleri",
                 "holdings_breakdown": "Fon İçi Etki Analizi",
-                "fund_takas_diff": "🏢 Yatırım Fonları Takas Fark Analizi"
+                "fund_takas_diff": "🏢 Yatırım Fonları Takas Fark Analizi",
+                "fund_takas_diff_pct": "📊 Yatırım Fonları Takas Oran Değişim Analizi"
             }
             pos_rows_html = ""
             for key, label in pos_labels.items():

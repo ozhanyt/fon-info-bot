@@ -498,6 +498,50 @@ def tweet_investor_chart(data, period):
     return "\n".join(lines)
 
 
+def load_capitals():
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    capitals_path = os.path.join(base_dir, "bist_capitals.json")
+    manual_path = os.path.join(base_dir, "manual_capitals.json")
+    
+    capitals = {}
+    if os.path.exists(capitals_path):
+        try:
+            with open(capitals_path, "r", encoding="utf-8") as f:
+                capitals = json.load(f)
+        except:
+            pass
+            
+    # Apply manual overrides in-memory at runtime
+    if os.path.exists(manual_path):
+        try:
+            with open(manual_path, "r", encoding="utf-8") as f:
+                manual_data = json.load(f)
+            for ticker, val in manual_data.items():
+                if isinstance(val, dict):
+                    bireysel = val.get("bireysel", 0.0)
+                    kurumsal = val.get("kurumsal", 0.0)
+                    total = bireysel + kurumsal
+                    if total > 0:
+                        capitals[ticker] = total
+                elif isinstance(val, (int, float)):
+                    capitals[ticker] = float(val)
+        except:
+            pass
+            
+    if not capitals:
+        capitals = {
+            "HEDEF": 347232862.0,
+            "DSTKF": 333333333.0,
+            "ACSEL": 10721700.0,
+            "BAYRK": 250000000.0,
+            "BURVA": 7350000.0,
+            "CWENE": 1078000000.0,
+            "ERBOS": 20000000.0,
+            "FZLGY": 1250000000.0,
+        }
+    return capitals
+
+
 def tweet_fund_takas_diff(data, config=None):
     if config is None: config = {}
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -530,25 +574,7 @@ def tweet_fund_takas_diff(data, config=None):
     start_data = history.get(s_date, {})
     end_data = history.get(e_date, {})
     
-    capitals_path = os.path.join(base_dir, "bist_capitals.json")
-    capitals = {}
-    if os.path.exists(capitals_path):
-        try:
-            with open(capitals_path, "r", encoding="utf-8") as f:
-                capitals = json.load(f)
-        except:
-            pass
-    if not capitals:
-        capitals = {
-            "HEDEF": 980451883.0,
-            "DSTKF": 333333333.0,
-            "ACSEL": 10721700.0,
-            "BAYRK": 250000000.0,
-            "BURVA": 7350000.0,
-            "CWENE": 1078000000.0,
-            "ERBOS": 20000000.0,
-            "FZLGY": 1250000000.0,
-        }
+    capitals = load_capitals()
     
     diffs = []
     for ticker, end_info in end_data.items():
@@ -569,30 +595,112 @@ def tweet_fund_takas_diff(data, config=None):
             "tl_flow": tl_flow
         })
         
-    diffs = sorted(diffs, key=lambda x: abs(x["tl_flow"]), reverse=True)
-    if not diffs:
+    inflows = [d for d in diffs if d["tl_flow"] > 0]
+    outflows = [d for d in diffs if d["tl_flow"] < 0]
+    
+    inflows = sorted(inflows, key=lambda x: x["tl_flow"], reverse=True)[:3]
+    outflows = sorted(outflows, key=lambda x: x["tl_flow"])[:3]
+    
+    if not inflows and not outflows:
         return "🏢 Hisselerdeki Yatırım Fonları Takas Akış Analizi güncellendi! Detaylar görselde ↓"
         
-    lines = [f"🏢 Yatırım Fonları Takas Değişim & Akış Analizi\n📅 Aralık: {s_date} - {e_date}\n"]
-    for d in diffs[:3]:
-        ticker = d["ticker"]
-        pct_diff = d["pct_diff"]
-        lot_diff = d["lot_diff"]
-        tl_flow = d["tl_flow"]
-        
-        flow_sign = "+" if tl_flow >= 0 else ""
-        flow_str = f"{flow_sign}₺{abs(tl_flow):,.0f}".replace(',', '.')
-        
-        pct_sign = "+" if pct_diff >= 0 else ""
-        pct_str = f"{pct_sign}{pct_diff:.2f}%".replace('.', ',')
-        
-        lot_sign = "+" if lot_diff >= 0 else ""
-        lot_str = f"{lot_sign}{lot_diff:,.0f}".replace(',', '.')
-        
-        lines.append(f"📌 #{ticker} — Fark: {pct_str} ({lot_str} Lot)")
-        lines.append(f"  • Tahmini Akış: {flow_str}")
-        
+    lines = [f"🏢 Yatırım Fonları Takas Akış Analizi\n📅 {s_date} - {e_date}\n"]
+    
+    if inflows:
+        lines.append("🟢 En Fazla Para Girişi")
+        for i, d in enumerate(inflows, 1):
+            lines.append(f"  {i}. #{d['ticker']}  {fmt_money(d['tl_flow'])}  ({fmt_pct(d['pct_diff'])})")
+            
+    if outflows:
+        if inflows:
+            lines.append("")
+        lines.append("🔴 En Fazla Para Çıkışı")
+        for i, d in enumerate(outflows, 1):
+            lines.append(f"  {i}. #{d['ticker']}  {fmt_money(d['tl_flow'])}  ({fmt_pct(d['pct_diff'])})")
+            
     lines.append("\n📊 Detaylar ve anomali analizi görselde ↓")
+    lines.append("#Borsa #Hisse #KAP #TEFAS")
+    return "\n".join(lines)
+
+
+
+def tweet_fund_takas_diff_pct(data, config=None):
+    if config is None: config = {}
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    json_path = os.path.join(base_dir, "fintables_history.json")
+    if not os.path.exists(json_path):
+        return "🏢 Hisselerdeki Yatırım Fonları Takas Oran Değişim Analizi güncellendi! Detaylar görselde ↓"
+        
+    try:
+        with open(json_path, "r", encoding="utf-8") as f:
+            history = json.load(f)
+    except:
+        return "🏢 Hisselerdeki Yatırım Fonları Takas Oran Değişim Analizi güncellendi! Detaylar görselde ↓"
+        
+    if not history or len(history) < 2:
+        return "🏢 Hisselerdeki Yatırım Fonları Takas Oran Değişim Analizi güncellendi! Detaylar görselde ↓"
+        
+    available_dates = sorted(list(history.keys()))
+    s_date = config.get("custom_start_date")
+    e_date = config.get("custom_end_date")
+    if not s_date or s_date not in history:
+        s_date = available_dates[0]
+    if not e_date or e_date not in history:
+        e_date = available_dates[-1]
+        
+    if s_date == e_date:
+        s_idx = available_dates.index(s_date)
+        if s_idx > 0:
+            s_date = available_dates[s_idx - 1]
+            
+    start_data = history.get(s_date, {})
+    end_data = history.get(e_date, {})
+    
+    capitals = load_capitals()
+    
+    diffs = []
+    for ticker, end_info in end_data.items():
+        start_info = start_data.get(ticker)
+        if not start_info:
+            continue
+            
+        capital = capitals.get(ticker, 100000000.0)
+        lot_diff = end_info.get("lot", 0.0) - start_info.get("lot", 0.0)
+        pct_diff = ((end_info.get("lot", 0.0) / capital) - (start_info.get("lot", 0.0) / capital)) * 100.0
+        price = end_info.get("price", 0.0)
+        tl_flow = lot_diff * price
+        
+        diffs.append({
+            "ticker": ticker,
+            "lot_diff": lot_diff,
+            "pct_diff": pct_diff,
+            "tl_flow": tl_flow
+        })
+        
+    inflows = [d for d in diffs if d["pct_diff"] > 0]
+    outflows = [d for d in diffs if d["pct_diff"] < 0]
+    
+    inflows = sorted(inflows, key=lambda x: x["pct_diff"], reverse=True)[:3]
+    outflows = sorted(outflows, key=lambda x: x["pct_diff"])[:3]
+    
+    if not inflows and not outflows:
+        return "🏢 Hisselerdeki Yatırım Fonları Takas Oran Değişim Analizi güncellendi! Detaylar görselde ↓"
+        
+    lines = [f"🏢 Yatırım Fonları Takas Oran Değişim Analizi\n📅 {s_date} - {e_date}\n"]
+    
+    if inflows:
+        lines.append("📈 En Fazla Oransal Artış")
+        for i, d in enumerate(inflows, 1):
+            lines.append(f"  {i}. #{d['ticker']}  {fmt_pct(d['pct_diff'])}  ({fmt_money(d['tl_flow'])})")
+            
+    if outflows:
+        if inflows:
+            lines.append("")
+        lines.append("📉 En Fazla Oransal Azalış")
+        for i, d in enumerate(outflows, 1):
+            lines.append(f"  {i}. #{d['ticker']}  {fmt_pct(d['pct_diff'])}  ({fmt_money(d['tl_flow'])})")
+            
+    lines.append("\n📊 Detaylar ve oran değişim analizi görselde ↓")
     lines.append("#Borsa #Hisse #KAP #TEFAS")
     return "\n".join(lines)
 
@@ -660,6 +768,9 @@ def generate_tweet_text(data, sections, config=None):
 
     if has("fund_takas_diff") and len(sections) == 1:
         return tweet_fund_takas_diff(data, config)
+
+    if has("fund_takas_diff_pct") and len(sections) == 1:
+        return tweet_fund_takas_diff_pct(data, config)
 
     if has("divergent") and len(sections) == 1:
         return tweet_divergent_signals(data, period)
