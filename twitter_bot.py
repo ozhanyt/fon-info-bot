@@ -617,9 +617,12 @@ def tweet_fund_takas_diff(data, config=None):
     lines.append("\n📊 Detaylar görselde ↓")
     main_text = "\n".join(lines)
     
-    # Dynamic Hashtag Builder (up to 280 chars limit)
-    sorted_diffs = sorted(diffs, key=lambda x: abs(x["tl_flow"]), reverse=True)
-    ticker_tags = [f"#{d['ticker']}" for d in sorted_diffs]
+    # Dynamic Hashtag Builder (Premium - no character limit)
+    top_inflows = sorted([d for d in diffs if d["tl_flow"] > 0], key=lambda x: x["tl_flow"], reverse=True)[:10]
+    top_outflows = sorted([d for d in diffs if d["tl_flow"] < 0], key=lambda x: x["tl_flow"])[:10]
+    top_diffs = top_inflows + top_outflows
+    
+    ticker_tags = [f"#{d['ticker']}" for d in top_diffs]
     base_tags = ["#Borsa", "#Hisse", "#KAP", "#TEFAS"]
     
     unique_tags = []
@@ -627,17 +630,8 @@ def tweet_fund_takas_diff(data, config=None):
         if tag not in unique_tags:
             unique_tags.append(tag)
             
-    final_tags = []
-    current_len = len(main_text) + 2 # for newlines
-    for tag in unique_tags:
-        if current_len + len(tag) + 1 <= 278:
-            final_tags.append(tag)
-            current_len += len(tag) + 1
-        else:
-            break
-            
-    if final_tags:
-        return main_text + "\n\n" + " ".join(final_tags)
+    if unique_tags:
+        return main_text + "\n\n" + " ".join(unique_tags)
     return main_text
 
 
@@ -717,9 +711,12 @@ def tweet_fund_takas_diff_pct(data, config=None):
     lines.append("\n📊 Detaylar görselde ↓")
     main_text = "\n".join(lines)
     
-    # Dynamic Hashtag Builder (up to 280 chars limit)
-    sorted_diffs = sorted(diffs, key=lambda x: abs(x["pct_diff"]), reverse=True)
-    ticker_tags = [f"#{d['ticker']}" for d in sorted_diffs]
+    # Dynamic Hashtag Builder (Premium - no character limit)
+    top_inflows = sorted([d for d in diffs if d["pct_diff"] > 0], key=lambda x: x["pct_diff"], reverse=True)[:10]
+    top_outflows = sorted([d for d in diffs if d["pct_diff"] < 0], key=lambda x: x["pct_diff"])[:10]
+    top_diffs = top_inflows + top_outflows
+    
+    ticker_tags = [f"#{d['ticker']}" for d in top_diffs]
     base_tags = ["#Borsa", "#Hisse", "#KAP", "#TEFAS"]
     
     unique_tags = []
@@ -727,17 +724,8 @@ def tweet_fund_takas_diff_pct(data, config=None):
         if tag not in unique_tags:
             unique_tags.append(tag)
             
-    final_tags = []
-    current_len = len(main_text) + 2 # for newlines
-    for tag in unique_tags:
-        if current_len + len(tag) + 1 <= 278:
-            final_tags.append(tag)
-            current_len += len(tag) + 1
-        else:
-            break
-            
-    if final_tags:
-        return main_text + "\n\n" + " ".join(final_tags)
+    if unique_tags:
+        return main_text + "\n\n" + " ".join(unique_tags)
     return main_text
 
 
@@ -964,12 +952,8 @@ def main():
     print("📋 TWEET ÖNİZLEME")
     print("=" * 60)
     print(tweet_text)
-    print(f"\n({len(tweet_text)} karakter / 280 max)")
+    print(f"\n({len(tweet_text)} karakter)")
     print("=" * 60)
-
-    if len(tweet_text) > 280:
-        print("⚠️  Tweet 280 karakteri aşıyor! Kısaltma yapılacak...")
-        tweet_text = tweet_text[:277] + "..."
 
     # 5. Onay al
     answer = input("\nTweet gönderilsin mi? (e/h) → ").strip().lower()

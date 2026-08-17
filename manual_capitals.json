@@ -117,6 +117,131 @@
     "CATES": {
         "bireysel": 26069218.0,
         "kurumsal": 6980782.0
+    },
+
+    "PETKM": {
+        "bireysel": 599582532.0,
+        "kurumsal": 642182379.0
+    },
+
+    "CEMZY": {
+        "bireysel": 203382894.0,
+        "kurumsal": 496834687.0
+    },
+
+    "BANVT": {
+        "bireysel": 5682679.0,
+        "kurumsal": 31278362.0
+    },
+
+    "TBORG": {
+        "bireysel": 14674056.0,
+        "kurumsal": 44718081.0
+    },
+
+    "OFSYM": {
+        "bireysel": 20212087.0,
+        "kurumsal": 2537911.0
+    },
+
+    "ARMGD": {
+        "bireysel": 55845973.0,
+        "kurumsal": 17520504.0
+    },
+
+    "ATATR": {
+        "bireysel": 264596888.0,
+        "kurumsal": 15403112.0
+    },
+
+    "KLSYN": {
+        "bireysel": 74755160.0,
+        "kurumsal": 33099792.0
+    },
+
+    "MARMR": {
+        "bireysel": 834071953.0,
+        "kurumsal": 127146764.0
+    },
+
+    "IZMDC": {
+        "bireysel": 396154052.0,
+        "kurumsal": 326911848.0
+    },
+
+    "SKBNK": {
+        "bireysel": 840967701.0,
+        "kurumsal": 1651161366.0
+    },
+
+    "OYAKC": {
+        "bireysel": 591469022.0,
+        "kurumsal": 4065248354.0
+    },
+
+    "EFOR": {
+        "bireysel": 312503408.0,
+        "kurumsal": 358176586.0
+    },
+
+    "MEGMT": {
+        "bireysel": 71804737.0,
+        "kurumsal": 13945236.0
+    },
+
+    "KTLEV": {
+        "bireysel": 949875148.0,
+        "kurumsal": 3407371168.0
+    },
+
+    "KBORU": {
+        "bireysel": 139322445.0,
+        "kurumsal": 40675575.0
+    },
+
+    "PASEU": {
+        "bireysel": 37949710.0,
+        "kurumsal": 244344158.0
+    },
+
+    "INFO": {
+        "bireysel": 373227598.0,
+        "kurumsal": 394235726.0
+    },
+
+    "EREGL": {
+        "bireysel": 1150442776.0,
+        "kurumsal": 2403714263.0
+    },
+
+    "BTCIM": {
+        "bireysel": 2137800308.0,
+        "kurumsal": 2078648367.0
+    },
+
+    "KUYAS": {
+        "bireysel": 278494145.0,
+        "kurumsal": 120463642.0
+    },
+
+    "KCAER": {
+        "bireysel": 288519805.0,
+        "kurumsal": 207974968.0
+    },
+
+    "PEKGY": {
+        "bireysel": 1424663269.0,
+        "kurumsal": 3260577469.0
+    },
+
+    "PSGYO": {
+        "bireysel": 2538240687.0,
+        "kurumsal": 939531043.0
+    },
+
+    "TAVHL": {
+        "bireysel": 32114762.0,
+        "kurumsal": 181092153.0
     }
 
 }
