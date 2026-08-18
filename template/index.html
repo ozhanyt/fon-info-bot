@@ -1325,7 +1325,7 @@
                         flex-direction: column;
                         align-items: center;
                         gap: 4px;
-                        width: 100px;
+                        width: 90px;
                         flex-shrink: 0;
                     }
                     .bist-ticker-badge {
@@ -1354,8 +1354,9 @@
                         flex-direction: column;
                         align-items: flex-start;
                         gap: 1px;
-                        width: 180px;
-                        flex-shrink: 0;
+                        flex-grow: 1;
+                        flex-shrink: 1;
+                        min-width: 0;
                     }
                     .row-pct-change {
                         font-size: 18px;
@@ -1374,8 +1375,8 @@
                         flex-direction: column;
                         align-items: flex-end;
                         gap: 2px;
-                        width: 160px;
                         flex-shrink: 0;
+                        text-align: right;
                     }
                     .row-flow-val {
                         font-size: 14px;
@@ -1407,7 +1408,6 @@
                         background: rgba(239, 68, 68, 0.08);
                         border: 1px solid rgba(239, 68, 68, 0.2);
                         color: #ef4444;
-                    }                       color: #ef4444;
                     }
                 </style>
                 <div class="card-header" style="border-bottom:1px solid rgba(255,255,255,0.06); padding: 22px 30px; display: flex; justify-content: space-between; align-items: center; width: 100%;">
