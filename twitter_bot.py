@@ -698,7 +698,7 @@ def tweet_fund_takas_diff_pct(data, config=None):
     if not inflows and not outflows:
         return "🏢 Hisselerdeki Yatırım Fonları Takas Oran Değişim Analizi güncellendi! Detaylar görselde ↓"
         
-    lines = [f"🏢 Fon Takas Oran Değişimi\n📅 {s_date} - {e_date}\n"]
+    lines = [f"🏢 Yatırım Fonları Takas Oran Değişim Analizi\n📅 {s_date} - {e_date}\n"]
     
     if inflows:
         inflow_strs = [f"#{d['ticker']} ({fmt_pct(d['pct_diff'])})" for d in inflows]
