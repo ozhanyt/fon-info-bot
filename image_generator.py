@@ -2170,8 +2170,9 @@ async def main():
             else:
                 template = template.replace(placeholder_pos, "")
 
-    # Hide footer if ONLY predictions or holdings_breakdown are shown
-    show_footer = "hidden" if len(sections) == 1 and ("predictions" in sections or "holdings_breakdown" in sections) else ""
+    # Hide footer if predictions, holdings_breakdown, or fund_takas_diff / fund_takas_diff_pct are shown
+    hide_footer_sections = {"predictions", "holdings_breakdown", "fund_takas_diff", "fund_takas_diff_pct"}
+    show_footer = "hidden" if any(s in hide_footer_sections for s in sections) else ""
     if show_footer:
         template = template.replace("{{SHOW_FOOTER}}", "hidden")
         # Also hide via inline if possible or just rely on class
