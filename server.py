@@ -315,8 +315,29 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                             
                             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                                 <button class="add-btn" onclick="addCalculatorRow()">+ Ekle</button>
+                                <button class="add-btn" onclick="transferCurrentToPrevious()" style="background:#ff9f0a; color:#fff;">📋 Aktar</button>
                                 <button class="add-btn" onclick="calculateReturns()" style="background:#32d74b; color:#fff;">🧮 Hesapla</button>
                             </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 12px; margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
+                                <div class="input-group" style="margin-bottom:0;">
+                                    <label for="quoteTweetUrl">Alıntı Linki:</label>
+                                    <input type="text" id="quoteTweetUrl" placeholder="https://x.com/..." oninput="saveQuoteTweetState()">
+                                </div>
+                                <div class="input-group" style="margin-bottom:0;">
+                                    <label for="calcSource">Veri Kaynağı:</label>
+                                    <input type="text" id="calcSource" placeholder="@fintables" value="@fintables" oninput="saveQuoteTweetState()">
+                                </div>
+                                <div class="input-group" style="margin-bottom:0;">
+                                    <label for="calcDate">Getiri Tarihi:</label>
+                                    <input type="date" id="calcDate" oninput="saveQuoteTweetState()">
+                                </div>
+                            </div>
+                            
+                            <button class="add-btn" onclick="shareCalculatorReturnsOnX()" style="background:#1d9bf0; color:#fff; width: 100%; margin-top: 10px; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; height: 44px; border-radius: 12px; cursor: pointer;">
+                                <svg width="16" height="16" viewBox="0 0 1200 1227" fill="white"><path d="M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.137 519.284H714.163Z"/></svg>
+                                𝕏 Getiri Paylaş
+                            </button>
                             <span id="calcStatus" style="font-size:13px; color:#8e8e93; display:block; margin-top:15px; font-weight:600;"></span>
                         </div>
                     </div>
@@ -413,7 +434,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                         // Servisten gelmeyen, manuel girilen fonlar
                         const MANUAL_FUNDS = ['BIST100'];
 
-                        const rows = document.querySelectorAll('.pred-row');
+                        const rows = document.querySelectorAll('#predRowsContainer .pred-row');
                         let allFunds = Array.from(rows)
                             .map(row => row.querySelector('.pred-code').value.trim().toUpperCase())
                             .filter(Boolean)
@@ -552,7 +573,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                         
                         // Prediction Rows
                         const predictions = [];
-                        document.querySelectorAll('.pred-row').forEach(row => {
+                        document.querySelectorAll('#predRowsContainer .pred-row').forEach(row => {
                             const code = row.querySelector('.pred-code').value;
                             if (code) {
                                 predictions.push({
@@ -819,11 +840,155 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                         saveCalculatorState();
                     }
 
-                    // Auto load and silent polling (every 2 seconds) on start
+                    function transferCurrentToPrevious() {
+                        const rows = document.querySelectorAll('#calcRowsContainer .pred-row');
+                        let transferredCount = 0;
+                        
+                        rows.forEach(row => {
+                            const prevEl = row.querySelector('.calc-prev');
+                            const currEl = row.querySelector('.calc-curr');
+                            const retEl = row.querySelector('.calc-ret');
+                            
+                            const currVal = currEl.value.trim();
+                            if (currVal) {
+                                prevEl.value = currVal;
+                                retEl.value = '';
+                                transferredCount++;
+                            }
+                        });
+                        
+                        const statusEl = document.getElementById('calcStatus');
+                        statusEl.textContent = `📋 ${transferredCount} fon fiyatı önceki güne aktarıldı!`;
+                        statusEl.style.color = '#ff9f0a';
+                        saveCalculatorState();
+                    }
+
+                    const saveQuoteTweetState = () => {
+                        const url = document.getElementById('quoteTweetUrl').value.trim();
+                        const source = document.getElementById('calcSource').value.trim();
+                        const date = document.getElementById('calcDate').value;
+                        localStorage.setItem('quote_tweet_url', url);
+                        localStorage.setItem('calc_source', source);
+                        localStorage.setItem('calc_date', date);
+                    };
+
+                    const loadQuoteTweetState = () => {
+                        const url = localStorage.getItem('quote_tweet_url');
+                        if (url) {
+                            document.getElementById('quoteTweetUrl').value = url;
+                        }
+                        const source = localStorage.getItem('calc_source');
+                        if (source !== null) {
+                            document.getElementById('calcSource').value = source;
+                        } else {
+                            document.getElementById('calcSource').value = '@fintables';
+                        }
+                        const date = localStorage.getItem('calc_date');
+                        if (date) {
+                            document.getElementById('calcDate').value = date;
+                        } else {
+                            const today = new Date();
+                            const yyyy = today.getFullYear();
+                            const mm = String(today.getMonth() + 1).padStart(2, '0');
+                            const dd = String(today.getDate()).padStart(2, '0');
+                            document.getElementById('calcDate').value = `${yyyy}-${mm}-${dd}`;
+                        }
+                    };
+
+                    function formatTurkishDate(dateStr) {
+                        if (!dateStr) return "";
+                        const parts = dateStr.split('-');
+                        if (parts.length !== 3) return dateStr;
+                        const year = parts[0];
+                        const month = parseInt(parts[1], 10);
+                        const day = parseInt(parts[2], 10);
+                        
+                        const months = [
+                            "", "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", 
+                            "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"
+                        ];
+                        return `${day} ${months[month]} ${year}`;
+                    }
+
+                    function shareCalculatorReturnsOnX() {
+                        const rows = document.querySelectorAll('#calcRowsContainer .pred-row');
+                        const lines = [];
+                        
+                        rows.forEach(row => {
+                            const codeEl = row.querySelector('.calc-code');
+                            const retEl = row.querySelector('.calc-ret');
+                            
+                            const code = codeEl.value.trim().toUpperCase();
+                            const retStr = retEl.value.trim();
+                            
+                            if (code && retStr && retStr !== '%') {
+                                const numericVal = parseFloat(retStr.replace('%', ''));
+                                // Bypass +0.0000%, -0.0000% and 0.0000%
+                                if (!isNaN(numericVal) && Math.abs(numericVal) > 0.00001) {
+                                    lines.push(`#${code} ${retStr}`);
+                                }
+                            }
+                        });
+                        
+                        if (lines.length === 0) {
+                            alert("Açıklanan ve sıfırdan farklı getirisi olan herhangi bir fon bulunamadı!");
+                            return;
+                        }
+
+                        const dateInputVal = document.getElementById('calcDate').value;
+                        let dateStr = "";
+                        if (dateInputVal) {
+                            dateStr = formatTurkishDate(dateInputVal);
+                        } else {
+                            const today = new Date();
+                            const yyyy = today.getFullYear();
+                            const mm = String(today.getMonth() + 1).padStart(2, '0');
+                            const dd = String(today.getDate()).padStart(2, '0');
+                            dateStr = formatTurkishDate(`${yyyy}-${mm}-${dd}`);
+                        }
+                        
+                        let tweetText = `${dateStr} Getirisi Açıklanan Fonlar\n` + lines.join("\n");
+                        
+                        const sourceVal = document.getElementById('calcSource').value.trim();
+                        if (sourceVal) {
+                            tweetText += "\n\nKaynak: " + sourceVal;
+                        }
+                        
+                        const quoteUrl = document.getElementById('quoteTweetUrl').value.trim();
+                        if (quoteUrl) {
+                            tweetText += "\n\n" + quoteUrl;
+                        }
+                        
+                        const modal = document.getElementById('tweet-modal');
+                        document.getElementById('tweet-preview-text').value = tweetText;
+                        document.getElementById('tweet-char-count').textContent = tweetText.length + ' karakter';
+                        modal.style.display = 'flex';
+                    }
+
+                    // Auto load and smart time-based polling on start
                     window.addEventListener('DOMContentLoaded', () => {
                         loadCalculatorState();
-                        setInterval(fetchPricesFromExtensionSilently, 2000);
+                        loadQuoteTweetState();
+                        checkAndPoll();
                     });
+
+                    function checkAndPoll() {
+                        const now = new Date();
+                        const hours = now.getHours();
+                        const minutes = now.getMinutes();
+                        const totalMinutes = hours * 60 + minutes;
+                        
+                        const startMinutes = 21 * 60 + 40; // 21:40
+                        const endMinutes = 23 * 60;       // 23:00
+                        
+                        if (totalMinutes >= startMinutes && totalMinutes < endMinutes) {
+                            fetchPricesFromExtensionSilently();
+                            setTimeout(checkAndPoll, 2000);
+                        } else {
+                            fetchPricesFromExtensionSilently();
+                            setTimeout(checkAndPoll, 60000); // 1 minute
+                        }
+                    }
                 </script>
 
                 <!-- Tweet Preview Modal -->
