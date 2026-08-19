@@ -315,7 +315,6 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                             
                             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                                 <button class="add-btn" onclick="addCalculatorRow()">+ Ekle</button>
-                                <button class="add-btn" onclick="fetchPricesFromExtension()" style="background:#5AC8FA; color:#000;">🔌 Eklenti ile Çek</button>
                                 <button class="add-btn" onclick="calculateReturns()" style="background:#32d74b; color:#fff;">🧮 Hesapla</button>
                             </div>
                             <span id="calcStatus" style="font-size:13px; color:#8e8e93; display:block; margin-top:15px; font-weight:600;"></span>
@@ -666,6 +665,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                             status.textContent = "Bağlantı hatası: " + err;
                             status.style.color = "#ff453a";
                         });
+                    }
                     // Fon Getiri Hesaplayıcı Javascript Fonksiyonları
                     const addCalculatorRow = (code='', prevVal='', currVal='', retVal='') => {
                         const container = document.getElementById('calcRowsContainer');
@@ -699,38 +699,46 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                         localStorage.setItem('calc_rows_state', JSON.stringify(state));
                     };
 
-                    const loadCalculatorState = () => {
+                    const loadCalculatorState = async () => {
                         const saved = localStorage.getItem('calc_rows_state');
+                        let state = [];
                         if (saved) {
                             try {
-                                const state = JSON.parse(saved);
-                                if (state.length > 0) {
-                                    state.forEach(item => {
-                                        addCalculatorRow(item.code, item.prev, item.curr, item.ret);
-                                    });
-                                    return;
-                                }
+                                state = JSON.parse(saved);
                             } catch (e) {
                                 console.error("Error loading calculator state:", e);
                             }
                         }
-                        // Default rows if empty
-                        addCalculatorRow('TLY', '', '', '');
-                        addCalculatorRow('DFI', '', '', '');
+                        
+                        if (!state || state.length === 0) {
+                            state = [
+                                { code: 'TLY', prev: '', curr: '', ret: '' },
+                                { code: 'DFI', prev: '', curr: '', ret: '' }
+                            ];
+                        }
+
+                        // Render rows
+                        const container = document.getElementById('calcRowsContainer');
+                        const header = container.querySelector('.pred-header');
+                        container.innerHTML = '';
+                        container.appendChild(header);
+
+                        state.forEach(item => {
+                            addCalculatorRow(item.code, item.prev, item.curr, item.ret);
+                        });
+
+                        // Silent initial fetch and calculation
+                        await fetchPricesFromExtensionSilently();
                     };
 
-                    async function fetchPricesFromExtension() {
-                        const statusEl = document.getElementById('calcStatus');
-                        statusEl.textContent = '⏳ Fiyatlar eklentiden çekiliyor...';
-                        statusEl.style.color = '#8e8e93';
-                        
+                    async function fetchPricesFromExtensionSilently() {
                         try {
                             const resp = await fetch('/api/prices/extension');
                             const data = await resp.json();
                             if (data.success && data.prices) {
                                 const prices = data.prices;
                                 const rows = document.querySelectorAll('#calcRowsContainer .pred-row');
-                                let updatedCount = 0;
+                                let changed = false;
                                 
                                 rows.forEach(row => {
                                     const codeEl = row.querySelector('.calc-code');
@@ -738,23 +746,44 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                                     const code = codeEl.value.trim().toUpperCase();
                                     
                                     if (code && prices[code]) {
-                                        const pVal = parseFloat(prices[code].price);
-                                        currEl.value = pVal.toFixed(6);
-                                        updatedCount++;
+                                        const pVal = parseFloat(prices[code].price).toFixed(6);
+                                        if (currEl.value !== pVal) {
+                                            currEl.value = pVal;
+                                            changed = true;
+                                        }
                                     }
                                 });
-                                
-                                statusEl.textContent = `✅ ${updatedCount} fon fiyatı başarıyla güncellendi!`;
-                                statusEl.style.color = '#32d74b';
-                                saveCalculatorState();
-                            } else {
-                                statusEl.textContent = '❌ Fiyat verisi bulunamadı. Eklentinin çalıştığından emin olun.';
-                                statusEl.style.color = '#ff453a';
+                                if (changed) {
+                                    saveCalculatorState();
+                                    calculateReturnsSilently();
+                                }
                             }
                         } catch (err) {
-                            statusEl.textContent = '❌ Bağlantı hatası: ' + err.message;
-                            statusEl.style.color = '#ff453a';
+                            // ignore silent errors
                         }
+                    }
+
+                    function calculateReturnsSilently() {
+                        const rows = document.querySelectorAll('#calcRowsContainer .pred-row');
+                        rows.forEach(row => {
+                            const prevEl = row.querySelector('.calc-prev');
+                            const currEl = row.querySelector('.calc-curr');
+                            const retEl = row.querySelector('.calc-ret');
+                            
+                            const prevVal = parseFloat(prevEl.value);
+                            const currVal = parseFloat(currEl.value);
+                            
+                            if (!isNaN(prevVal) && !isNaN(currVal) && prevVal > 0) {
+                                const ret = ((currVal / prevVal) - 1) * 100;
+                                const sign = ret >= 0 ? '+' : '';
+                                retEl.value = `${sign}${ret.toFixed(4)}%`;
+                                if (ret >= 0) {
+                                    retEl.style.color = '#32d74b';
+                                } else {
+                                    retEl.style.color = '#ff453a';
+                                }
+                            }
+                        });
                     }
 
                     function calculateReturns() {
@@ -790,9 +819,10 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                         saveCalculatorState();
                     }
 
-                    // Auto load on start
+                    // Auto load and silent polling (every 2 seconds) on start
                     window.addEventListener('DOMContentLoaded', () => {
                         loadCalculatorState();
+                        setInterval(fetchPricesFromExtensionSilently, 2000);
                     });
                 </script>
 
