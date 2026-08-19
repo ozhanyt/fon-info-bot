@@ -13,6 +13,22 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
         super().__init__(*args, directory=DIRECTORY, **kwargs)
 
     def do_GET(self):
+        if self.path == '/api/prices/extension':
+            prices_file = os.path.join(DIRECTORY, "fintables_prices.json")
+            stored_prices = {}
+            if os.path.exists(prices_file):
+                try:
+                    with open(prices_file, "r", encoding="utf-8") as f:
+                        stored_prices = json.load(f)
+                except:
+                    pass
+            
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(json.dumps({"success": True, "prices": stored_prices}, ensure_ascii=False).encode("utf-8"))
+            return
 
         # ── /tweet  →  generate tweet text from current data.json ──────────
         if self.path == '/tweet':
@@ -104,11 +120,11 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                 <title>TEFAS İnfografik Üretici</title>
                 <style>
                     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #121214; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; margin: 0; padding: 60px 20px; }
-                    .card { background: #1c1c1e; padding: 50px; border-radius: 30px; text-align: left; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 20px 60px rgba(0,0,0,0.6); width: 1000px; max-width: 95%; }
+                    .card { background: #1c1c1e; padding: 50px; border-radius: 30px; text-align: left; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 20px 60px rgba(0,0,0,0.6); width: 1450px; max-width: 98%; }
                     h1 { margin-top: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.5px; text-align: center; width: 100%; margin-bottom: 8px; }
                     .subtitle-p { color: #8e8e93; font-size: 17px; margin-bottom: 45px; text-align: center; width: 100%; }
                     
-                    .dashboard-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 50px; }
+                    .dashboard-grid { display: grid; grid-template-columns: 1.1fr 1fr 1.3fr; gap: 40px; }
                     .section-title { font-size: 13px; color: #8e8e93; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 18px; display: block; }
                     .input-group { margin-bottom: 25px; }
                     label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 10px; color: #8e8e93; }
@@ -279,6 +295,30 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                                 <div class="cat-item"><label><input type="checkbox" class="cat-chk" value="Serbest (K.Vade)"> Serbest (K.Vade)</label></div>
                                 <div class="cat-item"><label><input type="checkbox" class="cat-chk" value="Serbest (Katılım)"> Serbest (Katılım)</label></div>
                             </div>
+                        </div>
+                        
+                        <!-- Column 3: Fon Getiri Hesaplayıcı -->
+                        <div class="dash-column" style="border-left: 1px solid rgba(255,255,255,0.05); padding-left: 30px;">
+                            <span class="section-title">FON GETİRİ HESAPLAYICI</span>
+                            <p style="color:#8e8e93; font-size:13px; margin-bottom:20px;">Önceki günün fiyatını manuel girebilir, güncel fiyatı ise Fintables eklentisi yardımıyla çekebilirsiniz.</p>
+                            
+                            <div class="pred-table" id="calcRowsContainer" style="margin-bottom: 20px;">
+                                <div class="pred-header" style="grid-template-columns: 1fr 1.2fr 1.2fr 1.2fr 40px; gap: 10px;">
+                                    <span>FON KODU</span>
+                                    <span>ÖNCEKİ FİYAT</span>
+                                    <span>GÜNCEL FİYAT</span>
+                                    <span>GETİRİ</span>
+                                    <span></span>
+                                </div>
+                                <!-- Rows will load automatically -->
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button class="add-btn" onclick="addCalculatorRow()">+ Ekle</button>
+                                <button class="add-btn" onclick="fetchPricesFromExtension()" style="background:#5AC8FA; color:#000;">🔌 Eklenti ile Çek</button>
+                                <button class="add-btn" onclick="calculateReturns()" style="background:#32d74b; color:#fff;">🧮 Hesapla</button>
+                            </div>
+                            <span id="calcStatus" style="font-size:13px; color:#8e8e93; display:block; margin-top:15px; font-weight:600;"></span>
                         </div>
                     </div>
 
@@ -626,7 +666,134 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                             status.textContent = "Bağlantı hatası: " + err;
                             status.style.color = "#ff453a";
                         });
+                    // Fon Getiri Hesaplayıcı Javascript Fonksiyonları
+                    const addCalculatorRow = (code='', prevVal='', currVal='', retVal='') => {
+                        const container = document.getElementById('calcRowsContainer');
+                        const row = document.createElement('div');
+                        row.className = 'pred-row';
+                        row.style.gridTemplateColumns = '1fr 1.2fr 1.2fr 1.2fr 40px';
+                        row.innerHTML = `
+                            <input type="text" class="calc-code" value="${code}" placeholder="KOD" style="text-transform:uppercase;" oninput="saveCalculatorState()">
+                            <input type="number" step="any" class="calc-prev" value="${prevVal}" placeholder="Manuel" oninput="saveCalculatorState()">
+                            <input type="number" step="any" class="calc-curr" value="${currVal}" placeholder="0.000000" oninput="saveCalculatorState()">
+                            <input type="text" class="calc-ret" value="${retVal}" placeholder="%" readonly style="background:#111; border-color:#222; text-align:center; font-weight:700; color:#32d74b;">
+                            <button class="remove-btn" onclick="removeCalculatorRow(this)">✕</button>
+                        `;
+                        container.appendChild(row);
+                        saveCalculatorState();
+                    };
+
+                    const removeCalculatorRow = (btn) => {
+                        btn.parentElement.remove();
+                        saveCalculatorState();
+                    };
+
+                    const saveCalculatorState = () => {
+                        const rows = document.querySelectorAll('#calcRowsContainer .pred-row');
+                        const state = Array.from(rows).map(row => ({
+                            code: row.querySelector('.calc-code').value.trim().toUpperCase(),
+                            prev: row.querySelector('.calc-prev').value.trim(),
+                            curr: row.querySelector('.calc-curr').value.trim(),
+                            ret: row.querySelector('.calc-ret').value.trim()
+                        }));
+                        localStorage.setItem('calc_rows_state', JSON.stringify(state));
+                    };
+
+                    const loadCalculatorState = () => {
+                        const saved = localStorage.getItem('calc_rows_state');
+                        if (saved) {
+                            try {
+                                const state = JSON.parse(saved);
+                                if (state.length > 0) {
+                                    state.forEach(item => {
+                                        addCalculatorRow(item.code, item.prev, item.curr, item.ret);
+                                    });
+                                    return;
+                                }
+                            } catch (e) {
+                                console.error("Error loading calculator state:", e);
+                            }
+                        }
+                        // Default rows if empty
+                        addCalculatorRow('TLY', '', '', '');
+                        addCalculatorRow('DFI', '', '', '');
+                    };
+
+                    async function fetchPricesFromExtension() {
+                        const statusEl = document.getElementById('calcStatus');
+                        statusEl.textContent = '⏳ Fiyatlar eklentiden çekiliyor...';
+                        statusEl.style.color = '#8e8e93';
+                        
+                        try {
+                            const resp = await fetch('/api/prices/extension');
+                            const data = await resp.json();
+                            if (data.success && data.prices) {
+                                const prices = data.prices;
+                                const rows = document.querySelectorAll('#calcRowsContainer .pred-row');
+                                let updatedCount = 0;
+                                
+                                rows.forEach(row => {
+                                    const codeEl = row.querySelector('.calc-code');
+                                    const currEl = row.querySelector('.calc-curr');
+                                    const code = codeEl.value.trim().toUpperCase();
+                                    
+                                    if (code && prices[code]) {
+                                        const pVal = parseFloat(prices[code].price);
+                                        currEl.value = pVal.toFixed(6);
+                                        updatedCount++;
+                                    }
+                                });
+                                
+                                statusEl.textContent = `✅ ${updatedCount} fon fiyatı başarıyla güncellendi!`;
+                                statusEl.style.color = '#32d74b';
+                                saveCalculatorState();
+                            } else {
+                                statusEl.textContent = '❌ Fiyat verisi bulunamadı. Eklentinin çalıştığından emin olun.';
+                                statusEl.style.color = '#ff453a';
+                            }
+                        } catch (err) {
+                            statusEl.textContent = '❌ Bağlantı hatası: ' + err.message;
+                            statusEl.style.color = '#ff453a';
+                        }
                     }
+
+                    function calculateReturns() {
+                        const rows = document.querySelectorAll('#calcRowsContainer .pred-row');
+                        let calculatedCount = 0;
+                        
+                        rows.forEach(row => {
+                            const prevEl = row.querySelector('.calc-prev');
+                            const currEl = row.querySelector('.calc-curr');
+                            const retEl = row.querySelector('.calc-ret');
+                            
+                            const prevVal = parseFloat(prevEl.value);
+                            const currVal = parseFloat(currEl.value);
+                            
+                            if (!isNaN(prevVal) && !isNaN(currVal) && prevVal > 0) {
+                                const ret = ((currVal / prevVal) - 1) * 100;
+                                const sign = ret >= 0 ? '+' : '';
+                                retEl.value = `${sign}${ret.toFixed(4)}%`;
+                                if (ret >= 0) {
+                                    retEl.style.color = '#32d74b';
+                                } else {
+                                    retEl.style.color = '#ff453a';
+                                }
+                                calculatedCount++;
+                            } else {
+                                retEl.value = '';
+                            }
+                        });
+                        
+                        const statusEl = document.getElementById('calcStatus');
+                        statusEl.textContent = `✅ ${calculatedCount} fonun getirisi hesaplandı!`;
+                        statusEl.style.color = '#32d74b';
+                        saveCalculatorState();
+                    }
+
+                    // Auto load on start
+                    window.addEventListener('DOMContentLoaded', () => {
+                        loadCalculatorState();
+                    });
                 </script>
 
                 <!-- Tweet Preview Modal -->
@@ -766,6 +933,42 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_POST(self):
+        if self.path == '/api/prices/extension':
+            from datetime import datetime
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            req_data = json.loads(post_data.decode('utf-8'))
+            prices = req_data.get('prices', [])
+            
+            prices_file = os.path.join(DIRECTORY, "fintables_prices.json")
+            stored_prices = {}
+            if os.path.exists(prices_file):
+                try:
+                    with open(prices_file, "r", encoding="utf-8") as f:
+                        stored_prices = json.load(f)
+                except:
+                    pass
+            
+            for item in prices:
+                code = str(item.get("code", "")).strip().upper()
+                if not code:
+                    continue
+                stored_prices[code] = {
+                    "price": float(item.get("price", 0.0)),
+                    "changePercent": float(item.get("changePercent", 0.0)) if item.get("changePercent") is not None else None,
+                    "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                }
+                
+            with open(prices_file, "w", encoding="utf-8") as f:
+                json.dump(stored_prices, f, ensure_ascii=False, indent=4)
+                
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(json.dumps({"success": True, "count": len(prices)}).encode("utf-8"))
+            return
+
         if self.path == '/api/save_takas':
             from datetime import datetime
             content_length = int(self.headers['Content-Length'])
