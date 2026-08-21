@@ -174,6 +174,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
             date_from    = params.get('from',  [None])[0]  # e.g. 2026-08-01
             date_to      = params.get('to',    [None])[0]  # e.g. 2026-08-21
             show_unchanged = params.get('unchanged', ['0'])[0] == '1'
+            timeline_mode  = params.get('timeline',  ['0'])[0] == '1'
 
             db_path = os.path.join(DIRECTORY, "kap_shareholders_history.json")
             result  = []
@@ -210,83 +211,167 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                         end_date   = all_dates[-1]
                         dates_used = [start_date, end_date]
 
-                        start_data = history[start_date]
-                        end_data   = history[end_date]
+                        if timeline_mode:
+                            # --- GÜNLÜK HAREKET AKIŞI (TIMELINE) MODU ---
+                            for idx in range(len(all_dates) - 1):
+                                d_prev = all_dates[idx]
+                                d_curr = all_dates[idx + 1]
+                                
+                                start_data = history[d_prev]
+                                end_data   = history[d_curr]
 
-                        if fund_filter:
-                            # --- FON BAZLI: tek fon, tüm hisseler ---
-                            start_stocks = start_data.get(fund_filter, {})
-                            end_stocks   = end_data.get(fund_filter, {})
-                            all_tickers  = set(list(start_stocks.keys()) + list(end_stocks.keys()))
+                                if fund_filter:
+                                    start_stocks = start_data.get(fund_filter, {})
+                                    end_stocks   = end_data.get(fund_filter, {})
+                                    all_tickers  = set(list(start_stocks.keys()) + list(end_stocks.keys()))
 
-                            for ticker in sorted(all_tickers):
-                                s_det = start_stocks.get(ticker)
-                                e_det = end_stocks.get(ticker)
-                                s_lot = s_det.get("lot", 0.0) if s_det else 0.0
-                                e_lot = e_det.get("lot", 0.0) if e_det else 0.0
-                                diff  = e_lot - s_lot
+                                    for ticker in sorted(all_tickers):
+                                        s_det = start_stocks.get(ticker)
+                                        e_det = end_stocks.get(ticker)
+                                        s_lot = s_det.get("lot", 0.0) if s_det else 0.0
+                                        e_lot = e_det.get("lot", 0.0) if e_det else 0.0
+                                        diff  = e_lot - s_lot
 
-                                if not show_unchanged and abs(diff) < 0.01:
-                                    continue
+                                        if not show_unchanged and abs(diff) < 0.01:
+                                            continue
 
-                                pct = ((diff / s_lot) * 100) if s_lot > 0 else (100.0 if e_lot > 0 else 0.0)
-                                status = "new" if s_lot == 0 and e_lot > 0 else \
-                                         "exit" if s_lot > 0 and e_lot == 0 else \
-                                         "up" if diff > 0 else \
-                                         "down" if diff < 0 else "same"
+                                        pct = ((diff / s_lot) * 100) if s_lot > 0 else (100.0 if e_lot > 0 else 0.0)
+                                        status = "new" if s_lot == 0 and e_lot > 0 else \
+                                                 "exit" if s_lot > 0 and e_lot == 0 else \
+                                                 "up" if diff > 0 else \
+                                                 "down" if diff < 0 else "same"
 
-                                result.append({
-                                    "fund": fund_filter,
-                                    "fund_name": (e_det or s_det or {}).get("shareholder_name", ""),
-                                    "stock": ticker,
-                                    "company_name": (e_det or s_det or {}).get("company_name", ""),
-                                    "start_lot": s_lot,
-                                    "end_lot": e_lot,
-                                    "diff_lot": diff,
-                                    "pct_change": round(pct, 2),
-                                    "start_ratio": (s_det or {}).get("ratio", 0.0),
-                                    "end_ratio": (e_det or {}).get("ratio", 0.0),
-                                    "status": status
-                                })
+                                        result.append({
+                                            "date": d_curr,
+                                            "fund": fund_filter,
+                                            "fund_name": (e_det or s_det or {}).get("shareholder_name", ""),
+                                            "stock": ticker,
+                                            "company_name": (e_det or s_det or {}).get("company_name", ""),
+                                            "start_lot": s_lot,
+                                            "end_lot": e_lot,
+                                            "diff_lot": diff,
+                                            "pct_change": round(pct, 2),
+                                            "start_ratio": (s_det or {}).get("ratio", 0.0),
+                                            "end_ratio": (e_det or {}).get("ratio", 0.0),
+                                            "status": status
+                                        })
 
-                        elif stock_filter:
-                            # --- HİSSE BAZLI: tek hisse, tüm fonlar ---
-                            # Gather all funds that ever touched this stock
-                            all_funds_for_stock = set()
-                            for d in [start_date, end_date]:
-                                for fn, stocks in history[d].items():
-                                    if stock_filter in stocks:
-                                        all_funds_for_stock.add(fn)
+                                elif stock_filter:
+                                    # Gather all funds that ever touched this stock in these two days
+                                    all_funds_for_stock = set()
+                                    for fn, stocks in start_data.items():
+                                        if stock_filter in stocks:
+                                            all_funds_for_stock.add(fn)
+                                    for fn, stocks in end_data.items():
+                                        if stock_filter in stocks:
+                                            all_funds_for_stock.add(fn)
 
-                            for fn in sorted(all_funds_for_stock):
-                                s_det = start_data.get(fn, {}).get(stock_filter)
-                                e_det = end_data.get(fn, {}).get(stock_filter)
-                                s_lot = s_det.get("lot", 0.0) if s_det else 0.0
-                                e_lot = e_det.get("lot", 0.0) if e_det else 0.0
-                                diff  = e_lot - s_lot
+                                    for fn in sorted(all_funds_for_stock):
+                                        s_det = start_data.get(fn, {}).get(stock_filter)
+                                        e_det = end_data.get(fn, {}).get(stock_filter)
+                                        s_lot = s_det.get("lot", 0.0) if s_det else 0.0
+                                        e_lot = e_det.get("lot", 0.0) if e_det else 0.0
+                                        diff  = e_lot - s_lot
 
-                                if not show_unchanged and abs(diff) < 0.01:
-                                    continue
+                                        if not show_unchanged and abs(diff) < 0.01:
+                                            continue
 
-                                pct = ((diff / s_lot) * 100) if s_lot > 0 else (100.0 if e_lot > 0 else 0.0)
-                                status = "new" if s_lot == 0 and e_lot > 0 else \
-                                         "exit" if s_lot > 0 and e_lot == 0 else \
-                                         "up" if diff > 0 else \
-                                         "down" if diff < 0 else "same"
+                                        pct = ((diff / s_lot) * 100) if s_lot > 0 else (100.0 if e_lot > 0 else 0.0)
+                                        status = "new" if s_lot == 0 and e_lot > 0 else \
+                                                 "exit" if s_lot > 0 and e_lot == 0 else \
+                                                 "up" if diff > 0 else \
+                                                 "down" if diff < 0 else "same"
 
-                                result.append({
-                                    "fund": fn,
-                                    "fund_name": (e_det or s_det or {}).get("shareholder_name", ""),
-                                    "stock": stock_filter,
-                                    "company_name": (e_det or s_det or {}).get("company_name", ""),
-                                    "start_lot": s_lot,
-                                    "end_lot": e_lot,
-                                    "diff_lot": diff,
-                                    "pct_change": round(pct, 2),
-                                    "start_ratio": (s_det or {}).get("ratio", 0.0),
-                                    "end_ratio": (e_det or {}).get("ratio", 0.0),
-                                    "status": status
-                                })
+                                        result.append({
+                                            "date": d_curr,
+                                            "fund": fn,
+                                            "fund_name": (e_det or s_det or {}).get("shareholder_name", ""),
+                                            "stock": stock_filter,
+                                            "company_name": (e_det or s_det or {}).get("company_name", ""),
+                                            "start_lot": s_lot,
+                                            "end_lot": e_lot,
+                                            "diff_lot": diff,
+                                            "pct_change": round(pct, 2),
+                                            "start_ratio": (s_det or {}).get("ratio", 0.0),
+                                            "end_ratio": (e_det or {}).get("ratio", 0.0),
+                                            "status": status
+                                        })
+                        else:
+                            # --- NET FARK (AÇILIŞ VS KAPANIŞ) MODU ---
+                            start_data = history[start_date]
+                            end_data   = history[end_date]
+
+                            if fund_filter:
+                                start_stocks = start_data.get(fund_filter, {})
+                                end_stocks   = end_data.get(fund_filter, {})
+                                all_tickers  = set(list(start_stocks.keys()) + list(end_stocks.keys()))
+
+                                for ticker in sorted(all_tickers):
+                                    s_det = start_stocks.get(ticker)
+                                    e_det = end_stocks.get(ticker)
+                                    s_lot = s_det.get("lot", 0.0) if s_det else 0.0
+                                    e_lot = e_det.get("lot", 0.0) if e_det else 0.0
+                                    diff  = e_lot - s_lot
+
+                                    if not show_unchanged and abs(diff) < 0.01:
+                                        continue
+
+                                    pct = ((diff / s_lot) * 100) if s_lot > 0 else (100.0 if e_lot > 0 else 0.0)
+                                    status = "new" if s_lot == 0 and e_lot > 0 else \
+                                             "exit" if s_lot > 0 and e_lot == 0 else \
+                                             "up" if diff > 0 else \
+                                             "down" if diff < 0 else "same"
+
+                                    result.append({
+                                        "fund": fund_filter,
+                                        "fund_name": (e_det or s_det or {}).get("shareholder_name", ""),
+                                        "stock": ticker,
+                                        "company_name": (e_det or s_det or {}).get("company_name", ""),
+                                        "start_lot": s_lot,
+                                        "end_lot": e_lot,
+                                        "diff_lot": diff,
+                                        "pct_change": round(pct, 2),
+                                        "start_ratio": (s_det or {}).get("ratio", 0.0),
+                                        "end_ratio": (e_det or {}).get("ratio", 0.0),
+                                        "status": status
+                                    })
+
+                            elif stock_filter:
+                                all_funds_for_stock = set()
+                                for d in [start_date, end_date]:
+                                    for fn, stocks in history[d].items():
+                                        if stock_filter in stocks:
+                                            all_funds_for_stock.add(fn)
+
+                                for fn in sorted(all_funds_for_stock):
+                                    s_det = start_data.get(fn, {}).get(stock_filter)
+                                    e_det = end_data.get(fn, {}).get(stock_filter)
+                                    s_lot = s_det.get("lot", 0.0) if s_det else 0.0
+                                    e_lot = e_det.get("lot", 0.0) if e_det else 0.0
+                                    diff  = e_lot - s_lot
+
+                                    if not show_unchanged and abs(diff) < 0.01:
+                                        continue
+
+                                    pct = ((diff / s_lot) * 100) if s_lot > 0 else (100.0 if e_lot > 0 else 0.0)
+                                    status = "new" if s_lot == 0 and e_lot > 0 else \
+                                             "exit" if s_lot > 0 and e_lot == 0 else \
+                                             "up" if diff > 0 else \
+                                             "down" if diff < 0 else "same"
+
+                                    result.append({
+                                        "fund": fn,
+                                        "fund_name": (e_det or s_det or {}).get("shareholder_name", ""),
+                                        "stock": stock_filter,
+                                        "company_name": (e_det or s_det or {}).get("company_name", ""),
+                                        "start_lot": s_lot,
+                                        "end_lot": e_lot,
+                                        "diff_lot": diff,
+                                        "pct_change": round(pct, 2),
+                                        "start_ratio": (s_det or {}).get("ratio", 0.0),
+                                        "end_ratio": (e_det or {}).get("ratio", 0.0),
+                                        "status": status
+                                    })
 
                     elif len(all_dates) == 1:
                         dates_used = [all_dates[0], all_dates[0]]
@@ -294,9 +379,14 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                 except Exception as e:
                     print(f"Error calculating range changes: {e}")
 
-            # Sort: exits first, then by abs diff descending
-            status_order = {"exit": 0, "new": 1, "up": 2, "down": 3, "same": 4}
-            result.sort(key=lambda x: (status_order.get(x["status"], 9), -abs(x["diff_lot"])))
+            # Sort results
+            if timeline_mode:
+                # Timeline: Sort by date descending (newest first)
+                result.sort(key=lambda x: x.get("date", ""), reverse=True)
+            else:
+                # Net: Exits first, then by absolute lot difference descending
+                status_order = {"exit": 0, "new": 1, "up": 2, "down": 3, "same": 4}
+                result.sort(key=lambda x: (status_order.get(x["status"], 9), -abs(x["diff_lot"])))
 
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -871,6 +961,14 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                                         <span style="font-size:13px; color:#8e8e93;">Göster</span>
                                     </label>
                                 </div>
+                                <!-- Günlük İşlem Akışı (Timeline) toggle -->
+                                <div style="display:flex; flex-direction:column; gap:5px;">
+                                    <label style="font-size:11px; color:#8e8e93; font-weight:700;">İŞLEM GÜNLÜĞÜ</label>
+                                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:10px 12px; background:#000; border:1px solid #333; border-radius:10px;">
+                                        <input type="checkbox" id="rangeTimeline" style="width:16px; height:16px; cursor:pointer; accent-color:#ff9f0a;">
+                                        <span style="font-size:13px; color:#8e8e93;">Günlük Akış</span>
+                                    </label>
+                                </div>
                                 <!-- Analiz Butonu -->
                                 <button onclick="loadRangeAnalysis()"
                                     style="background:#ff9f0a; color:#000; border:none; padding:11px 22px; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; align-self:flex-end; white-space:nowrap;">
@@ -888,15 +986,8 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                             <div style="overflow-x: auto;">
                                 <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
                                     <thead id="rangeTableHead" style="display:none;">
-                                        <tr style="border-bottom:2px solid rgba(255,255,255,0.1); color:#8e8e93; font-weight:700;">
-                                            <th id="rangeColFundStock" style="padding:10px 10px;">Fon / Hisse</th>
-                                            <th style="padding:10px 10px;">Şirket / Fon Adı</th>
-                                            <th style="padding:10px 10px; text-align:right;">Açılış Lotu</th>
-                                            <th style="padding:10px 10px; text-align:right;">Kapanış Lotu</th>
-                                            <th style="padding:10px 10px; text-align:right;">Değişim (Lot)</th>
-                                            <th style="padding:10px 10px; text-align:right;">Değişim (%)</th>
-                                            <th style="padding:10px 10px; text-align:right;">Pay Oranı</th>
-                                            <th style="padding:10px 10px; text-align:center;">Durum</th>
+                                        <tr id="rangeTableHeadRow" style="border-bottom:2px solid rgba(255,255,255,0.1); color:#8e8e93; font-weight:700;">
+                                            <!-- Dynamically populated in loadRangeAnalysis -->
                                         </tr>
                                     </thead>
                                     <tbody id="rangeTableBody">
@@ -1862,22 +1953,50 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                         const fromDate      = document.getElementById('rangeFromDate').value;
                         const toDate        = document.getElementById('rangeToDate').value;
                         const showUnchanged = document.getElementById('rangeShowUnchanged').checked ? 1 : 0;
+                        const isTimeline    = document.getElementById('rangeTimeline').checked;
 
-                        let url = `/api/kap/shareholders/range-changes?from=${fromDate}&to=${toDate}&unchanged=${showUnchanged}`;
+                        let url = `/api/kap/shareholders/range-changes?from=${fromDate}&to=${toDate}&unchanged=${showUnchanged}&timeline=${isTimeline ? 1 : 0}`;
 
                         let labelPrimary = '';
+                        const headRow = document.getElementById('rangeTableHeadRow');
+                        const primaryColHeader = rangeMode === 'fund' ? 'Hisse' : 'Fon';
+                        const secondaryColHeader = rangeMode === 'fund' ? 'Şirket Unvanı' : 'Fon Adı';
+
+                        if (isTimeline) {
+                            headRow.innerHTML = `
+                                <th style="padding:10px; text-align:left;">Tarih</th>
+                                <th style="padding:10px;">${primaryColHeader}</th>
+                                <th style="padding:10px;">${secondaryColHeader}</th>
+                                <th style="padding:10px; text-align:right;">Önceki Lot</th>
+                                <th style="padding:10px; text-align:right;">Yeni Lot</th>
+                                <th style="padding:10px; text-align:right;">İşlem (Lot)</th>
+                                <th style="padding:10px; text-align:right;">İşlem (%)</th>
+                                <th style="padding:10px; text-align:right;">Yeni Pay</th>
+                                <th style="padding:10px; text-align:center;">İşlem Türü</th>
+                            `;
+                        } else {
+                            headRow.innerHTML = `
+                                <th style="padding:10px;">${primaryColHeader}</th>
+                                <th style="padding:10px;">${secondaryColHeader}</th>
+                                <th style="padding:10px; text-align:right;">Açılış Lotu</th>
+                                <th style="padding:10px; text-align:right;">Kapanış Lotu</th>
+                                <th style="padding:10px; text-align:right;">Değişim (Lot)</th>
+                                <th style="padding:10px; text-align:right;">Değişim (%)</th>
+                                <th style="padding:10px; text-align:right;">Pay Oranı</th>
+                                <th style="padding:10px; text-align:center;">Durum</th>
+                            `;
+                        }
+
                         if (rangeMode === 'fund') {
                             const fund = document.getElementById('rangeFundSelect').value;
-                            if (!fund) { tbody.innerHTML = `<tr><td colspan="8" style="padding:20px; text-align:center; color:#ff453a;">Lütfen bir fon seçin.</td></tr>`; return; }
+                            if (!fund) { tbody.innerHTML = `<tr><td colspan="9" style="padding:20px; text-align:center; color:#ff453a;">Lütfen bir fon seçin.</td></tr>`; return; }
                             url += `&fund=${fund}`;
                             labelPrimary = fund;
-                            document.getElementById('rangeColFundStock').textContent = 'Hisse';
                         } else {
                             const stock = document.getElementById('rangeStockInput').value.trim().toUpperCase();
-                            if (!stock) { tbody.innerHTML = `<tr><td colspan="8" style="padding:20px; text-align:center; color:#ff453a;">Lütfen bir hisse kodu girin.</td></tr>`; return; }
+                            if (!stock) { tbody.innerHTML = `<tr><td colspan="9" style="padding:20px; text-align:center; color:#ff453a;">Lütfen bir hisse kodu girin.</td></tr>`; return; }
                             url += `&stock=${stock}`;
                             labelPrimary = stock;
-                            document.getElementById('rangeColFundStock').textContent = 'Fon';
                         }
 
                         try {
@@ -1896,24 +2015,30 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                             document.getElementById('rangeResultSub').textContent =
                                 dates.length === 2 ? `${dates[0]}  →  ${dates[1]}` : '';
 
-                            renderRangeTable(results);
+                            renderRangeTable(results, isTimeline);
                             header.style.display = '';
 
                         } catch (err) {
-                            tbody.innerHTML = `<tr><td colspan="8" style="padding:20px; text-align:center; color:#ff453a;">Hata: ${err.message}</td></tr>`;
+                            tbody.innerHTML = `<tr><td colspan="9" style="padding:20px; text-align:center; color:#ff453a;">Hata: ${err.message}</td></tr>`;
                         }
                     }
 
-                    function renderRangeTable(results) {
+                    function renderRangeTable(results, isTimeline) {
                         const tbody = document.getElementById('rangeTableBody');
                         tbody.innerHTML = '';
 
                         if (!results.length) {
-                            tbody.innerHTML = `<tr><td colspan="8" style="padding:20px; text-align:center; color:#8e8e93;">Seçilen tarih aralığında değişim bulunamadı.</td></tr>`;
+                            tbody.innerHTML = `<tr><td colspan="9" style="padding:20px; text-align:center; color:#8e8e93;">Seçilen tarih aralığında değişim bulunamadı.</td></tr>`;
                             return;
                         }
 
-                        const statusMap = {
+                        const statusMap = isTimeline ? {
+                            new:  { label: 'YENİ GİRDİ 🆕', bg: '#30d158', color: '#000' },
+                            exit: { label: 'TAMAMEN ÇIKTI ❌', bg: '#ff453a', color: '#fff' },
+                            up:   { label: 'ALIM 📈', bg: '#30d15820', color: '#30d158', border: '#30d15840' },
+                            down: { label: 'SATIM 📉', bg: '#ff453a20', color: '#ff453a', border: '#ff453a40' },
+                            same: { label: 'DEĞİŞMEDİ ➡️', bg: '#8e8e9320', color: '#8e8e93', border: '#8e8e9340' }
+                        } : {
                             new:  { label: 'YENİ GİRDİ 🆕', bg: '#30d158', color: '#000' },
                             exit: { label: 'TAMAMEN ÇIKTI ❌', bg: '#ff453a', color: '#fff' },
                             up:   { label: 'ARTIRDI 📈', bg: '#30d15820', color: '#30d158', border: '#30d15840' },
@@ -1930,20 +2055,29 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
 
                             const badge = `<span style="background:${st.bg}; color:${st.color}; ${st.border ? 'border:1px solid '+st.border+';' : ''} padding:3px 9px; border-radius:7px; font-size:11px; font-weight:800; white-space:nowrap;">${st.label}</span>`;
 
+                            const ratioHtml = isTimeline 
+                                ? (r.end_ratio ? '%' + r.end_ratio.toFixed(2) : '—')
+                                : `${r.start_ratio ? '%' + r.start_ratio.toFixed(2) : '—'} → ${r.end_ratio ? '%' + r.end_ratio.toFixed(2) : '—'}`;
+
                             const tr = document.createElement('tr');
                             tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
-                            tr.innerHTML = `
+                            
+                            let htmlContent = '';
+                            if (isTimeline) {
+                                htmlContent += `<td style="padding:10px; font-weight:700; color:#8e8e93;">${r.date || '—'}</td>`;
+                            }
+                            
+                            htmlContent += `
                                 <td style="padding:10px; font-weight:800; color:#ff9f0a;">${primaryLabel}</td>
                                 <td style="padding:10px; font-size:12px; color:#8e8e93; max-width:220px; overflow:hidden; white-space:nowrap;" title="${secondaryLabel}">${secondaryLabel}</td>
                                 <td style="padding:10px; text-align:right; font-family:monospace; color:#8e8e93;">${r.start_lot > 0 ? Math.round(r.start_lot).toLocaleString('tr-TR') : '—'}</td>
                                 <td style="padding:10px; text-align:right; font-family:monospace;">${r.end_lot > 0 ? Math.round(r.end_lot).toLocaleString('tr-TR') : '—'}</td>
                                 <td style="padding:10px; text-align:right; font-family:monospace; color:${diffC}; font-weight:700;">${r.diff_lot !== 0 ? sign + Math.round(r.diff_lot).toLocaleString('tr-TR') : '—'}</td>
                                 <td style="padding:10px; text-align:right; font-family:monospace; color:${diffC}; font-weight:700;">${r.pct_change !== 0 ? sign + r.pct_change.toFixed(2) + '%' : '—'}</td>
-                                <td style="padding:10px; text-align:right; font-family:monospace; font-size:12px; color:#8e8e93;">
-                                    ${r.start_ratio ? '%' + r.start_ratio.toFixed(2) : '—'} → ${r.end_ratio ? '%' + r.end_ratio.toFixed(2) : '—'}
-                                </td>
+                                <td style="padding:10px; text-align:right; font-family:monospace; font-size:12px; color:#8e8e93;">${ratioHtml}</td>
                                 <td style="padding:10px; text-align:center;">${badge}</td>
                             `;
+                            tr.innerHTML = htmlContent;
                             tbody.appendChild(tr);
                         });
                     }

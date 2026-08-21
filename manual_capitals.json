@@ -242,6 +242,257 @@
     "TAVHL": {
         "bireysel": 32114762.0,
         "kurumsal": 181092153.0
+    },
+
+    "DAGI": {
+        "bireysel": 94867447.0,
+        "kurumsal": 80433827.0
+    },
+
+    "ALKLC": {
+        "bireysel": 18445786.0,
+        "kurumsal": 26936681.0
+    },
+
+    "SISE": {
+        "bireysel": 718266481.0,
+        "kurumsal": 1096494783.0
+    },
+
+    "HRKET": {
+        "bireysel": 26579195.0,
+        "kurumsal": 6032005.0
+    },
+
+    "SELEC": {
+        "bireysel": 27835393.0,
+        "kurumsal": 96426704.0
+    },
+
+    "BIGEN": {
+        "bireysel": 30418071.0,
+        "kurumsal": 119681929.0
+    },
+
+    "ISVEA": {
+        "bireysel": 28499241.0,
+        "kurumsal": 38500734.0
+    },
+
+    "EKGYO": {
+        "bireysel": 692690641.0,
+        "kurumsal": 1232371405.0
+    },
+
+    "KAREL": {
+        "bireysel": 234872900.0,
+        "kurumsal": 102766596.0
+    },
+
+    "OZSUB": {
+        "bireysel": 34254457.0,
+        "kurumsal": 9992945.0
+    },
+
+    "ATATP": {
+        "bireysel": 13132528.0,
+        "kurumsal": 5677471.0
+    },
+
+    "ALGYO": {
+        "bireysel": 751173743.0,
+        "kurumsal": 238164422.0
+    },
+
+    "LRSHO": {
+        "bireysel": 681789126.0,
+        "kurumsal": 42331821.0
+    },
+
+    "ISKPL": {
+        "bireysel": 455149243.0,
+        "kurumsal": 275196229.0
+    },
+    
+    "GZNMI": {
+        "bireysel": 22578963.0,
+        "kurumsal": 18370862.0
+    },
+
+    "RALYH": {
+        "bireysel": 103640916.0,
+        "kurumsal": 72729244.0
+    },
+
+    "IZFAS": {
+        "bireysel": 77712218.0,
+        "kurumsal": 78289440.0
+    },
+
+    "TTKOM": {
+        "bireysel": 154880331.0,
+        "kurumsal": 369817668.0
+    },
+
+    "ARASE": {
+        "bireysel": 9606347.0,
+        "kurumsal": 40393644.0
+    },
+
+    "EGEGY": {
+        "bireysel": 51775158.0,
+        "kurumsal": 17364842.0
+    },
+
+    "TKNKA": {
+        "bireysel": 31000000.0,
+        "kurumsal": 0.0
+    },
+
+    "GLRYH": {
+        "bireysel": 491772679.0,
+        "kurumsal": 107851135.0
+    },
+
+    "KORDS": {
+        "bireysel": 46801417.0,
+        "kurumsal": 18618860.0
+    },
+
+    "DGNMO": {
+        "bireysel": 147343922.0,
+        "kurumsal": 180290687.0
+    },
+
+    "BJKAS": {
+        "bireysel": 1256935905.0,
+        "kurumsal": 519153225.0
+    },
+
+    "MEDTR": {
+        "bireysel": 19424345.0,
+        "kurumsal": 5075654.0
+    },
+
+    "YUNSA": {
+        "bireysel": 162304713.0,
+        "kurumsal": 39853359.0
+    },
+
+    "HATSN": {
+        "bireysel": 37394373.0,
+        "kurumsal": 13530591.0
+    },
+
+    "BALSU": {
+        "bireysel": 351643052.0,
+        "kurumsal": 284356948.0
+    },
+
+    "YEOTK": {
+        "bireysel": 300119948.0,
+        "kurumsal": 76146322.0
+    },
+
+    "GRSEL": {
+        "bireysel": 12358205.0,
+        "kurumsal": 17291795.0
+    },
+
+    "AKFIS": {
+        "bireysel": 51715901.0,
+        "kurumsal": 78783834.0
+    },
+
+    "TRHOL": {
+        "bireysel": 5945568.0,
+        "kurumsal": 11667097.0
+    },
+
+    "CITAS": {
+        "bireysel": 17727499.0,
+        "kurumsal": 18771913.0
+    },
+
+    "GESAN": {
+        "bireysel": 104900130.0,
+        "kurumsal": 71359049.0
+    },
+
+    "GUNDG": {
+        "bireysel": 3697267.0,
+        "kurumsal": 15271716.0
+    },
+
+    "BINHO": {
+        "bireysel": 437841855.0,
+        "kurumsal": 51042526.0
+    },
+
+    "A1YEN": {
+        "bireysel": 405382192.0,
+        "kurumsal": 45161600.0
+    },
+
+    "DSTKF": {
+        "bireysel": 1211874.0,
+        "kurumsal": 83321460.0
+    },
+
+    "SVGYO": {
+        "bireysel": 126664163.0,
+        "kurumsal": 168735837.0
+    },
+
+    "TTRAK": {
+        "bireysel": 13425775.0,
+        "kurumsal": 11541383.0
+    },
+
+    "MANAS": {
+        "bireysel": 198595029.0,
+        "kurumsal": 108396971.0
+    },
+
+    "EKSUN": {
+        "bireysel": 120392312.0,
+        "kurumsal": 51400521.0
+    },
+
+    "DEVA": {
+        "bireysel": 28378484.0,
+        "kurumsal": 171584267.0
+    },
+
+    "KRVGD": {
+        "bireysel": 220709182.0,
+        "kurumsal": 375450584.0
+    },
+
+    "MAGEN": {
+        "bireysel": 128517597.0,
+        "kurumsal": 676794542.0
+    },
+
+    "SASA": {
+        "bireysel": 16911837327.0,
+        "kurumsal": 16478608720.0
+    },
+
+    "BAGFS": {
+        "bireysel": 71755613.0,
+        "kurumsal": 28222412.0
+    },
+
+    "ZGYO": {
+        "bireysel": 41847997.0,
+        "kurumsal": 42652003.0
+    },
+
+    "EKDMR": {
+        "bireysel": 45929048.0,
+        "kurumsal": 6070952.0
     }
+
 
 }
