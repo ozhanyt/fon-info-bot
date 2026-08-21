@@ -30,6 +30,287 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps({"success": True, "prices": stored_prices}, ensure_ascii=False).encode("utf-8"))
             return
 
+        if self.path.startswith('/api/kap/shareholders/history'):
+            import urllib.parse
+            parsed_url = urllib.parse.urlparse(self.path)
+            params = urllib.parse.parse_qs(parsed_url.query)
+            
+            fund_code = params.get('fund', [''])[0].strip().upper()
+            stock_code = params.get('stock', [''])[0].strip().upper()
+            
+            db_path = os.path.join(DIRECTORY, "kap_shareholders_history.json")
+            points = []
+            
+            if os.path.exists(db_path):
+                try:
+                    with open(db_path, "r", encoding="utf-8") as f:
+                        history = json.load(f)
+                    
+                    sorted_dates = sorted(history.keys())
+                    for date_str in sorted_dates:
+                        funds = history[date_str]
+                        if fund_code in funds and stock_code in funds[fund_code]:
+                            details = funds[fund_code][stock_code]
+                            points.append({
+                                "date": date_str,
+                                "lot": details.get("lot", 0.0),
+                                "ratio": details.get("ratio", 0.0),
+                                "is_manual": details.get("is_manual", False)
+                            })
+                except Exception as e:
+                    print(f"Error querying history: {e}")
+                    
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(json.dumps({"success": True, "history": points}, ensure_ascii=False).encode("utf-8"))
+            return
+
+        if self.path == '/api/kap/shareholders/selectors':
+            db_path = os.path.join(DIRECTORY, "kap_shareholders_history.json")
+            selectors = {}
+            
+            if os.path.exists(db_path):
+                try:
+                    with open(db_path, "r", encoding="utf-8") as f:
+                        history = json.load(f)
+                    
+                    for date_str, funds in history.items():
+                        for fund_code, stocks in funds.items():
+                            if fund_code not in selectors:
+                                selectors[fund_code] = set()
+                            for stock_code in stocks.keys():
+                                selectors[fund_code].add(stock_code)
+                                
+                    selectors = {f: sorted(list(s)) for f, s in selectors.items()}
+                except Exception as e:
+                    print(f"Error building selectors: {e}")
+                    
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(json.dumps({"success": True, "selectors": selectors}, ensure_ascii=False).encode("utf-8"))
+            return
+
+        if self.path == '/api/kap/shareholders/changes':
+            db_path = os.path.join(DIRECTORY, "kap_shareholders_history.json")
+            changes = []
+            yesterday_date = ""
+            today_date = ""
+            
+            if os.path.exists(db_path):
+                try:
+                    with open(db_path, "r", encoding="utf-8") as f:
+                        history = json.load(f)
+                    
+                    sorted_dates = sorted(history.keys())
+                    if len(sorted_dates) >= 2:
+                        today_date = sorted_dates[-1]
+                        yesterday_date = sorted_dates[-2]
+                        
+                        today_data = history[today_date]
+                        yesterday_data = history[yesterday_date]
+                        
+                        for fund, stocks in today_data.items():
+                            for stock, details in stocks.items():
+                                today_lot = details.get("lot", 0.0)
+                                yesterday_details = yesterday_data.get(fund, {}).get(stock)
+                                yesterday_lot = yesterday_details.get("lot", 0.0) if yesterday_details else 0.0
+                                
+                                diff_lot = today_lot - yesterday_lot
+                                if abs(diff_lot) > 0.01:
+                                    pct_change = ((diff_lot / yesterday_lot) * 100) if yesterday_lot > 0 else 100.0
+                                    changes.append({
+                                        "fund": fund,
+                                        "stock": stock,
+                                        "yesterday_lot": yesterday_lot,
+                                        "today_lot": today_lot,
+                                        "diff_lot": diff_lot,
+                                        "pct_change": pct_change,
+                                        "yesterday_ratio": yesterday_details.get("ratio", 0.0) if yesterday_details else 0.0,
+                                        "today_ratio": details.get("ratio", 0.0),
+                                        "shareholder_name": details.get("shareholder_name", "MANUEL GİRİŞ"),
+                                        "company_name": details.get("company_name", "MANUEL GİRİŞ")
+                                    })
+                                    
+                        for fund, stocks in yesterday_data.items():
+                            for stock, details in stocks.items():
+                                if fund not in today_data or stock not in today_data[fund]:
+                                    yesterday_lot = details.get("lot", 0.0)
+                                    diff_lot = -yesterday_lot
+                                    changes.append({
+                                        "fund": fund,
+                                        "stock": stock,
+                                        "yesterday_lot": yesterday_lot,
+                                        "today_lot": 0.0,
+                                        "diff_lot": diff_lot,
+                                        "pct_change": -100.0,
+                                        "yesterday_ratio": details.get("ratio", 0.0),
+                                        "today_ratio": 0.0,
+                                        "shareholder_name": details.get("shareholder_name", "MANUEL GİRİŞ"),
+                                        "company_name": details.get("company_name", "MANUEL GİRİŞ")
+                                    })
+                except Exception as e:
+                    print(f"Error calculating changes: {e}")
+                    
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(json.dumps({
+                "success": True,
+                "changes": changes,
+                "yesterday": yesterday_date,
+                "today": today_date
+            }, ensure_ascii=False).encode("utf-8"))
+            return
+
+        if self.path.startswith('/api/kap/shareholders/range-changes'):
+            from urllib.parse import urlparse, parse_qs
+            parsed = urlparse(self.path)
+            params = parse_qs(parsed.query)
+            
+            fund_filter  = params.get('fund', [None])[0]   # e.g. TLY
+            stock_filter = params.get('stock', [None])[0]  # e.g. PASEU
+            date_from    = params.get('from',  [None])[0]  # e.g. 2026-08-01
+            date_to      = params.get('to',    [None])[0]  # e.g. 2026-08-21
+            show_unchanged = params.get('unchanged', ['0'])[0] == '1'
+
+            db_path = os.path.join(DIRECTORY, "kap_shareholders_history.json")
+            result  = []
+            dates_used = []
+            available_stocks = []
+            available_funds  = []
+
+            if os.path.exists(db_path):
+                try:
+                    with open(db_path, "r", encoding="utf-8") as f:
+                        history = json.load(f)
+
+                    all_dates = sorted(history.keys())
+
+                    # Collect unique stocks and funds for selectors
+                    stocks_set = set()
+                    funds_set  = set()
+                    for d in all_dates:
+                        for fn, stocks in history[d].items():
+                            funds_set.add(fn)
+                            for st in stocks:
+                                stocks_set.add(st)
+                    available_stocks = sorted(list(stocks_set))
+                    available_funds  = sorted(list(funds_set))
+
+                    # Filter dates by range
+                    if date_from:
+                        all_dates = [d for d in all_dates if d >= date_from]
+                    if date_to:
+                        all_dates = [d for d in all_dates if d <= date_to]
+
+                    if len(all_dates) >= 2:
+                        start_date = all_dates[0]
+                        end_date   = all_dates[-1]
+                        dates_used = [start_date, end_date]
+
+                        start_data = history[start_date]
+                        end_data   = history[end_date]
+
+                        if fund_filter:
+                            # --- FON BAZLI: tek fon, tüm hisseler ---
+                            start_stocks = start_data.get(fund_filter, {})
+                            end_stocks   = end_data.get(fund_filter, {})
+                            all_tickers  = set(list(start_stocks.keys()) + list(end_stocks.keys()))
+
+                            for ticker in sorted(all_tickers):
+                                s_det = start_stocks.get(ticker)
+                                e_det = end_stocks.get(ticker)
+                                s_lot = s_det.get("lot", 0.0) if s_det else 0.0
+                                e_lot = e_det.get("lot", 0.0) if e_det else 0.0
+                                diff  = e_lot - s_lot
+
+                                if not show_unchanged and abs(diff) < 0.01:
+                                    continue
+
+                                pct = ((diff / s_lot) * 100) if s_lot > 0 else (100.0 if e_lot > 0 else 0.0)
+                                status = "new" if s_lot == 0 and e_lot > 0 else \
+                                         "exit" if s_lot > 0 and e_lot == 0 else \
+                                         "up" if diff > 0 else \
+                                         "down" if diff < 0 else "same"
+
+                                result.append({
+                                    "fund": fund_filter,
+                                    "fund_name": (e_det or s_det or {}).get("shareholder_name", ""),
+                                    "stock": ticker,
+                                    "company_name": (e_det or s_det or {}).get("company_name", ""),
+                                    "start_lot": s_lot,
+                                    "end_lot": e_lot,
+                                    "diff_lot": diff,
+                                    "pct_change": round(pct, 2),
+                                    "start_ratio": (s_det or {}).get("ratio", 0.0),
+                                    "end_ratio": (e_det or {}).get("ratio", 0.0),
+                                    "status": status
+                                })
+
+                        elif stock_filter:
+                            # --- HİSSE BAZLI: tek hisse, tüm fonlar ---
+                            # Gather all funds that ever touched this stock
+                            all_funds_for_stock = set()
+                            for d in [start_date, end_date]:
+                                for fn, stocks in history[d].items():
+                                    if stock_filter in stocks:
+                                        all_funds_for_stock.add(fn)
+
+                            for fn in sorted(all_funds_for_stock):
+                                s_det = start_data.get(fn, {}).get(stock_filter)
+                                e_det = end_data.get(fn, {}).get(stock_filter)
+                                s_lot = s_det.get("lot", 0.0) if s_det else 0.0
+                                e_lot = e_det.get("lot", 0.0) if e_det else 0.0
+                                diff  = e_lot - s_lot
+
+                                if not show_unchanged and abs(diff) < 0.01:
+                                    continue
+
+                                pct = ((diff / s_lot) * 100) if s_lot > 0 else (100.0 if e_lot > 0 else 0.0)
+                                status = "new" if s_lot == 0 and e_lot > 0 else \
+                                         "exit" if s_lot > 0 and e_lot == 0 else \
+                                         "up" if diff > 0 else \
+                                         "down" if diff < 0 else "same"
+
+                                result.append({
+                                    "fund": fn,
+                                    "fund_name": (e_det or s_det or {}).get("shareholder_name", ""),
+                                    "stock": stock_filter,
+                                    "company_name": (e_det or s_det or {}).get("company_name", ""),
+                                    "start_lot": s_lot,
+                                    "end_lot": e_lot,
+                                    "diff_lot": diff,
+                                    "pct_change": round(pct, 2),
+                                    "start_ratio": (s_det or {}).get("ratio", 0.0),
+                                    "end_ratio": (e_det or {}).get("ratio", 0.0),
+                                    "status": status
+                                })
+
+                    elif len(all_dates) == 1:
+                        dates_used = [all_dates[0], all_dates[0]]
+
+                except Exception as e:
+                    print(f"Error calculating range changes: {e}")
+
+            # Sort: exits first, then by abs diff descending
+            status_order = {"exit": 0, "new": 1, "up": 2, "down": 3, "same": 4}
+            result.sort(key=lambda x: (status_order.get(x["status"], 9), -abs(x["diff_lot"])))
+
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(json.dumps({
+                "success": True,
+                "results": result,
+                "dates": dates_used,
+                "available_stocks": available_stocks,
+                "available_funds": available_funds
+            }, ensure_ascii=False).encode("utf-8"))
+            return
+
+
         # ── /tweet  →  generate tweet text from current data.json ──────────
         if self.path == '/tweet':
             try:
@@ -118,13 +399,20 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>TEFAS İnfografik Üretici</title>
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                 <style>
                     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #121214; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; margin: 0; padding: 60px 20px; }
                     .card { background: #1c1c1e; padding: 50px; border-radius: 30px; text-align: left; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 20px 60px rgba(0,0,0,0.6); width: 1450px; max-width: 98%; }
                     h1 { margin-top: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.5px; text-align: center; width: 100%; margin-bottom: 8px; }
                     .subtitle-p { color: #8e8e93; font-size: 17px; margin-bottom: 45px; text-align: center; width: 100%; }
                     
-                    .dashboard-grid { display: grid; grid-template-columns: 1.1fr 1fr 1.3fr; gap: 40px; }
+                    .dashboard-grid-generator { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; }
+                    .dashboard-grid-calculator { display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; }
+                    .tab-header { display: flex; gap: 12px; margin-bottom: 35px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px; width: 100%; }
+                    .tab-btn { background: none; border: none; color: #8e8e93; font-size: 16px; font-weight: 700; padding: 10px 20px; cursor: pointer; border-radius: 12px; transition: all 0.2s; }
+                    .tab-btn.active { background: #0a84ff !important; color: #fff !important; }
+                    .tab-btn:hover:not(.active) { color: #fff; background: rgba(255,255,255,0.05); }
+                    .tab-content.hidden { display: none !important; }
                     .section-title { font-size: 13px; color: #8e8e93; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 18px; display: block; }
                     .input-group { margin-bottom: 25px; }
                     label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 10px; color: #8e8e93; }
@@ -177,7 +465,16 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                     <h1>TEFAS İnfografik Üretici</h1>
                     <p class="subtitle-p">Profesyonel veri görselleştirme paneli.</p>
 
-                    <div class="dashboard-grid">
+                    <!-- Tab Buttons -->
+                    <div class="tab-header">
+                        <button class="tab-btn active" onclick="switchTab('tab-generator')">📊 İnfografik Üretici</button>
+                        <button class="tab-btn" onclick="switchTab('tab-calculator')">🧮 Getiri Hesaplayıcı</button>
+                        <button class="tab-btn" onclick="switchTab('tab-kap')">📈 KAP Ortaklık Takibi</button>
+                    </div>
+
+                    <!-- Tab 1: İnfografik Üretici -->
+                    <div id="tab-generator" class="tab-content">
+                        <div class="dashboard-grid-generator">
                         <!-- Column 1 -->
                         <div class="dash-column">
                             <span class="section-title">TEMEL BİLGİLER</span>
@@ -296,51 +593,7 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                                 <div class="cat-item"><label><input type="checkbox" class="cat-chk" value="Serbest (Katılım)"> Serbest (Katılım)</label></div>
                             </div>
                         </div>
-                        
-                        <!-- Column 3: Fon Getiri Hesaplayıcı -->
-                        <div class="dash-column" style="border-left: 1px solid rgba(255,255,255,0.05); padding-left: 30px;">
-                            <span class="section-title">FON GETİRİ HESAPLAYICI</span>
-                            <p style="color:#8e8e93; font-size:13px; margin-bottom:20px;">Önceki günün fiyatını manuel girebilir, güncel fiyatı ise Fintables eklentisi yardımıyla çekebilirsiniz.</p>
-                            
-                            <div class="pred-table" id="calcRowsContainer" style="margin-bottom: 20px;">
-                                <div class="pred-header" style="grid-template-columns: 1fr 1.2fr 1.2fr 1.2fr 40px; gap: 10px;">
-                                    <span>FON KODU</span>
-                                    <span>ÖNCEKİ FİYAT</span>
-                                    <span>GÜNCEL FİYAT</span>
-                                    <span>GETİRİ</span>
-                                    <span></span>
-                                </div>
-                                <!-- Rows will load automatically -->
-                            </div>
-                            
-                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                <button class="add-btn" onclick="addCalculatorRow()">+ Ekle</button>
-                                <button class="add-btn" onclick="transferCurrentToPrevious()" style="background:#ff9f0a; color:#fff;">📋 Aktar</button>
-                                <button class="add-btn" onclick="calculateReturns()" style="background:#32d74b; color:#fff;">🧮 Hesapla</button>
-                            </div>
-                            
-                            <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 12px; margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
-                                <div class="input-group" style="margin-bottom:0;">
-                                    <label for="quoteTweetUrl">Alıntı Linki:</label>
-                                    <input type="text" id="quoteTweetUrl" placeholder="https://x.com/..." oninput="saveQuoteTweetState()">
-                                </div>
-                                <div class="input-group" style="margin-bottom:0;">
-                                    <label for="calcSource">Veri Kaynağı:</label>
-                                    <input type="text" id="calcSource" placeholder="@fintables" value="@fintables" oninput="saveQuoteTweetState()">
-                                </div>
-                                <div class="input-group" style="margin-bottom:0;">
-                                    <label for="calcDate">Getiri Tarihi:</label>
-                                    <input type="date" id="calcDate" oninput="saveQuoteTweetState()">
-                                </div>
-                            </div>
-                            
-                            <button class="add-btn" onclick="shareCalculatorReturnsOnX()" style="background:#1d9bf0; color:#fff; width: 100%; margin-top: 10px; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; height: 44px; border-radius: 12px; cursor: pointer;">
-                                <svg width="16" height="16" viewBox="0 0 1200 1227" fill="white"><path d="M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.137 519.284H714.163Z"/></svg>
-                                𝕏 Getiri Paylaş
-                            </button>
-                            <span id="calcStatus" style="font-size:13px; color:#8e8e93; display:block; margin-top:15px; font-weight:600;"></span>
-                        </div>
-                    </div>
+                        </div> <!-- Closes dashboard-grid-generator -->
 
                     <div class="pred-section">
                         <span class="section-title">GETİRİ TAHMİNLERİ</span>
@@ -391,6 +644,8 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                         </div>
                     </div>
 
+
+
                     <div class="status-msg" id="status"></div>
                     <center>
                         <a id="resultLink" href="/infographic.png" target="_blank" class="result-link">Görseli Yeni Sekmede Aç</a>
@@ -413,9 +668,249 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                             <div class="loader"></div>
                             <span class="btn-text">Aylık İnfografik</span>
                         </button>
-                    </div>
-                </div>
+                    </div> <!-- Closes button-group -->
+                </div> <!-- Closes tab-generator -->
 
+                    <!-- Tab 2: Getiri Hesaplayıcı -->
+                    <div id="tab-calculator" class="tab-content hidden">
+                        <div class="dashboard-grid-calculator">
+                            <!-- Left panel: Calculator table -->
+                            <div class="dash-column">
+                                <span class="section-title">FON GETİRİ HESAPLAYICI</span>
+                                <p style="color:#8e8e93; font-size:13px; margin-bottom:20px;">Önceki günün fiyatını manuel girebilir, güncel fiyatı ise Fintables eklentisi yardımıyla çekebilirsiniz.</p>
+                                
+                                <div class="pred-table" id="calcRowsContainer" style="margin-bottom: 20px;">
+                                    <div class="pred-header" style="grid-template-columns: 1fr 1.2fr 1.2fr 1.2fr 40px; gap: 10px;">
+                                        <span>FON KODU</span>
+                                        <span>ÖNCEKİ FİYAT</span>
+                                        <span>GÜNCEL FİYAT</span>
+                                        <span>GETİRİ</span>
+                                        <span></span>
+                                    </div>
+                                    <!-- Rows will load automatically -->
+                                </div>
+                                
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <button class="add-btn" onclick="addCalculatorRow()">+ Ekle</button>
+                                    <button class="add-btn" onclick="transferCurrentToPrevious()" style="background:#ff9f0a; color:#fff;">📋 Aktar</button>
+                                    <button class="add-btn" onclick="calculateReturns()" style="background:#32d74b; color:#fff;">🧮 Hesapla</button>
+                                </div>
+                            </div>
+
+                            <!-- Right panel: Share settings -->
+                            <div class="dash-column" style="border-left: 1px solid rgba(255,255,255,0.05); padding-left: 30px;">
+                                <span class="section-title">PAYLAŞIM AYARLARI</span>
+                                <div class="input-group">
+                                    <label for="quoteTweetUrl">Alıntı Linki:</label>
+                                    <input type="text" id="quoteTweetUrl" placeholder="https://x.com/..." oninput="saveQuoteTweetState()">
+                                </div>
+                                <div class="input-group">
+                                    <label for="calcSource">Veri Kaynağı:</label>
+                                    <input type="text" id="calcSource" placeholder="@fintables" value="@fintables" oninput="saveQuoteTweetState()">
+                                </div>
+                                <div class="input-group">
+                                    <label for="calcDate">Getiri Tarihi:</label>
+                                    <input type="date" id="calcDate" oninput="saveQuoteTweetState()">
+                                </div>
+                                
+                                <button class="add-btn" onclick="shareCalculatorReturnsOnX()" style="background:#1d9bf0; color:#fff; width: 100%; margin-top: 15px; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; height: 44px; border-radius: 12px; cursor: pointer;">
+                                    <svg width="16" height="16" viewBox="0 0 1200 1227" fill="white"><path d="M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.137 519.284H714.163Z"/></svg>
+                                    𝕏 Getiri Paylaş
+                                </button>
+                                <span id="calcStatus" style="font-size:13px; color:#8e8e93; display:block; margin-top:15px; font-weight:600;"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 3: KAP Ortaklık Takibi -->
+                    <div id="tab-kap" class="tab-content hidden">
+                        <div class="pred-section" style="margin-top: 0; padding-top: 0; border: none;">
+                            <span class="section-title" style="color: #ff9f0a; font-size: 16px; margin-bottom: 8px;">📈 KAP BÜYÜK ORTAKLAR TAKİBİ (%5 VE ÜZERİ)</span>
+                            <p style="color:#8e8e93; font-size:13px; margin-bottom:25px; margin-top:0;">Fonların şirketlerdeki pay değişimlerini interaktif grafik ve manuel lot kayıtlarıyla takip edin.</p>
+                            
+                            <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; margin-bottom: 30px;">
+                                <!-- Left panel: Chart and selectors -->
+                                <div style="background: rgba(255,255,255,0.02); padding: 25px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; min-width: 0;">
+                                    <span style="font-size: 14px; font-weight: 700; color: #fff; display: block; margin-bottom: 18px;">📊 Tarihsel Değişim Grafiği</span>
+                                    <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                                        <div style="display: flex; flex-direction: column; gap: 5px; flex: 1;">
+                                            <label style="font-size: 11px; color: #8e8e93; font-weight: 700;">TAKİPTEKİ FON</label>
+                                            <select id="kapSelectorFund" onchange="onKapFundChanged()" style="background:#000; border:1px solid #333; border-radius:10px; color:#fff; padding:10px; font-weight:800;"></select>
+                                        </div>
+                                        <div style="display: flex; flex-direction: column; gap: 5px; flex: 1;">
+                                            <label style="font-size: 11px; color: #8e8e93; font-weight: 700;">BÜYÜK ORTAK OLDUĞU HİSSE</label>
+                                            <select id="kapSelectorStock" onchange="loadKapShareholderHistoryChart()" style="background:#000; border:1px solid #333; border-radius:10px; color:#fff; padding:10px; font-weight:800;"></select>
+                                        </div>
+                                    </div>
+                                    <div style="position: relative; height: 260px; width: 100%; background: #000; border-radius: 12px; padding: 15px; border: 1px solid #1c1c1e;">
+                                        <canvas id="kapHistoryChart"></canvas>
+                                    </div>
+                                </div>
+                                
+                                <!-- Right panel: Manual input entry -->
+                                <div style="background: rgba(255,255,255,0.02); padding: 25px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; justify-content: space-between; min-width: 0;">
+                                    <div>
+                                        <span style="font-size: 14px; font-weight: 700; color: #fff; display: block; margin-bottom: 18px;">✍️ Manuel Lot/Pay Ekleme</span>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                            <div style="display: flex; flex-direction: column; gap: 5px;">
+                                                <label style="font-size: 11px; color: #8e8e93; font-weight: 700;">TARİH</label>
+                                                <input type="date" id="kapManualDate" style="background:#000; border:1px solid #333; border-radius:10px; color:#fff; padding:9px; font-size:13px;">
+                                            </div>
+                                            <div style="display: flex; flex-direction: column; gap: 5px;">
+                                                <label style="font-size: 11px; color: #8e8e93; font-weight: 700;">FON KODU</label>
+                                                <input type="text" id="kapManualFund" placeholder="Örn: TLY" style="background:#000; border:1px solid #333; border-radius:10px; color:#fff; padding:9px; font-weight:800; text-transform:uppercase; text-align:center;">
+                                            </div>
+                                        </div>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                                            <div style="display: flex; flex-direction: column; gap: 5px;">
+                                                <label style="font-size: 11px; color: #8e8e93; font-weight: 700;">HİSSE KODU</label>
+                                                <input type="text" id="kapManualStock" placeholder="Örn: TERA" style="background:#000; border:1px solid #333; border-radius:10px; color:#fff; padding:9px; font-weight:800; text-transform:uppercase; text-align:center;">
+                                            </div>
+                                            <div style="display: flex; flex-direction: column; gap: 5px;">
+                                                <label style="font-size: 11px; color: #8e8e93; font-weight: 700;">LOT ADEDİ</label>
+                                                <input type="number" id="kapManualLot" placeholder="10093782" style="background:#000; border:1px solid #333; border-radius:10px; color:#fff; padding:9px;">
+                                            </div>
+                                            <div style="display: flex; flex-direction: column; gap: 5px;">
+                                                <label style="font-size: 11px; color: #8e8e93; font-weight: 700;">PAY ORANI (%)</label>
+                                                <input type="number" step="any" id="kapManualRatio" placeholder="9.01" style="background:#000; border:1px solid #333; border-radius:10px; color:#fff; padding:9px;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button onclick="saveKapManualEntry()" style="background:#ff9f0a; color:#fff; border:none; padding:14px; border-radius:12px; font-size: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">💾 Manuel Veri Kaydet</button>
+                                    <span id="kapManualStatus" style="font-size: 13px; text-align: center; margin-top: 10px; font-weight: 600; display: block;"></span>
+                                </div>
+                            </div>
+
+                            <!-- Pay Değişimleri Alt Bölüm -->
+                            <div style="background: rgba(255,255,255,0.02); padding: 25px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.05); margin-top: 25px; min-width: 0;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                                    <div>
+                                        <span style="font-size: 14px; font-weight: 700; color: #fff; display: block; margin-bottom: 4px;">🔄 Ortaklık Payı Değişimleri</span>
+                                        <span id="kapChangesDates" style="font-size: 12px; color: #8e8e93; font-weight: 500;">Karşılaştırılan Tarihler: Yükleniyor...</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <label style="font-size: 12px; color: #8e8e93; font-weight: 700; margin-bottom: 0;">FON FİLTRESİ:</label>
+                                        <select id="kapChangesFilter" onchange="renderKapChangesTable()" style="background:#000; border:1px solid #333; border-radius:10px; color:#fff; padding:8px 12px; font-size:13px; font-weight:800; width: 160px;"></select>
+                                    </div>
+                                </div>
+                                
+                                <div style="overflow-x: auto;">
+                                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+                                        <thead>
+                                            <tr style="border-bottom: 2px solid rgba(255,255,255,0.1); color: #8e8e93; font-weight: 700;">
+                                                <th style="padding: 12px 10px;">Fon</th>
+                                                <th style="padding: 12px 10px;">Hisse</th>
+                                                <th style="padding: 12px 10px;">Şirket Unvanı</th>
+                                                <th style="padding: 12px 10px; text-align: right;">Eski Lot</th>
+                                                <th style="padding: 12px 10px; text-align: right;">Yeni Lot</th>
+                                                <th style="padding: 12px 10px; text-align: right;">Değişim (Lot)</th>
+                                                <th style="padding: 12px 10px; text-align: right;">Değişim (%)</th>
+                                                <th style="padding: 12px 10px; text-align: right;">Yeni Pay (%)</th>
+                                                <th style="padding: 12px 10px; text-align: center;">Tür</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="kapChangesTableBody">
+                                            <tr>
+                                                <td colspan="9" style="padding: 20px; text-align: center; color: #8e8e93;">Değişim hesaplanabilmesi için en az 2 farklı güne ait veri bulunmalıdır.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tarih Aralığı Analizi Bölümü -->
+                        <div style="background: rgba(255,159,10,0.06); padding: 25px; border-radius: 18px; border: 1px solid rgba(255,159,10,0.2); margin-top: 30px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+                                <div>
+                                    <span style="font-size: 15px; font-weight: 700; color: #ff9f0a; display: block; margin-bottom: 3px;">🔍 Tarih Aralığı Analizi</span>
+                                    <span style="font-size: 12px; color: #8e8e93;">Seçilen tarih aralığında fon veya hisse bazlı tüm ortaklık değişimlerini görün</span>
+                                </div>
+                                <!-- Mod Toggle -->
+                                <div style="display: flex; background: #000; border-radius: 12px; padding: 4px; gap: 4px; border: 1px solid #333;">
+                                    <button id="rangeModeFundBtn" onclick="setRangeMode('fund')"
+                                        style="background:#ff9f0a; color:#000; border:none; padding:8px 18px; border-radius:9px; font-size:13px; font-weight:800; cursor:pointer; transition:all 0.2s;">
+                                        🏦 Fon Bazlı
+                                    </button>
+                                    <button id="rangeModeStockBtn" onclick="setRangeMode('stock')"
+                                        style="background:none; color:#8e8e93; border:none; padding:8px 18px; border-radius:9px; font-size:13px; font-weight:800; cursor:pointer; transition:all 0.2s;">
+                                        📊 Hisse Bazlı
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Filtre Satırı -->
+                            <div style="display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 20px;">
+                                <!-- Fon modu: dropdown -->
+                                <div id="rangeFundGroup" style="display:flex; flex-direction:column; gap:5px; min-width:130px;">
+                                    <label style="font-size:11px; color:#8e8e93; font-weight:700;">FON KODU</label>
+                                    <select id="rangeFundSelect" style="background:#000; border:1px solid #333; border-radius:10px; color:#fff; padding:10px 12px; font-size:13px; font-weight:800;"></select>
+                                </div>
+                                <!-- Hisse modu: text input + datalist -->
+                                <div id="rangeStockGroup" style="display:none; flex-direction:column; gap:5px; min-width:130px;">
+                                    <label style="font-size:11px; color:#8e8e93; font-weight:700;">HİSSE KODU</label>
+                                    <input id="rangeStockInput" list="rangeStockList" placeholder="Örn: PASEU"
+                                        style="background:#000; border:1px solid #333; border-radius:10px; color:#fff; padding:10px 12px; font-size:13px; font-weight:800; text-transform:uppercase; width:130px;">
+                                    <datalist id="rangeStockList"></datalist>
+                                </div>
+                                <!-- Başlangıç tarihi -->
+                                <div style="display:flex; flex-direction:column; gap:5px;">
+                                    <label style="font-size:11px; color:#8e8e93; font-weight:700;">BAŞLANGIÇ</label>
+                                    <input type="date" id="rangeFromDate" style="background:#000; border:1px solid #333; border-radius:10px; color:#fff; padding:9px 12px; font-size:13px;">
+                                </div>
+                                <!-- Bitiş tarihi -->
+                                <div style="display:flex; flex-direction:column; gap:5px;">
+                                    <label style="font-size:11px; color:#8e8e93; font-weight:700;">BİTİŞ</label>
+                                    <input type="date" id="rangeToDate" style="background:#000; border:1px solid #333; border-radius:10px; color:#fff; padding:9px 12px; font-size:13px;">
+                                </div>
+                                <!-- Değişmeyenleri göster toggle -->
+                                <div style="display:flex; flex-direction:column; gap:5px;">
+                                    <label style="font-size:11px; color:#8e8e93; font-weight:700;">DEĞİŞMEYENLER</label>
+                                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:10px 12px; background:#000; border:1px solid #333; border-radius:10px;">
+                                        <input type="checkbox" id="rangeShowUnchanged" style="width:16px; height:16px; cursor:pointer; accent-color:#ff9f0a;">
+                                        <span style="font-size:13px; color:#8e8e93;">Göster</span>
+                                    </label>
+                                </div>
+                                <!-- Analiz Butonu -->
+                                <button onclick="loadRangeAnalysis()"
+                                    style="background:#ff9f0a; color:#000; border:none; padding:11px 22px; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; align-self:flex-end; white-space:nowrap;">
+                                    🔍 Analiz Et
+                                </button>
+                            </div>
+
+                            <!-- Sonuç Başlığı -->
+                            <div id="rangeResultHeader" style="display:none; margin-bottom:12px;">
+                                <span id="rangeResultTitle" style="font-size:13px; font-weight:700; color:#ff9f0a;"></span>
+                                <span id="rangeResultSub" style="font-size:12px; color:#8e8e93; margin-left:10px;"></span>
+                            </div>
+
+                            <!-- Sonuç Tablosu -->
+                            <div style="overflow-x: auto;">
+                                <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
+                                    <thead id="rangeTableHead" style="display:none;">
+                                        <tr style="border-bottom:2px solid rgba(255,255,255,0.1); color:#8e8e93; font-weight:700;">
+                                            <th id="rangeColFundStock" style="padding:10px 10px;">Fon / Hisse</th>
+                                            <th style="padding:10px 10px;">Şirket / Fon Adı</th>
+                                            <th style="padding:10px 10px; text-align:right;">Açılış Lotu</th>
+                                            <th style="padding:10px 10px; text-align:right;">Kapanış Lotu</th>
+                                            <th style="padding:10px 10px; text-align:right;">Değişim (Lot)</th>
+                                            <th style="padding:10px 10px; text-align:right;">Değişim (%)</th>
+                                            <th style="padding:10px 10px; text-align:right;">Pay Oranı</th>
+                                            <th style="padding:10px 10px; text-align:center;">Durum</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rangeTableBody">
+                                        <tr>
+                                            <td colspan="8" style="padding:25px; text-align:center; color:#8e8e93;">
+                                                Fon veya hisse seçip tarih aralığı belirleyin, ardından "Analiz Et" butonuna basın.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- Closes card div -->
                 <script>
                     const addPredictionRow = (code='', val='', desc='') => {
                         const container = document.getElementById('predRowsContainer');
@@ -964,11 +1459,521 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
                         document.getElementById('tweet-char-count').textContent = tweetText.length + ' karakter';
                         modal.style.display = 'flex';
                     }
+                    let kapChartInstance = null;
+                    let kapSelectorsData = {};
+
+                    async function initKapShareholdersTracker() {
+                        const today = new Date();
+                        const yyyy = today.getFullYear();
+                        const mm = String(today.getMonth() + 1).padStart(2, '0');
+                        const dd = String(today.getDate()).padStart(2, '0');
+                        document.getElementById('kapManualDate').value = `${yyyy}-${mm}-${dd}`;
+                        
+                        try {
+                            const resp = await fetch('/api/kap/shareholders/selectors');
+                            const data = await resp.json();
+                            if (data.success && data.selectors) {
+                                kapSelectorsData = data.selectors;
+                                
+                                const fundSelect = document.getElementById('kapSelectorFund');
+                                fundSelect.innerHTML = '';
+                                
+                                const funds = Object.keys(kapSelectorsData).sort();
+                                if (funds.length === 0) {
+                                    const opt = document.createElement('option');
+                                    opt.text = "Veri Yok";
+                                    fundSelect.appendChild(opt);
+                                    return;
+                                }
+                                
+                                funds.forEach(f => {
+                                    const opt = document.createElement('option');
+                                    opt.value = f;
+                                    opt.text = f;
+                                    fundSelect.appendChild(opt);
+                                });
+                                
+                                if (funds.includes('TLY')) {
+                                    fundSelect.value = 'TLY';
+                                }
+                                
+                                onKapFundChanged();
+                            }
+                            loadKapChanges();
+                            initRangeAnalysis();
+                        } catch (err) {
+                            console.error("Error initializing KAP tracker:", err);
+                        }
+                    }
+
+                    let kapChangesData = [];
+
+                    async function loadKapChanges() {
+                        const datesEl = document.getElementById('kapChangesDates');
+                        const filterSelect = document.getElementById('kapChangesFilter');
+                        
+                        try {
+                            const resp = await fetch('/api/kap/shareholders/changes');
+                            const data = await resp.json();
+                            if (data.success) {
+                                kapChangesData = data.changes;
+                                
+                                if (data.yesterday && data.today) {
+                                    datesEl.textContent = `Karşılaştırılan Tarihler: ${data.yesterday} ➔ ${data.today}`;
+                                } else {
+                                    datesEl.textContent = "Karşılaştırılacak yeterli tarih bulunamadı.";
+                                }
+                                
+                                const currentFilter = filterSelect.value;
+                                filterSelect.innerHTML = '';
+                                
+                                const allOpt = document.createElement('option');
+                                allOpt.value = 'ALL';
+                                allOpt.text = 'TÜM FONLAR';
+                                filterSelect.appendChild(allOpt);
+                                
+                                const uniqueFunds = [...new Set(kapChangesData.map(c => c.fund))].sort();
+                                uniqueFunds.forEach(f => {
+                                    const opt = document.createElement('option');
+                                    opt.value = f;
+                                    opt.text = f;
+                                    filterSelect.appendChild(opt);
+                                });
+                                
+                                if (uniqueFunds.includes(currentFilter)) {
+                                    filterSelect.value = currentFilter;
+                                } else if (uniqueFunds.includes('TLY')) {
+                                    filterSelect.value = 'TLY';
+                                } else {
+                                    filterSelect.value = 'ALL';
+                                }
+                                
+                                renderKapChangesTable();
+                            }
+                        } catch (err) {
+                            console.error("Error loading KAP changes:", err);
+                        }
+                    }
+
+                    function renderKapChangesTable() {
+                        const filter = document.getElementById('kapChangesFilter').value;
+                        const tbody = document.getElementById('kapChangesTableBody');
+                        tbody.innerHTML = '';
+                        
+                        const filtered = kapChangesData.filter(c => filter === 'ALL' || c.fund === filter);
+                        
+                        if (filtered.length === 0) {
+                            tbody.innerHTML = `
+                                <tr>
+                                    <td colspan="9" style="padding: 20px; text-align: center; color: #8e8e93;">Bu fona ait alım/satım hareketi bulunmamaktadır.</td>
+                                </tr>
+                            `;
+                            return;
+                        }
+                        
+                        filtered.sort((a, b) => Math.abs(b.diff_lot) - Math.abs(a.diff_lot));
+                        
+                        filtered.forEach(c => {
+                            const isBuy = c.diff_lot > 0;
+                            const badgeColor = isBuy ? '#32d74b' : '#ff453a';
+                            const badgeText = isBuy ? 'ALIM 📈' : 'SATIM 📉';
+                            const sign = isBuy ? '+' : '';
+                            const colorStyle = `color: ${badgeColor}; font-weight: 700;`;
+                            
+                            const tr = document.createElement('tr');
+                            tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+                            tr.className = 'hover:bg-gray-50';
+                            tr.innerHTML = `
+                                <td style="padding: 12px 10px; font-weight:700;">${c.fund}</td>
+                                <td style="padding: 12px 10px; font-weight:700; color:#ff9f0a;">#${c.stock}</td>
+                                <td style="padding: 12px 10px; font-size:12px; color:#8e8e93; max-width:250px; overflow:hidden; text-ellipsis:ellipsis; white-space:nowrap;" title="${c.company_name}">${c.company_name}</td>
+                                <td style="padding: 12px 10px; text-align: right; font-family:monospace;">${Math.round(c.yesterday_lot).toLocaleString('tr-TR')}</td>
+                                <td style="padding: 12px 10px; text-align: right; font-family:monospace;">${Math.round(c.today_lot).toLocaleString('tr-TR')}</td>
+                                <td style="padding: 12px 10px; text-align: right; font-family:monospace; ${colorStyle}">${sign}${Math.round(c.diff_lot).toLocaleString('tr-TR')}</td>
+                                <td style="padding: 12px 10px; text-align: right; font-family:monospace; ${colorStyle}">${sign}${c.pct_change.toFixed(2)}%</td>
+                                <td style="padding: 12px 10px; text-align: right; font-family:monospace;">%${c.today_ratio.toFixed(2)}</td>
+                                <td style="padding: 12px 10px; text-align: center;"><span style="background: ${badgeColor}20; color: ${badgeColor}; padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: 800; border: 1px solid ${badgeColor}40;">${badgeText}</span></td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    }
+
+                    function onKapFundChanged() {
+                        const fundSelect = document.getElementById('kapSelectorFund');
+                        const stockSelect = document.getElementById('kapSelectorStock');
+                        const selectedFund = fundSelect.value;
+                        
+                        stockSelect.innerHTML = '';
+                        if (!selectedFund || !kapSelectorsData[selectedFund]) {
+                            const opt = document.createElement('option');
+                            opt.text = "Hisse Yok";
+                            stockSelect.appendChild(opt);
+                            return;
+                        }
+                        
+                        const stocks = kapSelectorsData[selectedFund];
+                        stocks.forEach(s => {
+                            const opt = document.createElement('option');
+                            opt.value = s;
+                            opt.text = s;
+                            stockSelect.appendChild(opt);
+                        });
+                        
+                        if (stocks.includes('TERA')) {
+                            stockSelect.value = 'TERA';
+                        }
+                        
+                        loadKapShareholderHistoryChart();
+                    }
+
+                    async function loadKapShareholderHistoryChart() {
+                        const fund = document.getElementById('kapSelectorFund').value;
+                        const stock = document.getElementById('kapSelectorStock').value;
+                        
+                        if (!fund || !stock || fund === "Veri Yok" || stock === "Hisse Yok") {
+                            return;
+                        }
+                        
+                        try {
+                            const resp = await fetch(`/api/kap/shareholders/history?fund=${fund}&stock=${stock}`);
+                            const data = await resp.json();
+                            if (data.success && data.history) {
+                                const history = data.history;
+                                
+                                const labels = history.map(h => {
+                                    const parts = h.date.split('-');
+                                    return parts.length === 3 ? `${parts[2]}.${parts[1]}` : h.date;
+                                });
+                                const lots = history.map(h => h.lot);
+                                const ratios = history.map(h => h.ratio);
+                                
+                                drawKapChart(labels, lots, ratios, `${fund} Fonunun ${stock} Hissesindeki Lot Miktarı`);
+                            }
+                        } catch (err) {
+                            console.error("Error loading KAP history chart:", err);
+                        }
+                    }
+
+                    function drawKapChart(labels, lots, ratios, title) {
+                        const ctx = document.getElementById('kapHistoryChart').getContext('2d');
+                        
+                        if (kapChartInstance) {
+                            kapChartInstance.destroy();
+                        }
+                        
+                        kapChartInstance = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Lot Miktarı',
+                                    data: lots,
+                                    borderColor: '#ff9f0a',
+                                    backgroundColor: 'rgba(255, 159, 10, 0.1)',
+                                    borderWidth: 3,
+                                    pointBackgroundColor: '#ff9f0a',
+                                    pointRadius: 4,
+                                    tension: 0.15,
+                                    fill: true,
+                                    yAxisID: 'y'
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    },
+                                    tooltip: {
+                                        mode: 'index',
+                                        intersect: false,
+                                        callbacks: {
+                                            label: function(context) {
+                                                const val = context.raw;
+                                                const ratio = ratios[context.dataIndex];
+                                                return ` Lot: ${val.toLocaleString('tr-TR')} (Pay: %${ratio.toFixed(2)})`;
+                                            }
+                                        }
+                                    }
+                                },
+                                scales: {
+                                    x: {
+                                        grid: {
+                                            color: 'rgba(255, 255, 255, 0.05)'
+                                        },
+                                        ticks: {
+                                            color: '#8e8e93'
+                                        }
+                                    },
+                                    y: {
+                                        type: 'linear',
+                                        display: true,
+                                        position: 'left',
+                                        grid: {
+                                            color: 'rgba(255, 255, 255, 0.05)'
+                                        },
+                                        ticks: {
+                                            color: '#8e8e93',
+                                            callback: function(value) {
+                                                if (value >= 1e6) return (value / 1e6).toFixed(1) + 'M';
+                                                if (value >= 1e3) return (value / 1e3).toFixed(0) + 'K';
+                                                return value;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                    async function saveKapManualEntry() {
+                        const date = document.getElementById('kapManualDate').value;
+                        const fund = document.getElementById('kapManualFund').value.trim().toUpperCase();
+                        const stock = document.getElementById('kapManualStock').value.trim().toUpperCase();
+                        const lot = parseFloat(document.getElementById('kapManualLot').value);
+                        const ratio = parseFloat(document.getElementById('kapManualRatio').value);
+                        
+                        const statusEl = document.getElementById('kapManualStatus');
+                        statusEl.textContent = "⏳ Kaydediliyor...";
+                        statusEl.style.color = "#8e8e93";
+                        
+                        if (!date || !fund || !stock || isNaN(lot) || isNaN(ratio)) {
+                            statusEl.textContent = "❌ Lütfen tüm alanları doldurun!";
+                            statusEl.style.color = "#ff453a";
+                            return;
+                        }
+                        
+                        try {
+                            const resp = await fetch('/api/kap/shareholders/manual', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ date, fund, stock, lot, ratio })
+                            });
+                            const data = await resp.json();
+                            if (data.success) {
+                                statusEl.textContent = "✅ Başarıyla kaydedildi!";
+                                statusEl.style.color = "#32d74b";
+                                
+                                document.getElementById('kapManualFund').value = '';
+                                document.getElementById('kapManualStock').value = '';
+                                document.getElementById('kapManualLot').value = '';
+                                document.getElementById('kapManualRatio').value = '';
+                                
+                                await initKapShareholdersTracker();
+                            } else {
+                                statusEl.textContent = "❌ Hata: " + data.error;
+                                statusEl.style.color = "#ff453a";
+                            }
+                        } catch (err) {
+                            statusEl.textContent = "❌ Bağlantı hatası: " + err.message;
+                            statusEl.style.color = "#ff453a";
+                        }
+                    }
+
+                    // ── Tarih Aralığı Analizi ──────────────────────────────
+                    let rangeMode = 'fund'; // 'fund' | 'stock'
+                    let rangeAvailableStocks = [];
+                    let rangeAvailableFunds  = [];
+
+                    function setRangeMode(mode) {
+                        rangeMode = mode;
+                        const fundBtn  = document.getElementById('rangeModeFundBtn');
+                        const stockBtn = document.getElementById('rangeModeStockBtn');
+                        const fundGrp  = document.getElementById('rangeFundGroup');
+                        const stockGrp = document.getElementById('rangeStockGroup');
+
+                        if (mode === 'fund') {
+                            fundBtn.style.background  = '#ff9f0a';
+                            fundBtn.style.color       = '#000';
+                            stockBtn.style.background = 'none';
+                            stockBtn.style.color      = '#8e8e93';
+                            fundGrp.style.display  = 'flex';
+                            stockGrp.style.display = 'none';
+                        } else {
+                            stockBtn.style.background = '#ff9f0a';
+                            stockBtn.style.color      = '#000';
+                            fundBtn.style.background  = 'none';
+                            fundBtn.style.color       = '#8e8e93';
+                            stockGrp.style.display = 'flex';
+                            fundGrp.style.display  = 'none';
+                        }
+                    }
+
+                    function populateRangeSelectors(funds, stocks) {
+                        rangeAvailableFunds  = funds  || [];
+                        rangeAvailableStocks = stocks || [];
+
+                        // Fund dropdown
+                        const fundSel = document.getElementById('rangeFundSelect');
+                        if (fundSel) {
+                            fundSel.innerHTML = '';
+                            rangeAvailableFunds.forEach(f => {
+                                const o = document.createElement('option');
+                                o.value = f; o.text = f;
+                                fundSel.appendChild(o);
+                            });
+                            if (rangeAvailableFunds.includes('TLY')) fundSel.value = 'TLY';
+                        }
+
+                        // Stock datalist
+                        const dl = document.getElementById('rangeStockList');
+                        if (dl) {
+                            dl.innerHTML = '';
+                            rangeAvailableStocks.forEach(s => {
+                                const o = document.createElement('option');
+                                o.value = s;
+                                dl.appendChild(o);
+                            });
+                        }
+
+                        // Default dates: oldest → today from history
+                        const today = new Date().toISOString().slice(0, 10);
+                        const fromEl = document.getElementById('rangeFromDate');
+                        const toEl   = document.getElementById('rangeToDate');
+                        if (fromEl && !fromEl.value) fromEl.value = today;
+                        if (toEl && !toEl.value) toEl.value = today;
+                    }
+
+                    async function initRangeAnalysis() {
+                        try {
+                            const resp = await fetch('/api/kap/shareholders/range-changes');
+                            const data = await resp.json();
+                            if (data.success) {
+                                populateRangeSelectors(data.available_funds, data.available_stocks);
+                                const fromEl = document.getElementById('rangeFromDate');
+                                const toEl   = document.getElementById('rangeToDate');
+                                if (data.dates && data.dates.length === 2) {
+                                    if (fromEl) fromEl.value = data.dates[0];
+                                    if (toEl)   toEl.value   = data.dates[1];
+                                }
+                            }
+                        } catch (err) {
+                            console.error("Error initializing Range Analysis selectors:", err);
+                        }
+                    }
+
+                    async function loadRangeAnalysis() {
+                        const tbody  = document.getElementById('rangeTableBody');
+                        const header = document.getElementById('rangeTableHead');
+                        const resHdr = document.getElementById('rangeResultHeader');
+                        tbody.innerHTML = `<tr><td colspan="8" style="padding:20px; text-align:center; color:#8e8e93;">Yükleniyor...</td></tr>`;
+
+                        const fromDate      = document.getElementById('rangeFromDate').value;
+                        const toDate        = document.getElementById('rangeToDate').value;
+                        const showUnchanged = document.getElementById('rangeShowUnchanged').checked ? 1 : 0;
+
+                        let url = `/api/kap/shareholders/range-changes?from=${fromDate}&to=${toDate}&unchanged=${showUnchanged}`;
+
+                        let labelPrimary = '';
+                        if (rangeMode === 'fund') {
+                            const fund = document.getElementById('rangeFundSelect').value;
+                            if (!fund) { tbody.innerHTML = `<tr><td colspan="8" style="padding:20px; text-align:center; color:#ff453a;">Lütfen bir fon seçin.</td></tr>`; return; }
+                            url += `&fund=${fund}`;
+                            labelPrimary = fund;
+                            document.getElementById('rangeColFundStock').textContent = 'Hisse';
+                        } else {
+                            const stock = document.getElementById('rangeStockInput').value.trim().toUpperCase();
+                            if (!stock) { tbody.innerHTML = `<tr><td colspan="8" style="padding:20px; text-align:center; color:#ff453a;">Lütfen bir hisse kodu girin.</td></tr>`; return; }
+                            url += `&stock=${stock}`;
+                            labelPrimary = stock;
+                            document.getElementById('rangeColFundStock').textContent = 'Fon';
+                        }
+
+                        try {
+                            const resp = await fetch(url);
+                            const data = await resp.json();
+
+                            if (data.available_stocks) populateRangeSelectors(data.available_funds, data.available_stocks);
+
+                            const results = data.results || [];
+                            const dates   = data.dates   || [];
+
+                            // Update header
+                            resHdr.style.display = 'block';
+                            document.getElementById('rangeResultTitle').textContent =
+                                `${labelPrimary} — ${results.length} kayıt`;
+                            document.getElementById('rangeResultSub').textContent =
+                                dates.length === 2 ? `${dates[0]}  →  ${dates[1]}` : '';
+
+                            renderRangeTable(results);
+                            header.style.display = '';
+
+                        } catch (err) {
+                            tbody.innerHTML = `<tr><td colspan="8" style="padding:20px; text-align:center; color:#ff453a;">Hata: ${err.message}</td></tr>`;
+                        }
+                    }
+
+                    function renderRangeTable(results) {
+                        const tbody = document.getElementById('rangeTableBody');
+                        tbody.innerHTML = '';
+
+                        if (!results.length) {
+                            tbody.innerHTML = `<tr><td colspan="8" style="padding:20px; text-align:center; color:#8e8e93;">Seçilen tarih aralığında değişim bulunamadı.</td></tr>`;
+                            return;
+                        }
+
+                        const statusMap = {
+                            new:  { label: 'YENİ GİRDİ 🆕', bg: '#30d158', color: '#000' },
+                            exit: { label: 'TAMAMEN ÇIKTI ❌', bg: '#ff453a', color: '#fff' },
+                            up:   { label: 'ARTIRDI 📈', bg: '#30d15820', color: '#30d158', border: '#30d15840' },
+                            down: { label: 'AZALTTI 📉', bg: '#ff453a20', color: '#ff453a', border: '#ff453a40' },
+                            same: { label: 'DEĞİŞMEDİ ➡️', bg: '#8e8e9320', color: '#8e8e93', border: '#8e8e9340' }
+                        };
+
+                        results.forEach(r => {
+                            const st    = statusMap[r.status] || statusMap.same;
+                            const sign  = r.diff_lot > 0 ? '+' : '';
+                            const diffC = r.diff_lot > 0 ? '#30d158' : r.diff_lot < 0 ? '#ff453a' : '#8e8e93';
+                            const primaryLabel = rangeMode === 'fund' ? r.stock : r.fund;
+                            const secondaryLabel = rangeMode === 'fund' ? r.company_name : r.fund_name;
+
+                            const badge = `<span style="background:${st.bg}; color:${st.color}; ${st.border ? 'border:1px solid '+st.border+';' : ''} padding:3px 9px; border-radius:7px; font-size:11px; font-weight:800; white-space:nowrap;">${st.label}</span>`;
+
+                            const tr = document.createElement('tr');
+                            tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+                            tr.innerHTML = `
+                                <td style="padding:10px; font-weight:800; color:#ff9f0a;">${primaryLabel}</td>
+                                <td style="padding:10px; font-size:12px; color:#8e8e93; max-width:220px; overflow:hidden; white-space:nowrap;" title="${secondaryLabel}">${secondaryLabel}</td>
+                                <td style="padding:10px; text-align:right; font-family:monospace; color:#8e8e93;">${r.start_lot > 0 ? Math.round(r.start_lot).toLocaleString('tr-TR') : '—'}</td>
+                                <td style="padding:10px; text-align:right; font-family:monospace;">${r.end_lot > 0 ? Math.round(r.end_lot).toLocaleString('tr-TR') : '—'}</td>
+                                <td style="padding:10px; text-align:right; font-family:monospace; color:${diffC}; font-weight:700;">${r.diff_lot !== 0 ? sign + Math.round(r.diff_lot).toLocaleString('tr-TR') : '—'}</td>
+                                <td style="padding:10px; text-align:right; font-family:monospace; color:${diffC}; font-weight:700;">${r.pct_change !== 0 ? sign + r.pct_change.toFixed(2) + '%' : '—'}</td>
+                                <td style="padding:10px; text-align:right; font-family:monospace; font-size:12px; color:#8e8e93;">
+                                    ${r.start_ratio ? '%' + r.start_ratio.toFixed(2) : '—'} → ${r.end_ratio ? '%' + r.end_ratio.toFixed(2) : '—'}
+                                </td>
+                                <td style="padding:10px; text-align:center;">${badge}</td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    }
+
+                    function switchTab(tabId) {
+                        document.querySelectorAll('.tab-content').forEach(el => {
+                            el.classList.add('hidden');
+                        });
+                        document.getElementById(tabId).classList.remove('hidden');
+                        
+                        document.querySelectorAll('.tab-btn').forEach(btn => {
+                            btn.classList.remove('active');
+                        });
+                        
+                        let btnSelector = '';
+                        if (tabId === 'tab-generator') btnSelector = '[onclick="switchTab(\'tab-generator\')"]';
+                        else if (tabId === 'tab-calculator') btnSelector = '[onclick="switchTab(\'tab-calculator\')"]';
+                        else if (tabId === 'tab-kap') btnSelector = '[onclick="switchTab(\'tab-kap\')"]';
+                        
+                        const activeBtn = document.querySelector(btnSelector);
+                        if (activeBtn) {
+                            activeBtn.classList.add('active');
+                        }
+                    }
 
                     // Auto load and smart time-based polling on start
                     window.addEventListener('DOMContentLoaded', () => {
                         loadCalculatorState();
                         loadQuoteTweetState();
+                        initKapShareholdersTracker();
                         checkAndPoll();
                     });
 
@@ -1162,6 +2167,61 @@ class WebServerHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             self.wfile.write(json.dumps({"success": True, "count": len(prices)}).encode("utf-8"))
+            return
+
+        if self.path == '/api/kap/shareholders/manual':
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            req_data = json.loads(post_data.decode('utf-8'))
+            
+            date_str = req_data.get('date', '').strip()
+            fund_code = req_data.get('fund', '').strip().upper()
+            stock_code = req_data.get('stock', '').strip().upper()
+            lot_val = float(req_data.get('lot', 0.0))
+            ratio_val = float(req_data.get('ratio', 0.0))
+            
+            if not date_str or not fund_code or not stock_code:
+                self.send_response(400)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": False, "error": "Geçersiz parametreler."}).encode("utf-8"))
+                return
+                
+            db_path = os.path.join(DIRECTORY, "kap_shareholders_history.json")
+            history = {}
+            if os.path.exists(db_path):
+                try:
+                    with open(db_path, "r", encoding="utf-8") as f:
+                        history = json.load(f)
+                except:
+                    pass
+                    
+            if date_str not in history:
+                history[date_str] = {}
+            if fund_code not in history[date_str]:
+                history[date_str][fund_code] = {}
+                
+            history[date_str][fund_code][stock_code] = {
+                "lot": lot_val,
+                "ratio": ratio_val,
+                "is_manual": True,
+                "shareholder_name": "MANUEL GİRİŞ",
+                "company_name": "MANUEL GİRİŞ"
+            }
+            
+            try:
+                with open(db_path, "w", encoding="utf-8") as f:
+                    json.dump(history, f, ensure_ascii=False, indent=4)
+                success = True
+                error_msg = ""
+            except Exception as e:
+                success = False
+                error_msg = str(e)
+                
+            self.send_response(200 if success else 500)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(json.dumps({"success": success, "error": error_msg}).encode("utf-8"))
             return
 
         if self.path == '/api/save_takas':
@@ -1544,8 +2604,67 @@ def start_capitals_updater():
                 
     threading.Thread(target=run_loop, daemon=True).start()
 
+def start_kap_shareholders_updater():
+    import time
+    from datetime import datetime, timedelta
+    import threading
+    import subprocess
+    
+    db_path = os.path.join(DIRECTORY, "kap_shareholders_history.json")
+    script_path = os.path.join(DIRECTORY, "scrape_kap_shareholders.py")
+    
+    # 1. First run: if today's data is missing in history, run the scraper immediately
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    needs_run = True
+    if os.path.exists(db_path):
+        try:
+            with open(db_path, "r", encoding="utf-8") as f:
+                history = json.load(f)
+                if today_str in history:
+                    needs_run = False
+        except:
+            pass
+            
+    if needs_run and os.path.exists(script_path):
+        def first_run():
+            print("Today's KAP shareholder data is missing. Scraping immediately in background...")
+            try:
+                subprocess.run(["python", script_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                print("Initial daily KAP shareholder data scraped successfully!")
+            except Exception as e:
+                print(f"Failed to run initial KAP shareholder scraper: {e}")
+        threading.Thread(target=first_run, daemon=True).start()
+
+    # 2. Start daily scheduler thread
+    def run_loop():
+        if not os.path.exists(script_path):
+            return
+        while True:
+            now = datetime.now()
+            target_time = now.replace(hour=11, minute=0, second=0, microsecond=0)
+            if now >= target_time:
+                target_time += timedelta(days=1)
+                
+            seconds_to_wait = (target_time - now).total_seconds()
+            print(f"[KAP Shareholders Updater] Next daily update scheduled at {target_time.strftime('%Y-%m-%d %H:%M:%S')} (waiting {seconds_to_wait:.1f}s)")
+            
+            slept = 0
+            while slept < seconds_to_wait:
+                time.sleep(min(60, seconds_to_wait - slept))
+                slept += 60
+                
+            print("Running daily KAP shareholder scraper at 11:00 AM...")
+            try:
+                subprocess.run(["python", script_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                print("Daily KAP shareholder data updated successfully!")
+            except Exception as e:
+                print(f"Failed to run daily KAP shareholder scraper: {e}")
+                
+    threading.Thread(target=run_loop, daemon=True).start()
+
 def start_server():
     start_capitals_updater()
+    start_kap_shareholders_updater()
     with socketserver.TCPServer(("", PORT), WebServerHandler) as httpd:
         print(f"Server started at http://localhost:{PORT}")
         httpd.serve_forever()
