@@ -492,6 +492,66 @@
     "EKDMR": {
         "bireysel": 45929048.0,
         "kurumsal": 6070952.0
+    },
+
+    "ORGE": {
+        "bireysel": 20918440.0,
+        "kurumsal": 20921552.0
+    },
+
+    "AGROT": {
+        "bireysel": 1111701238.0,
+        "kurumsal": 52218532.0
+    },
+
+    "TMPOL": {
+        "bireysel": 4789798.0,
+        "kurumsal": 6255192.0
+    },
+
+    "ALTNY": {
+        "bireysel": 249699465.0,
+        "kurumsal": 150185645.0
+    },
+
+    "METEN": {
+        "bireysel": 94037726.0,
+        "kurumsal": 41541274.0
+    },
+
+    "QUICK": {
+        "bireysel": 19616211.0,
+        "kurumsal": 28696739.0
+    },
+
+    "ULKER": {
+        "bireysel": 82843462.0,
+        "kurumsal": 256012511.0
+    },
+
+    "DESA": {
+        "bireysel": 101583721.0,
+        "kurumsal": 69523398.0
+    },
+
+    "MACKO": {
+        "bireysel": 26995189.0,
+        "kurumsal": 14504811.0
+    },
+
+    "SOKE": {
+        "bireysel": 62881620.0,
+        "kurumsal": 64118376.0
+    },
+
+    "INDES": {
+        "bireysel": 200677144.0,
+        "kurumsal": 262072612.0
+    },
+
+    "MERCN": {
+        "bireysel": 45886322.0,
+        "kurumsal": 28499683.0
     }
 
 
