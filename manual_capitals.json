@@ -552,7 +552,118 @@
     "MERCN": {
         "bireysel": 45886322.0,
         "kurumsal": 28499683.0
+    },
+
+    "GIPTA": {
+        "bireysel": 51267015.0,
+        "kurumsal": 8929906.0
+    },
+
+    "SURGY": {
+        "bireysel": 45390700.0,
+        "kurumsal": 4409289.0
+    },
+
+    "ONCSM": {
+        "bireysel": 6050408.0,
+        "kurumsal": 4035592.0
+    },
+
+    "BIOEN": {
+        "bireysel": 81349777.0,
+        "kurumsal": 191133640.0
+    },
+
+    "LIDER": {
+        "bireysel": 56499200.0,
+        "kurumsal": 223000800.0
+    },
+
+    "OZKGY": {
+        "bireysel": 214837755.0,
+        "kurumsal": 149162189.0
+    },
+
+    "VAKKO": {
+        "bireysel": 14986464.0,
+        "kurumsal": 15801655.0
+    },
+
+    "VEYAS": {
+        "bireysel": 19996885.0,
+        "kurumsal": 24376449.0
+    },
+
+    "AGYO": {
+        "bireysel": 124839197.0,
+        "kurumsal": 4197262.0
+    },
+
+    "VERUS": {
+        "bireysel": 7142393.0,
+        "kurumsal": 27357544.0
+    },
+
+    "BESLR": {
+        "bireysel": 122278936.0,
+        "kurumsal": 535813904.0
+    },
+
+    "DAPGM": {
+        "bireysel": 676225910.0,
+        "kurumsal": 268733939.0
+    },
+
+    "KONKA": {
+        "bireysel": 50270361.0,
+        "kurumsal": 51060639.0
+    },
+
+    "KARCL": {
+        "bireysel": 40711334.0,
+        "kurumsal": 87288666.0
+    },
+
+    "BOBET": {
+        "bireysel": 88184981.0,
+        "kurumsal": 25815017.0
+    },
+
+    "GENIL": {
+        "bireysel": 746358645.0,
+        "kurumsal": 553211340.0
+    },
+
+    "SARAE": {
+        "bireysel": 76788389.0,
+        "kurumsal": 12211611.0
+    },
+
+    "KRDMA": {
+        "bireysel": 104867239.0,
+        "kurumsal": 135433596.0
+    },
+
+    "ALARK": {
+        "bireysel": 85102459.0,
+        "kurumsal": 74531713.0
+    },
+
+    "PINSU": {
+        "bireysel": 92071951.0,
+        "kurumsal": 9562198.0
+    },
+
+    "GSDHO": {
+        "bireysel": 619793129.0,
+        "kurumsal": 380201832.0
+    },
+
+    "LIDFA": {
+        "bireysel": 342826384.0,
+        "kurumsal": 115354160.0
     }
+
 
 
 }
