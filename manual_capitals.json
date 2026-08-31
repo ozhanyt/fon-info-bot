@@ -662,8 +662,61 @@
     "LIDFA": {
         "bireysel": 342826384.0,
         "kurumsal": 115354160.0
+    },
+
+    "VAKFA": {
+        "bireysel": 186239765.0,
+        "kurumsal": 38759936.0
+    },
+
+    "MAKIM": {
+        "bireysel": 29611328.0,
+        "kurumsal": 12948670.0
+    },
+
+    "FZLGY": {
+        "bireysel": 159328279.0,
+        "kurumsal": 276599364.0
+    },
+
+    "TERA": {
+        "bireysel": 137750616.0,
+        "kurumsal": 103138172.0
+    },
+
+    "TUREX": {
+        "bireysel": 388140302.0,
+        "kurumsal": 43859698.0
+    },
+
+    "TGSAS": {
+        "bireysel": 9006883.0,
+        "kurumsal": 3341410.0
+    },
+
+    "ALFAS": {
+        "bireysel": 73560499.0,
+        "kurumsal": 11079060.0
+    },
+
+    "KPEKS": {
+        "bireysel": 13589730.0,
+        "kurumsal": 11510261.0
+    },
+
+    "TEZOL": {
+        "bireysel": 120004972.0,
+        "kurumsal": 19994999.0
+    },
+
+    "ENERY": {
+        "bireysel": 882428262.0,
+        "kurumsal": 1538259206.0
+    },
+
+    "BRSLM": {
+        "bireysel": 102760622.0,
+        "kurumsal": 5264452.0
     }
-
-
 
 }

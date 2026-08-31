@@ -24,9 +24,9 @@ class TefasAPI:
             logging.error(f"Preflight failed: {e}")
 
     def post(self, endpoint, payload, referer=None):
-        time.sleep(1.0) # Avoid rate limiting
+        time.sleep(1.2) # Avoid rate limiting
         if not self.preflight_done:
-            self.preflight()
+            self.preflight(referer)
             
         url = f"{self.base_url}/api/funds/{endpoint}"
         headers = self.headers.copy()
@@ -34,23 +34,44 @@ class TefasAPI:
         headers["Origin"] = self.base_url
         headers["Referer"] = referer if referer else f"{self.base_url}/tr"
             
-        for attempt in range(4):
+        max_attempts = 10
+        for attempt in range(max_attempts):
             try:
                 response = self.session.post(url, json=payload, headers=headers, timeout=25)
+                
+                # Handle HTTP 429 Rate Limit
+                if response.status_code == 429:
+                    sleep_s = min(8 * (attempt + 1), 45)
+                    logging.warning(f"TEFAS 429 Rate Limit for {endpoint} (Attempt {attempt+1}/{max_attempts}). Sleeping {sleep_s}s and refreshing session...")
+                    time.sleep(sleep_s)
+                    self.preflight(referer)
+                    continue
+
                 response.raise_for_status()
                 data = response.json()
                 
-                # Check for "Too many requests" message in JSON
+                # Check for "Too many requests" message in JSON payload
                 if isinstance(data, dict) and data.get('message') == 'Too many requests':
-                     sleep_s = 5 * (attempt + 1)
-                     logging.warning(f"TEFAS returned 'Too many requests' (Attempt {attempt+1}). Sleeping {sleep_s}s...")
+                     sleep_s = min(8 * (attempt + 1), 45)
+                     logging.warning(f"TEFAS returned 'Too many requests' JSON for {endpoint} (Attempt {attempt+1}/{max_attempts}). Sleeping {sleep_s}s...")
                      time.sleep(sleep_s)
+                     self.preflight(referer)
                      continue
                 
                 return data
             except Exception as e:
-                logging.error(f"POST to {endpoint} failed (Attempt {attempt+1}): {e}")
-                if attempt < 3:
+                is_429 = (hasattr(e, 'response') and getattr(e.response, 'status_code', None) == 429) or ("429" in str(e))
+                if is_429:
+                    sleep_s = min(8 * (attempt + 1), 45)
+                    logging.warning(f"POST to {endpoint} hit 429 (Attempt {attempt+1}/{max_attempts}): {e}. Sleeping {sleep_s}s...")
+                    time.sleep(sleep_s)
+                    self.preflight(referer)
+                    if attempt < max_attempts - 1:
+                        continue
+                    return None
+
+                logging.error(f"POST to {endpoint} failed (Attempt {attempt+1}/{max_attempts}): {e}")
+                if attempt < max_attempts - 1:
                     time.sleep(3 * (attempt + 1))
                     continue
                 return None
@@ -109,27 +130,52 @@ class TefasAPI:
         total_days = max((end_dt - start_dt).days, 1)
 
         if total_days <= 30:
-            df = self._fetch_fund_history_range(
-                fund_code,
-                start_dt.strftime("%Y%m%d"),
-                end_dt.strftime("%Y%m%d"),
-            )
+            df = None
+            for single_attempt in range(3):
+                df = self._fetch_fund_history_range(
+                    fund_code,
+                    start_dt.strftime("%Y%m%d"),
+                    end_dt.strftime("%Y%m%d"),
+                )
+                if df is not None:
+                    break
+                logging.warning(f"Retrying single range fetch for {fund_code} (Attempt {single_attempt + 1}/3)...")
+                time.sleep(5.0)
+                self.preflight()
+            if df is None:
+                df = pd.DataFrame()
         else:
             parts = []
             cursor = start_dt
             while cursor <= end_dt:
                 chunk_end = min(cursor + timedelta(days=29), end_dt)
-                part = self._fetch_fund_history_range(
-                    fund_code,
-                    cursor.strftime("%Y%m%d"),
-                    chunk_end.strftime("%Y%m%d"),
-                )
+                c_start_str = cursor.strftime("%Y%m%d")
+                c_end_str = chunk_end.strftime("%Y%m%d")
+                part = None
+                for chunk_attempt in range(3):
+                    part = self._fetch_fund_history_range(
+                        fund_code,
+                        c_start_str,
+                        c_end_str,
+                    )
+                    if part is not None:
+                        break
+                    logging.warning(
+                        "Retrying chunk fetch for %s (%s -> %s) (Attempt %d/3)...",
+                        fund_code,
+                        c_start_str,
+                        c_end_str,
+                        chunk_attempt + 1,
+                    )
+                    time.sleep(5.0)
+                    self.preflight()
+
                 if part is None:
                     logging.error(
                         "Fund history chunk fetch failed for %s (%s -> %s); aborting to avoid partial history.",
                         fund_code,
-                        cursor.strftime("%Y%m%d"),
-                        chunk_end.strftime("%Y%m%d"),
+                        c_start_str,
+                        c_end_str,
                     )
                     return pd.DataFrame()
                 if not part.empty:

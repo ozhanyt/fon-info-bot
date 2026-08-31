@@ -1911,8 +1911,8 @@
                 "lot": 8794331.0,
                 "ratio": 0.81,
                 "is_manual": true,
-                "shareholder_name": "MANUEL GİRİŞ",
-                "company_name": "MANUEL GİRİŞ"
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "SAVUR GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
             }
         },
         "TMV": {
@@ -3426,8 +3426,15 @@
                 "lot": 49177124.0,
                 "ratio": 4.54,
                 "is_manual": true,
-                "shareholder_name": "MANUEL GİRİŞ",
-                "company_name": "MANUEL GİRİŞ"
+                "shareholder_name": "TERA PORTFÖY HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "SAVUR GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            },            
+            "TATEN": {
+                "lot": 50585997.0,
+                "ratio": 4.51,
+                "is_manual": true,
+                "shareholder_name": "TERA PORTFÖY HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "TATLIPINAR ENERJİ ÜRETİM A.Ş."
             }
         },
         "NUH": {
@@ -3746,8 +3753,8 @@
                 "lot": 31656126.0,
                 "ratio": 4.52,
                 "is_manual": true,
-                "shareholder_name": "MANUEL GİRİŞ",
-                "company_name": "MANUEL GİRİŞ"
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "TERA YATIRIM MENKUL DEĞERLER A.Ş."
             }
         },
         "TMV": {
@@ -4099,6 +4106,13 @@
                 "is_manual": false,
                 "shareholder_name": "TERA PORTFÖY HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)",
                 "company_name": "TEMAPOL POLİMER PLASTİK VE İNŞAAT SANAYİ TİCARET A.Ş."
+            },
+            "ANELE": {
+                "lot": 9588311.0,
+                "ratio": 3.62,
+                "is_manual": true,
+                "shareholder_name": "TERA PORTFÖY HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "ANEL ELEKTRİK PROJE TAAHHÜT VE TİCARET A.Ş."
             }
         },
         "RAI": {
@@ -5533,6 +5547,2877 @@
             "ZRGYO": {
                 "lot": 343661471.0,
                 "ratio": 7.32,
+                "is_manual": false,
+                "shareholder_name": "ZİRAAT PORTFÖY BİRİNCİ SERBEST (TL) FON",
+                "company_name": "ZİRAAT GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "ZJI": {
+            "ZRGYO": {
+                "lot": 260904378.0,
+                "ratio": 5.56,
+                "is_manual": false,
+                "shareholder_name": "ZİRAAT PORTFÖY İKİNCİ SERBEST (TL) FON",
+                "company_name": "ZİRAAT GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            }
+        }
+    },
+    "2026-08-27": {
+        "SRO": {
+            "AGHOL": {
+                "lot": 171565220.0,
+                "ratio": 7.04,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY SKY HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "AG ANADOLU GRUBU HOLDİNG A.Ş."
+            }
+        },
+        "RE8": {
+            "AHSGY": {
+                "lot": 68226857.9,
+                "ratio": 9.46,
+                "is_manual": false,
+                "shareholder_name": "RE-PIE PORTFÖY SEKİZİNCİ HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "AHES GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "BSC": {
+            "ALBRK": {
+                "lot": 1334860092.57,
+                "ratio": 53.39,
+                "is_manual": false,
+                "shareholder_name": "AL BARAKA GROUP B.S.C. (C)",
+                "company_name": "ALBARAKA TÜRK KATILIM BANKASI A.Ş."
+            }
+        },
+        "TLY": {
+            "ALKLC": {
+                "lot": 8627695.0,
+                "ratio": 7.7,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "ALTINKILIÇ GIDA VE SÜT SANAYİ TİCARET A.Ş."
+            },
+            "ANELE": {
+                "lot": 42152420.0,
+                "ratio": 15.91,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "ANEL ELEKTRİK PROJE TAAHHÜT VE TİCARET A.Ş."
+            },
+            "BIGEN": {
+                "lot": 37069985.0,
+                "ratio": 6.42,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "BİRLEŞİM GRUP ENERJİ YATIRIMLARI A.Ş."
+            },
+            "DSTKF": {
+                "lot": 23353015.0,
+                "ratio": 7.01,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "DESTEK FİNANS FAKTORİNG A.Ş."
+            },
+            "OZATD": {
+                "lot": 14427969.0,
+                "ratio": 20.22,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "ÖZATA DENİZCİLİK SANAYİ VE TİCARET A.Ş."
+            },
+            "PEKGY": {
+                "lot": 1551923618.0,
+                "ratio": 31.04,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "PEKER GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            },
+            "TRHOL": {
+                "lot": 6224772.0,
+                "ratio": 20.75,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "TERA FİNANSAL YATIRIMLAR HOLDİNG A.Ş."
+            },
+            "TEHOL": {
+                "lot": 530172360.75,
+                "ratio": 26.56,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "TERA YATIRIM TEKNOLOJİ HOLDİNG A.Ş."
+            }
+        },
+        "TMV": {
+            "ANELE": {
+                "lot": 26999000.0,
+                "ratio": 10.19,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY ALGORİTMİK STRATEJİLER SERBEST FON",
+                "company_name": "ANEL ELEKTRİK PROJE TAAHHÜT VE TİCARET A.Ş."
+            },
+            "TMPOL": {
+                "lot": 1675000.0,
+                "ratio": 11.82,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY ALGORİTMİK STRATEJİLER SERBEST FON",
+                "company_name": "TEMAPOL POLİMER PLASTİK VE İNŞAAT SANAYİ TİCARET A.Ş."
+            },
+            "TRHOL": {
+                "lot": 1520436.0,
+                "ratio": 5.07,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY ALGORİTMİK STRATEJİLER SERBEST FON",
+                "company_name": "TERA FİNANSAL YATIRIMLAR HOLDİNG A.Ş."
+            }
+        },
+        "THF": {
+            "ANELE": {
+                "lot": 15580685.0,
+                "ratio": 5.88,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "ANEL ELEKTRİK PROJE TAAHHÜT VE TİCARET A.Ş."
+            },
+            "GIPTA": {
+                "lot": 9481516.0,
+                "ratio": 7.18,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GIPTA OFİS KIRTASİYE VE PROMOSYON ÜRÜNLERİ İMALAT SANAYİ A.Ş."
+            },
+            "MANAS": {
+                "lot": 40984260.0,
+                "ratio": 12.38,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "MANAS ENERJİ YÖNETİMİ SANAYİ VE TİCARET A.Ş."
+            },
+            "SVGYO": {
+                "lot": 73870725.0,
+                "ratio": 6.82,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "SAVUR GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            },
+            "TMPOL": {
+                "lot": 1250000.0,
+                "ratio": 8.82,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "TEMAPOL POLİMER PLASTİK VE İNŞAAT SANAYİ TİCARET A.Ş."
+            }
+        },
+        "ARF": {
+            "ARFYE": {
+                "lot": 128500000.0,
+                "ratio": 70.28,
+                "is_manual": false,
+                "shareholder_name": "RE-PİE PORTFÖY YÖNETİMİ A.Ş. ARF GİRİŞİM SERMAYESİ YATIRIM FONU",
+                "company_name": "ARF BİO YENİLENEBİLİR ENERJİ ÜRETİM A.Ş."
+            }
+        },
+        "AVC": {
+            "ATAGY": {
+                "lot": 7176087.0,
+                "ratio": 15.11,
+                "is_manual": false,
+                "shareholder_name": "ATA PORTFÖY İKİNCİ SERBEST (TL) FON",
+                "company_name": "ATA GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "STI": {
+            "AYEN": {
+                "lot": 230412946.42,
+                "ratio": 83.03,
+                "is_manual": false,
+                "shareholder_name": "AYDINER İNŞAAT ANONİM ŞTİ.",
+                "company_name": "AYEN ENERJİ A.Ş."
+            }
+        },
+        "GAS": {
+            "AYGAZ": {
+                "lot": 53884641.77,
+                "ratio": 24.52,
+                "is_manual": false,
+                "shareholder_name": "LİQUİD PETROLEUM GAS DEVELOPMENT CY SA MERKEZİ CENEVRE TÜRKİYE İSTANBUL",
+                "company_name": "AYGAZ A.Ş."
+            }
+        },
+        "RTA": {
+            "A1CAP": {
+                "lot": 174750000.0,
+                "ratio": 25.89,
+                "is_manual": false,
+                "shareholder_name": "RTA LABORATUVARLARI BİYOLOJİK ÜRÜNLER İLAÇ VE MAKİNE SANAYİ TİCARET ANONİM ŞİRKETİ",
+                "company_name": "A1 CAPİTAL YATIRIM MENKUL DEĞERLER A.Ş."
+            }
+        },
+        "ICG": {
+            "A1CAP": {
+                "lot": 50000000.0,
+                "ratio": 7.41,
+                "is_manual": false,
+                "shareholder_name": "İCG FİNANSAL DANIŞMANLIK ANONİM ŞİRKETİ",
+                "company_name": "A1 CAPİTAL YATIRIM MENKUL DEĞERLER A.Ş."
+            },
+            "A1YEN": {
+                "lot": 29999999.98,
+                "ratio": 5.0,
+                "is_manual": false,
+                "shareholder_name": "İCG FİNANSAL DANIŞMANLIK ANONİM ŞİRKETİ",
+                "company_name": "A1 YENİLENEBİLİR ENERJİ ÜRETİM A.Ş."
+            },
+            "RTALB": {
+                "lot": 56016845.01,
+                "ratio": 11.2,
+                "is_manual": false,
+                "shareholder_name": "İCG FİNANSAL DANIŞMANLIK ANONİM ŞİRKETİ",
+                "company_name": "RTA LABORATUVARLARI BİYOLOJİK ÜRÜNLER İLAÇ VE MAKİNE SANAYİ TİCARET A.Ş."
+            }
+        },
+        "IAS": {
+            "BAGFS": {
+                "lot": 8607409.0,
+                "ratio": 6.38,
+                "is_manual": false,
+                "shareholder_name": "ASTRA PORTFÖY MUTLAK GETİRİ HEDEFLİ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "BAGFAŞ BANDIRMA GÜBRE FABRİKALARI A.Ş."
+            }
+        },
+        "PHF": {
+            "BAHKM": {
+                "lot": 2837357.0,
+                "ratio": 5.16,
+                "is_manual": false,
+                "shareholder_name": "PİRAMİT PORTFÖY BİST 50 DIŞI ŞİRKETLER HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "BAHADIR KİMYA SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "HPL": {
+            "BALSU": {
+                "lot": 75890865.0,
+                "ratio": 6.82,
+                "is_manual": false,
+                "shareholder_name": "HEDEF PORTFÖY ÇINAR HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "BALSU GIDA SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "BRF": {
+            "BANVT": {
+                "lot": 55036207.82,
+                "ratio": 55.02,
+                "is_manual": false,
+                "shareholder_name": "BRF GMBH",
+                "company_name": "BANVİT BANDIRMA VİTAMİNLİ YEM SANAYİ A.Ş."
+            }
+        },
+        "AS3": {
+            "BAYRK": {
+                "lot": 19078738.35,
+                "ratio": 7.63,
+                "is_manual": false,
+                "shareholder_name": "ALLBATROSS PORTFÖY ATLAS SERBEST FON",
+                "company_name": "BAYRAK EBT TABAN SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "DTP": {
+            "BLCYT": {
+                "lot": 13179899.0,
+                "ratio": 13.18,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY ADATEPE SERBEST ÖZEL FON",
+                "company_name": "BİLİCİ YATIRIM SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "HGJ": {
+            "BORLS": {
+                "lot": 53112748.0,
+                "ratio": 7.59,
+                "is_manual": false,
+                "shareholder_name": "HEDEF PORTFÖY GÜNEY HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "BORLEASE OTOMOTİV A.Ş."
+            }
+        },
+        "BBO": {
+            "BURVA": {
+                "lot": 1073003.0,
+                "ratio": 14.6,
+                "is_manual": false,
+                "shareholder_name": "BULLS PORTFÖY BANKACILIK SEKTÖRÜ DIŞI ŞİRKETLER HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "BURÇELİK VANA SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "DHS": {
+            "CEMZY": {
+                "lot": 170783581.05,
+                "ratio": 7.43,
+                "is_manual": false,
+                "shareholder_name": "DENİZ PORTFÖY CC HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "CEM ZEYTİN A.Ş."
+            }
+        },
+        "ABG": {
+            "CRDFA": {
+                "lot": 59378784.0,
+                "ratio": 19.79,
+                "is_manual": false,
+                "shareholder_name": "ATLAS PORTFÖY DÖRDÜNCÜ SERBEST (TL) FON",
+                "company_name": "CREDITWEST FAKTORİNG A.Ş."
+            },
+            "IEYHO": {
+                "lot": 61179728.0,
+                "ratio": 11.25,
+                "is_manual": false,
+                "shareholder_name": "ATLAS PORTFÖY DÖRDÜNCÜ SERBEST (TL) FON",
+                "company_name": "IŞIKLAR ENERJİ VE YAPI HOLDİNG A.Ş."
+            }
+        },
+        "BDO": {
+            "CWENE": {
+                "lot": 79515699.9,
+                "ratio": 7.37,
+                "is_manual": false,
+                "shareholder_name": "BULLS PORTFÖY DÖRDÜNCÜ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "CW ENERJİ MÜHENDİSLİK TİCARET VE SANAYİ A.Ş."
+            }
+        },
+        "SVY": {
+            "CWENE": {
+                "lot": 97312630.34,
+                "ratio": 9.02,
+                "is_manual": false,
+                "shareholder_name": "DENİZ PORTFÖY TTSVY HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "CW ENERJİ MÜHENDİSLİK TİCARET VE SANAYİ A.Ş."
+            }
+        },
+        "BSN": {
+            "CGCAM": {
+                "lot": 19115390.0,
+                "ratio": 11.38,
+                "is_manual": false,
+                "shareholder_name": "BULLS PORTFÖY SANAYİ ŞİRKETLERİ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "ÇAĞDAŞ CAM SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "DRH": {
+            "DAGI": {
+                "lot": 25675125.0,
+                "ratio": 6.42,
+                "is_manual": false,
+                "shareholder_name": "PARDUS PORTFÖY DÖRDÜNCÜ HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "DAGİ GİYİM SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "DAP": {
+            "DAPGM": {
+                "lot": 246675994.95,
+                "ratio": 9.31,
+                "is_manual": false,
+                "shareholder_name": "DAP YAPI İNŞAAT SANAYİ VE TİCARET ANONİM ŞİRKETİ",
+                "company_name": "DAP GAYRİMENKUL GELİŞTİRME A.Ş."
+            }
+        },
+        "TP2": {
+            "DSTKF": {
+                "lot": 20969090.0,
+                "ratio": 6.29,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY PARA PİYASASI (TL) FONU",
+                "company_name": "DESTEK FİNANS FAKTORİNG A.Ş."
+            }
+        },
+        "BDY": {
+            "DITAS": {
+                "lot": 114610965.68,
+                "ratio": 67.42,
+                "is_manual": false,
+                "shareholder_name": "BDY GROUP İNŞAAT ANONİM ŞİRKETİ",
+                "company_name": "DİTAŞ BDY YEDEK PARÇA İMALAT VE TEKNİK A.Ş."
+            }
+        },
+        "YLZ": {
+            "DITAS": {
+                "lot": 10708488.0,
+                "ratio": 6.3,
+                "is_manual": false,
+                "shareholder_name": "BULLS PORTFÖY YILDIZ PAZAR ŞİRKETLERİ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "DİTAŞ BDY YEDEK PARÇA İMALAT VE TEKNİK A.Ş."
+            }
+        },
+        "DP1": {
+            "ERBOS": {
+                "lot": 3818141.0,
+                "ratio": 19.09,
+                "is_manual": false,
+                "shareholder_name": "DENİZ PORTFÖY DELTA SERBEST ÖZEL FON",
+                "company_name": "ERBOSAN ERCİYAS BORU SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "PYH": {
+            "FZLGY": {
+                "lot": 110832895.17,
+                "ratio": 8.87,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY 10.0 KATILIM SERBEST FON",
+                "company_name": "FUZUL GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "FS3": {
+            "FZLGY": {
+                "lot": 102635000.0,
+                "ratio": 8.21,
+                "is_manual": false,
+                "shareholder_name": "ONE PORTFÖY KATILIM HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "FUZUL GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "PGH": {
+            "GRNYO": {
+                "lot": 3014682.0,
+                "ratio": 8.04,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY GÜNEY HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GARANTİ YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "PPU": {
+            "GATEG": {
+                "lot": 1040000.0,
+                "ratio": 9.19,
+                "is_manual": false,
+                "shareholder_name": "PARDUS PORTFÖY ÜÇÜNCÜ SERBEST FON",
+                "company_name": "GATE GROUP TEKNOLOJİ MEDYA VE SİBER GÜVENLİK HİZMETLERİ A.Ş."
+            }
+        },
+        "ABJ": {
+            "GZNMI": {
+                "lot": 5187703.0,
+                "ratio": 7.98,
+                "is_manual": false,
+                "shareholder_name": "ALLBATROSS PORTFÖY BENZ HİSSE SENEDİ SERBEST (TL) ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GEZİNOMİ SEYAHAT TURİZM TİCARET A.Ş."
+            },
+            "QUAGR": {
+                "lot": 160647082.0,
+                "ratio": 6.09,
+                "is_manual": false,
+                "shareholder_name": "ALLBATROSS PORTFÖY BENZ HİSSE SENEDİ SERBEST (TL) ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "QUA GRANITE HAYAL YAPI VE ÜRÜNLERİ SANAYİ TİCARET A.Ş."
+            }
+        },
+        "BSE": {
+            "GZNMI": {
+                "lot": 5415000.0,
+                "ratio": 8.33,
+                "is_manual": false,
+                "shareholder_name": "PARDUS PORTFÖY BIST 30 DIŞI ŞİRKETLER HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GEZİNOMİ SEYAHAT TURİZM TİCARET A.Ş."
+            }
+        },
+        "RAI": {
+            "GLYHO": {
+                "lot": 335000000.0,
+                "ratio": 17.18,
+                "is_manual": false,
+                "shareholder_name": "ROTA PORTFÖY ABİS HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GLOBAL YATIRIM HOLDİNG A.Ş."
+            }
+        },
+        "BBN": {
+            "GRTHO": {
+                "lot": 6594323.0,
+                "ratio": 5.28,
+                "is_manual": false,
+                "shareholder_name": "BULLS PORTFÖY BİRİNCİ HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GRAINTURK HOLDİNG A.Ş."
+            }
+        },
+        "MAC": {
+            "GSDHO": {
+                "lot": 65000000.0,
+                "ratio": 6.5,
+                "is_manual": false,
+                "shareholder_name": "MARMARA CAPITAL PORTFÖY HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GSD HOLDİNG A.Ş."
+            }
+        },
+        "PBH": {
+            "GLRMK": {
+                "lot": 17788910.0,
+                "ratio": 5.51,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY BİRİNCİ HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GÜLERMAK AĞIR SANAYİ İNŞAAT VE TAAHHÜT A.Ş."
+            }
+        },
+        "PDE": {
+            "GUNDG": {
+                "lot": 7225749.0,
+                "ratio": 18.53,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY DENGE KATILIM SERBEST FON",
+                "company_name": "GÜNDOĞDU GIDA SÜT ÜRÜNLERİ SANAYİ VE DIŞ TİCARET A.Ş."
+            },
+            "IZFAS": {
+                "lot": 48578131.0,
+                "ratio": 27.42,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY DENGE KATILIM SERBEST FON",
+                "company_name": "İZMİR FIRÇA SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "PHE": {
+            "GUNDG": {
+                "lot": 2917720.0,
+                "ratio": 7.48,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY HİSSE SENEDİ FONU (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GÜNDOĞDU GIDA SÜT ÜRÜNLERİ SANAYİ VE DIŞ TİCARET A.Ş."
+            }
+        },
+        "PCS": {
+            "GUNDG": {
+                "lot": 4170582.0,
+                "ratio": 10.69,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY ÜÇÜNCÜ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GÜNDOĞDU GIDA SÜT ÜRÜNLERİ SANAYİ VE DIŞ TİCARET A.Ş."
+            },
+            "KTLEV": {
+                "lot": 1760691061.07,
+                "ratio": 25.15,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY ÜÇÜNCÜ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "KATILIMEVİM TASARRUF FİNANSMAN A.Ş."
+            },
+            "ODINE": {
+                "lot": 9495655.0,
+                "ratio": 8.59,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY ÜÇÜNCÜ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "ODİNE SOLUTİONS TEKNOLOJİ TİCARET VE SANAYİ A.Ş."
+            }
+        },
+        "GMO": {
+            "GRSEL": {
+                "lot": 6735000.0,
+                "ratio": 6.6,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY G MOBİLİTE HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GÜR-SEL TURİZM TAŞIMACILIK VE SERVİS TİCARET A.Ş."
+            }
+        },
+        "HDH": {
+            "HEDEF": {
+                "lot": 338683007.28,
+                "ratio": 11.29,
+                "is_manual": false,
+                "shareholder_name": "HEDEF PORTFÖY DOĞU HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "HEDEF HOLDİNG A.Ş."
+            },
+            "INFO": {
+                "lot": 78389943.9,
+                "ratio": 8.16,
+                "is_manual": false,
+                "shareholder_name": "HEDEF PORTFÖY DOĞU HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "İNFO YATIRIM MENKUL DEĞERLER A.Ş."
+            }
+        },
+        "DFI": {
+            "ISKPL": {
+                "lot": 123133339.0,
+                "ratio": 8.21,
+                "is_manual": false,
+                "shareholder_name": "ATLAS PORTFÖY SERBEST FON",
+                "company_name": "IŞIK PLASTİK SANAYİ VE DIŞ TİCARET PAZARLAMA A.Ş."
+            },
+            "IEYHO": {
+                "lot": 81775746.0,
+                "ratio": 15.04,
+                "is_manual": false,
+                "shareholder_name": "ATLAS PORTFÖY SERBEST FON",
+                "company_name": "IŞIKLAR ENERJİ VE YAPI HOLDİNG A.Ş."
+            }
+        },
+        "DHI": {
+            "IZENR": {
+                "lot": 271272957.0,
+                "ratio": 11.1,
+                "is_manual": false,
+                "shareholder_name": "PARDUS PORTFÖY DOKUZUNCU HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "İZDEMİR ENERJİ ELEKTRİK ÜRETİM A.Ş."
+            }
+        },
+        "PKZ": {
+            "KTLEV": {
+                "lot": 995672029.62,
+                "ratio": 14.22,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY KUZEY HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "KATILIMEVİM TASARRUF FİNANSMAN A.Ş."
+            }
+        },
+        "ZTV": {
+            "KAYSE": {
+                "lot": 282315480.94,
+                "ratio": 9.41,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VARLIK FONU",
+                "company_name": "KAYSERİ ŞEKER FABRİKASI A.Ş."
+            },
+            "THYAO": {
+                "lot": 677884848.57,
+                "ratio": 49.12,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VARLIK FONU",
+                "company_name": "TÜRK HAVA YOLLARI A.O."
+            },
+            "TTKOM": {
+                "lot": 2158800000.02,
+                "ratio": 61.68,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VARLIK FONU",
+                "company_name": "TÜRK TELEKOMÜNİKASYON A.Ş."
+            },
+            "HALKB": {
+                "lot": 6573603541.96,
+                "ratio": 91.49,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VARLIK FONU",
+                "company_name": "TÜRKİYE HALK BANKASI A.Ş."
+            },
+            "VAKBN": {
+                "lot": 7263921522.54,
+                "ratio": 73.26,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VARLIK FONU",
+                "company_name": "TÜRKİYE VAKIFLAR BANKASI T.A.O."
+            }
+        },
+        "TGV": {
+            "KLRHO": {
+                "lot": 102618005.0,
+                "ratio": 6.31,
+                "is_manual": false,
+                "shareholder_name": "TACİRLER PORTFÖY KG SERBEST ÖZEL FON",
+                "company_name": "KİLER HOLDİNG A.Ş."
+            }
+        },
+        "LTS": {
+            "KGYO": {
+                "lot": 116901036.92,
+                "ratio": 11.69,
+                "is_manual": false,
+                "shareholder_name": "HEDEF PORTFÖY LOTUS SERBEST FON",
+                "company_name": "KORAY GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "PSR": {
+            "KOPOL": {
+                "lot": 218092144.0,
+                "ratio": 16.82,
+                "is_manual": false,
+                "shareholder_name": "PARDUS PORTFÖY SANAYİ ŞİRKETLERİ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "KOZA POLYESTER SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "BAC": {
+            "LIDER": {
+                "lot": 45500000.0,
+                "ratio": 5.52,
+                "is_manual": false,
+                "shareholder_name": "ATLAS PORTFÖY BİRİNCİ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "LDR TURİZM A.Ş."
+            }
+        },
+        "MGE": {
+            "LIDER": {
+                "lot": 49436977.0,
+                "ratio": 5.99,
+                "is_manual": false,
+                "shareholder_name": "PARDUS PORTFÖY MUTLAK GETİRİ HEDEFLİ HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "LDR TURİZM A.Ş."
+            }
+        },
+        "CBO": {
+            "LILAK": {
+                "lot": 51666333.0,
+                "ratio": 8.76,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY HCBO HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "LİLA KAĞIT SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "SYF": {
+            "LILAK": {
+                "lot": 58966758.0,
+                "ratio": 9.99,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY KLM HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "LİLA KAĞIT SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "SAT": {
+            "LILAK": {
+                "lot": 49037479.0,
+                "ratio": 8.31,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY RASAT HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "LİLA KAĞIT SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "BIK": {
+            "LYDYE": {
+                "lot": 122872.0,
+                "ratio": 6.5,
+                "is_manual": false,
+                "shareholder_name": "BULLS PORTFÖY İKİNCİ HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "LYDİA YEŞİL ENERJİ KAYNAKLARI A.Ş."
+            }
+        },
+        "IYP": {
+            "MAKTK": {
+                "lot": 66213392.0,
+                "ratio": 33.11,
+                "is_manual": false,
+                "shareholder_name": "İSTANBUL PORTFÖY YILDIZ SERBEST ÖZEL FON",
+                "company_name": "MAKİNA TAKIM ENDÜSTRİSİ A.Ş."
+            }
+        },
+        "NUH": {
+            "NUHCM": {
+                "lot": 66283863.52,
+                "ratio": 44.13,
+                "is_manual": false,
+                "shareholder_name": "NUH TİCARET VE SANAYİ A Ş",
+                "company_name": "NUH ÇİMENTO SANAYİ A.Ş."
+            }
+        },
+        "DAL": {
+            "OBASE": {
+                "lot": 10489500.0,
+                "ratio": 23.05,
+                "is_manual": false,
+                "shareholder_name": "BÜLENT DAL",
+                "company_name": "OBASE BİLGİSAYAR VE DANIŞMANLIK HİZMETLERİ TİCARET A.Ş."
+            }
+        },
+        "TCC": {
+            "OYAKC": {
+                "lot": 3891795733.59,
+                "ratio": 80.05,
+                "is_manual": false,
+                "shareholder_name": "TCC OYAK AMSTERDAM HOLDINGS B.V.",
+                "company_name": "OYAK ÇİMENTO FABRİKALARI A.Ş."
+            }
+        },
+        "EHS": {
+            "PNLSN": {
+                "lot": 13752384.0,
+                "ratio": 18.34,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY ERCİYES HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "PANELSAN ÇATI CEPHE SİSTEMLERİ SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "PHB": {
+            "PASEU": {
+                "lot": 58026121.0,
+                "ratio": 8.63,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY BEŞİNCİ HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "PASİFİK EURASİA LOJİSTİK DIŞ TİCARET A.Ş."
+            }
+        },
+        "PRY": {
+            "PASEU": {
+                "lot": 63617301.0,
+                "ratio": 9.47,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY PARA PİYASASI (TL) FONU",
+                "company_name": "PASİFİK EURASİA LOJİSTİK DIŞ TİCARET A.Ş."
+            }
+        },
+        "PNU": {
+            "PASEU": {
+                "lot": 62924270.0,
+                "ratio": 9.36,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY İKİNCİ PARA PİYASASI (TL) FONU",
+                "company_name": "PASİFİK EURASİA LOJİSTİK DIŞ TİCARET A.Ş."
+            }
+        },
+        "PDG": {
+            "SKYLP": {
+                "lot": 1345000.0,
+                "ratio": 14.16,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY DOĞU HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "SKYALP FİNANSAL TEKNOLOJİLER VE DANIŞMANLIK A.Ş."
+            }
+        },
+        "PHN": {
+            "SKYLP": {
+                "lot": 1027842.0,
+                "ratio": 10.82,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY İKİNCİ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "SKYALP FİNANSAL TEKNOLOJİLER VE DANIŞMANLIK A.Ş."
+            }
+        },
+        "VPS": {
+            "SOKE": {
+                "lot": 20046543.0,
+                "ratio": 5.19,
+                "is_manual": false,
+                "shareholder_name": "VEGA PORTFÖY SALUR HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "SÖKE DEĞİRMENCİLİK SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "SLR": {
+            "SUNTK": {
+                "lot": 32000000.0,
+                "ratio": 6.74,
+                "is_manual": false,
+                "shareholder_name": "QNB PORTFÖY SOLARİS SERBEST ÖZEL FON",
+                "company_name": "SUN TEKSTİL SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "SUR": {
+            "SURGY": {
+                "lot": 117700000.0,
+                "ratio": 70.27,
+                "is_manual": false,
+                "shareholder_name": "SUR YAPI ENDÜSTRİ SANAYİ TİC.A.Ş.",
+                "company_name": "SUR TATİL EVLERİ GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "ZVO": {
+            "SUWEN": {
+                "lot": 40461673.5,
+                "ratio": 7.23,
+                "is_manual": false,
+                "shareholder_name": "ZİRAAT PORTFÖY ÜÇÜNCÜ SERBEST (TL) FON",
+                "company_name": "SUWEN TEKSTİL SANAYİ PAZARLAMA A.Ş."
+            }
+        },
+        "HPF": {
+            "TMPOL": {
+                "lot": 1695800.0,
+                "ratio": 11.96,
+                "is_manual": false,
+                "shareholder_name": "HEDEF PORTFÖY KUZEY HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "TEMAPOL POLİMER PLASTİK VE İNŞAAT SANAYİ TİCARET A.Ş."
+            }
+        },
+        "HMV": {
+            "TEHOL": {
+                "lot": 100778000.0,
+                "ratio": 5.05,
+                "is_manual": false,
+                "shareholder_name": "HEDEF PORTFÖY MAVİ HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "TERA YATIRIM TEKNOLOJİ HOLDİNG A.Ş."
+            }
+        },
+        "SPA": {
+            "TOASO": {
+                "lot": 189279856.87,
+                "ratio": 37.86,
+                "is_manual": false,
+                "shareholder_name": "STELLANTİS EUROPE SPA",
+                "company_name": "TOFAŞ TÜRK OTOMOBİL FABRİKASI A.Ş."
+            }
+        },
+        "TAO": {
+            "TSKB": {
+                "lot": 234569489.94,
+                "ratio": 8.38,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VAKIFLAR BANKASI T.A.O.",
+                "company_name": "TÜRKİYE SINAİ KALKINMA BANKASI A.Ş."
+            },
+            "VAKFA": {
+                "lot": 685784035.0,
+                "ratio": 76.2,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VAKIFLAR BANKASI T.A.O.",
+                "company_name": "VAKIF FAKTORİNG A.Ş."
+            },
+            "VAKFN": {
+                "lot": 3811720314.74,
+                "ratio": 63.53,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VAKIFLAR BANKASI T.A.O.",
+                "company_name": "VAKIF FİNANSAL KİRALAMA A.Ş."
+            },
+            "VKGYO": {
+                "lot": 2469149921.21,
+                "ratio": 56.12,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VAKIFLAR BANKASI T.A.O.",
+                "company_name": "VAKIF GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            },
+            "VKFYO": {
+                "lot": 10132457.69,
+                "ratio": 33.77,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VAKIFLAR BANKASI T.A.O.",
+                "company_name": "VAKIF MENKUL KIYMET YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "NTD": {
+            "UNLU": {
+                "lot": 34990000.0,
+                "ratio": 19.91,
+                "is_manual": false,
+                "shareholder_name": "ÜNLÜ PORTFÖY UFT HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "ÜNLÜ YATIRIM HOLDİNG A.Ş."
+            }
+        },
+        "T3B": {
+            "VANGD": {
+                "lot": 1693535.0,
+                "ratio": 6.77,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY ÜÇÜNCÜ  HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN)",
+                "company_name": "VANET GIDA SANAYİ İÇ VE DIŞ TİCARET A.Ş."
+            }
+        },
+        "NOV": {
+            "YYLGD": {
+                "lot": 70656800.0,
+                "ratio": 6.5,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY INOVA AGRO HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "YAYLA AGRO GIDA SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "ZJB": {
+            "ZRGYO": {
+                "lot": 343115470.0,
+                "ratio": 7.31,
+                "is_manual": false,
+                "shareholder_name": "ZİRAAT PORTFÖY BİRİNCİ SERBEST (TL) FON",
+                "company_name": "ZİRAAT GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "ZJI": {
+            "ZRGYO": {
+                "lot": 260904378.0,
+                "ratio": 5.56,
+                "is_manual": false,
+                "shareholder_name": "ZİRAAT PORTFÖY İKİNCİ SERBEST (TL) FON",
+                "company_name": "ZİRAAT GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            }
+        }
+    },
+    "2026-08-28": {
+        "SRO": {
+            "AGHOL": {
+                "lot": 171565220.0,
+                "ratio": 7.04,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY SKY HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "AG ANADOLU GRUBU HOLDİNG A.Ş."
+            }
+        },
+        "RE8": {
+            "AHSGY": {
+                "lot": 68226857.9,
+                "ratio": 9.46,
+                "is_manual": false,
+                "shareholder_name": "RE-PIE PORTFÖY SEKİZİNCİ HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "AHES GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "BSC": {
+            "ALBRK": {
+                "lot": 1334860092.57,
+                "ratio": 53.39,
+                "is_manual": false,
+                "shareholder_name": "AL BARAKA GROUP B.S.C. (C)",
+                "company_name": "ALBARAKA TÜRK KATILIM BANKASI A.Ş."
+            }
+        },
+        "TLY": {
+            "ALKLC": {
+                "lot": 8807255.0,
+                "ratio": 7.86,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "ALTINKILIÇ GIDA VE SÜT SANAYİ TİCARET A.Ş."
+            },
+            "ANELE": {
+                "lot": 42527057.0,
+                "ratio": 16.05,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "ANEL ELEKTRİK PROJE TAAHHÜT VE TİCARET A.Ş."
+            },
+            "BIGEN": {
+                "lot": 37335929.0,
+                "ratio": 6.47,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "BİRLEŞİM GRUP ENERJİ YATIRIMLARI A.Ş."
+            },
+            "DSTKF": {
+                "lot": 23128408.0,
+                "ratio": 6.94,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "DESTEK FİNANS FAKTORİNG A.Ş."
+            },
+            "OZATD": {
+                "lot": 14381643.0,
+                "ratio": 20.16,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "ÖZATA DENİZCİLİK SANAYİ VE TİCARET A.Ş."
+            },
+            "PEKGY": {
+                "lot": 1560013531.0,
+                "ratio": 31.2,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "PEKER GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            },
+            "TRHOL": {
+                "lot": 6363529.0,
+                "ratio": 21.21,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "TERA FİNANSAL YATIRIMLAR HOLDİNG A.Ş."
+            },
+            "TEHOL": {
+                "lot": 530172360.75,
+                "ratio": 26.56,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "TERA YATIRIM TEKNOLOJİ HOLDİNG A.Ş."
+            }
+        },
+        "TMV": {
+            "ANELE": {
+                "lot": 26999000.0,
+                "ratio": 10.19,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY ALGORİTMİK STRATEJİLER SERBEST FON",
+                "company_name": "ANEL ELEKTRİK PROJE TAAHHÜT VE TİCARET A.Ş."
+            },
+            "TMPOL": {
+                "lot": 1675000.0,
+                "ratio": 11.82,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY ALGORİTMİK STRATEJİLER SERBEST FON",
+                "company_name": "TEMAPOL POLİMER PLASTİK VE İNŞAAT SANAYİ TİCARET A.Ş."
+            },
+            "TRHOL": {
+                "lot": 1520436.0,
+                "ratio": 5.07,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY ALGORİTMİK STRATEJİLER SERBEST FON",
+                "company_name": "TERA FİNANSAL YATIRIMLAR HOLDİNG A.Ş."
+            }
+        },
+        "THF": {
+            "ANELE": {
+                "lot": 15580685.0,
+                "ratio": 5.88,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "ANEL ELEKTRİK PROJE TAAHHÜT VE TİCARET A.Ş."
+            },
+            "GIPTA": {
+                "lot": 9481516.0,
+                "ratio": 7.18,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GIPTA OFİS KIRTASİYE VE PROMOSYON ÜRÜNLERİ İMALAT SANAYİ A.Ş."
+            },
+            "MANAS": {
+                "lot": 41234260.0,
+                "ratio": 12.46,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "MANAS ENERJİ YÖNETİMİ SANAYİ VE TİCARET A.Ş."
+            },
+            "SVGYO": {
+                "lot": 98870725.0,
+                "ratio": 9.13,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "SAVUR GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            },
+            "TMPOL": {
+                "lot": 1250000.0,
+                "ratio": 8.82,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "TEMAPOL POLİMER PLASTİK VE İNŞAAT SANAYİ TİCARET A.Ş."
+            }
+        },
+        "ARF": {
+            "ARFYE": {
+                "lot": 128500000.0,
+                "ratio": 70.28,
+                "is_manual": false,
+                "shareholder_name": "RE-PİE PORTFÖY YÖNETİMİ A.Ş. ARF GİRİŞİM SERMAYESİ YATIRIM FONU",
+                "company_name": "ARF BİO YENİLENEBİLİR ENERJİ ÜRETİM A.Ş."
+            }
+        },
+        "AVC": {
+            "ATAGY": {
+                "lot": 7176087.0,
+                "ratio": 15.11,
+                "is_manual": false,
+                "shareholder_name": "ATA PORTFÖY İKİNCİ SERBEST (TL) FON",
+                "company_name": "ATA GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "STI": {
+            "AYEN": {
+                "lot": 230412946.42,
+                "ratio": 83.03,
+                "is_manual": false,
+                "shareholder_name": "AYDINER İNŞAAT ANONİM ŞTİ.",
+                "company_name": "AYEN ENERJİ A.Ş."
+            }
+        },
+        "GAS": {
+            "AYGAZ": {
+                "lot": 53884641.77,
+                "ratio": 24.52,
+                "is_manual": false,
+                "shareholder_name": "LİQUİD PETROLEUM GAS DEVELOPMENT CY SA MERKEZİ CENEVRE TÜRKİYE İSTANBUL",
+                "company_name": "AYGAZ A.Ş."
+            }
+        },
+        "RTA": {
+            "A1CAP": {
+                "lot": 174750000.0,
+                "ratio": 25.89,
+                "is_manual": false,
+                "shareholder_name": "RTA LABORATUVARLARI BİYOLOJİK ÜRÜNLER İLAÇ VE MAKİNE SANAYİ TİCARET ANONİM ŞİRKETİ",
+                "company_name": "A1 CAPİTAL YATIRIM MENKUL DEĞERLER A.Ş."
+            }
+        },
+        "ICG": {
+            "A1CAP": {
+                "lot": 50000000.0,
+                "ratio": 7.41,
+                "is_manual": false,
+                "shareholder_name": "İCG FİNANSAL DANIŞMANLIK ANONİM ŞİRKETİ",
+                "company_name": "A1 CAPİTAL YATIRIM MENKUL DEĞERLER A.Ş."
+            },
+            "A1YEN": {
+                "lot": 29999999.98,
+                "ratio": 5.0,
+                "is_manual": false,
+                "shareholder_name": "İCG FİNANSAL DANIŞMANLIK ANONİM ŞİRKETİ",
+                "company_name": "A1 YENİLENEBİLİR ENERJİ ÜRETİM A.Ş."
+            },
+            "RTALB": {
+                "lot": 56016845.01,
+                "ratio": 11.2,
+                "is_manual": false,
+                "shareholder_name": "İCG FİNANSAL DANIŞMANLIK ANONİM ŞİRKETİ",
+                "company_name": "RTA LABORATUVARLARI BİYOLOJİK ÜRÜNLER İLAÇ VE MAKİNE SANAYİ TİCARET A.Ş."
+            }
+        },
+        "IAS": {
+            "BAGFS": {
+                "lot": 8617409.0,
+                "ratio": 6.38,
+                "is_manual": false,
+                "shareholder_name": "ASTRA PORTFÖY MUTLAK GETİRİ HEDEFLİ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "BAGFAŞ BANDIRMA GÜBRE FABRİKALARI A.Ş."
+            }
+        },
+        "PHF": {
+            "BAHKM": {
+                "lot": 2837357.0,
+                "ratio": 5.16,
+                "is_manual": false,
+                "shareholder_name": "PİRAMİT PORTFÖY BİST 50 DIŞI ŞİRKETLER HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "BAHADIR KİMYA SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "HPL": {
+            "BALSU": {
+                "lot": 75890865.0,
+                "ratio": 6.82,
+                "is_manual": false,
+                "shareholder_name": "HEDEF PORTFÖY ÇINAR HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "BALSU GIDA SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "BRF": {
+            "BANVT": {
+                "lot": 55036207.82,
+                "ratio": 55.02,
+                "is_manual": false,
+                "shareholder_name": "BRF GMBH",
+                "company_name": "BANVİT BANDIRMA VİTAMİNLİ YEM SANAYİ A.Ş."
+            }
+        },
+        "AS3": {
+            "BAYRK": {
+                "lot": 19078738.35,
+                "ratio": 7.63,
+                "is_manual": false,
+                "shareholder_name": "ALLBATROSS PORTFÖY ATLAS SERBEST FON",
+                "company_name": "BAYRAK EBT TABAN SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "DTP": {
+            "BLCYT": {
+                "lot": 13179899.0,
+                "ratio": 13.18,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY ADATEPE SERBEST ÖZEL FON",
+                "company_name": "BİLİCİ YATIRIM SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "HGJ": {
+            "BORLS": {
+                "lot": 53112748.0,
+                "ratio": 7.59,
+                "is_manual": false,
+                "shareholder_name": "HEDEF PORTFÖY GÜNEY HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "BORLEASE OTOMOTİV A.Ş."
+            }
+        },
+        "BBO": {
+            "BURVA": {
+                "lot": 1073003.0,
+                "ratio": 14.6,
+                "is_manual": false,
+                "shareholder_name": "BULLS PORTFÖY BANKACILIK SEKTÖRÜ DIŞI ŞİRKETLER HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "BURÇELİK VANA SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "DHS": {
+            "CEMZY": {
+                "lot": 170783581.05,
+                "ratio": 7.43,
+                "is_manual": false,
+                "shareholder_name": "DENİZ PORTFÖY CC HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "CEM ZEYTİN A.Ş."
+            }
+        },
+        "ABG": {
+            "CRDFA": {
+                "lot": 59378784.0,
+                "ratio": 19.79,
+                "is_manual": false,
+                "shareholder_name": "ATLAS PORTFÖY DÖRDÜNCÜ SERBEST (TL) FON",
+                "company_name": "CREDITWEST FAKTORİNG A.Ş."
+            },
+            "IEYHO": {
+                "lot": 61179728.0,
+                "ratio": 11.25,
+                "is_manual": false,
+                "shareholder_name": "ATLAS PORTFÖY DÖRDÜNCÜ SERBEST (TL) FON",
+                "company_name": "IŞIKLAR ENERJİ VE YAPI HOLDİNG A.Ş."
+            }
+        },
+        "BDO": {
+            "CWENE": {
+                "lot": 79515699.9,
+                "ratio": 7.37,
+                "is_manual": false,
+                "shareholder_name": "BULLS PORTFÖY DÖRDÜNCÜ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "CW ENERJİ MÜHENDİSLİK TİCARET VE SANAYİ A.Ş."
+            }
+        },
+        "SVY": {
+            "CWENE": {
+                "lot": 97312630.34,
+                "ratio": 9.02,
+                "is_manual": false,
+                "shareholder_name": "DENİZ PORTFÖY TTSVY HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "CW ENERJİ MÜHENDİSLİK TİCARET VE SANAYİ A.Ş."
+            }
+        },
+        "BSN": {
+            "CGCAM": {
+                "lot": 19115390.0,
+                "ratio": 11.38,
+                "is_manual": false,
+                "shareholder_name": "BULLS PORTFÖY SANAYİ ŞİRKETLERİ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "ÇAĞDAŞ CAM SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "DRH": {
+            "DAGI": {
+                "lot": 24990125.0,
+                "ratio": 6.25,
+                "is_manual": false,
+                "shareholder_name": "PARDUS PORTFÖY DÖRDÜNCÜ HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "DAGİ GİYİM SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "DAP": {
+            "DAPGM": {
+                "lot": 246675994.95,
+                "ratio": 9.31,
+                "is_manual": false,
+                "shareholder_name": "DAP YAPI İNŞAAT SANAYİ VE TİCARET ANONİM ŞİRKETİ",
+                "company_name": "DAP GAYRİMENKUL GELİŞTİRME A.Ş."
+            }
+        },
+        "TP2": {
+            "DSTKF": {
+                "lot": 23362590.0,
+                "ratio": 7.01,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY PARA PİYASASI (TL) FONU",
+                "company_name": "DESTEK FİNANS FAKTORİNG A.Ş."
+            }
+        },
+        "BDY": {
+            "DITAS": {
+                "lot": 114610965.68,
+                "ratio": 67.42,
+                "is_manual": false,
+                "shareholder_name": "BDY GROUP İNŞAAT ANONİM ŞİRKETİ",
+                "company_name": "DİTAŞ BDY YEDEK PARÇA İMALAT VE TEKNİK A.Ş."
+            }
+        },
+        "YLZ": {
+            "DITAS": {
+                "lot": 10708488.0,
+                "ratio": 6.3,
+                "is_manual": false,
+                "shareholder_name": "BULLS PORTFÖY YILDIZ PAZAR ŞİRKETLERİ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "DİTAŞ BDY YEDEK PARÇA İMALAT VE TEKNİK A.Ş."
+            }
+        },
+        "DP1": {
+            "ERBOS": {
+                "lot": 3818141.0,
+                "ratio": 19.09,
+                "is_manual": false,
+                "shareholder_name": "DENİZ PORTFÖY DELTA SERBEST ÖZEL FON",
+                "company_name": "ERBOSAN ERCİYAS BORU SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "PYH": {
+            "FZLGY": {
+                "lot": 110832895.17,
+                "ratio": 8.87,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY 10.0 KATILIM SERBEST FON",
+                "company_name": "FUZUL GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "FS3": {
+            "FZLGY": {
+                "lot": 104691000.0,
+                "ratio": 8.38,
+                "is_manual": false,
+                "shareholder_name": "ONE PORTFÖY KATILIM HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "FUZUL GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "PGH": {
+            "GRNYO": {
+                "lot": 3014682.0,
+                "ratio": 8.04,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY GÜNEY HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GARANTİ YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "PPU": {
+            "GATEG": {
+                "lot": 1040000.0,
+                "ratio": 9.19,
+                "is_manual": false,
+                "shareholder_name": "PARDUS PORTFÖY ÜÇÜNCÜ SERBEST FON",
+                "company_name": "GATE GROUP TEKNOLOJİ MEDYA VE SİBER GÜVENLİK HİZMETLERİ A.Ş."
+            }
+        },
+        "ABJ": {
+            "GZNMI": {
+                "lot": 5187703.0,
+                "ratio": 7.98,
+                "is_manual": false,
+                "shareholder_name": "ALLBATROSS PORTFÖY BENZ HİSSE SENEDİ SERBEST (TL) ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GEZİNOMİ SEYAHAT TURİZM TİCARET A.Ş."
+            },
+            "QUAGR": {
+                "lot": 160647082.0,
+                "ratio": 6.09,
+                "is_manual": false,
+                "shareholder_name": "ALLBATROSS PORTFÖY BENZ HİSSE SENEDİ SERBEST (TL) ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "QUA GRANITE HAYAL YAPI VE ÜRÜNLERİ SANAYİ TİCARET A.Ş."
+            }
+        },
+        "BSE": {
+            "GZNMI": {
+                "lot": 5415000.0,
+                "ratio": 8.33,
+                "is_manual": false,
+                "shareholder_name": "PARDUS PORTFÖY BIST 30 DIŞI ŞİRKETLER HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GEZİNOMİ SEYAHAT TURİZM TİCARET A.Ş."
+            }
+        },
+        "RAI": {
+            "GLYHO": {
+                "lot": 335000000.0,
+                "ratio": 17.18,
+                "is_manual": false,
+                "shareholder_name": "ROTA PORTFÖY ABİS HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GLOBAL YATIRIM HOLDİNG A.Ş."
+            }
+        },
+        "BBN": {
+            "GRTHO": {
+                "lot": 6594323.0,
+                "ratio": 5.28,
+                "is_manual": false,
+                "shareholder_name": "BULLS PORTFÖY BİRİNCİ HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GRAINTURK HOLDİNG A.Ş."
+            }
+        },
+        "MAC": {
+            "GSDHO": {
+                "lot": 65000000.0,
+                "ratio": 6.5,
+                "is_manual": false,
+                "shareholder_name": "MARMARA CAPITAL PORTFÖY HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GSD HOLDİNG A.Ş."
+            }
+        },
+        "PBH": {
+            "GLRMK": {
+                "lot": 17788910.0,
+                "ratio": 5.51,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY BİRİNCİ HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GÜLERMAK AĞIR SANAYİ İNŞAAT VE TAAHHÜT A.Ş."
+            }
+        },
+        "PDE": {
+            "GUNDG": {
+                "lot": 7225749.0,
+                "ratio": 18.53,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY DENGE KATILIM SERBEST FON",
+                "company_name": "GÜNDOĞDU GIDA SÜT ÜRÜNLERİ SANAYİ VE DIŞ TİCARET A.Ş."
+            },
+            "IZFAS": {
+                "lot": 48578131.0,
+                "ratio": 27.42,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY DENGE KATILIM SERBEST FON",
+                "company_name": "İZMİR FIRÇA SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "PHE": {
+            "GUNDG": {
+                "lot": 2917720.0,
+                "ratio": 7.48,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY HİSSE SENEDİ FONU (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GÜNDOĞDU GIDA SÜT ÜRÜNLERİ SANAYİ VE DIŞ TİCARET A.Ş."
+            }
+        },
+        "PCS": {
+            "GUNDG": {
+                "lot": 4217667.0,
+                "ratio": 10.81,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY ÜÇÜNCÜ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GÜNDOĞDU GIDA SÜT ÜRÜNLERİ SANAYİ VE DIŞ TİCARET A.Ş."
+            },
+            "KTLEV": {
+                "lot": 1751432253.07,
+                "ratio": 25.02,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY ÜÇÜNCÜ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "KATILIMEVİM TASARRUF FİNANSMAN A.Ş."
+            },
+            "ODINE": {
+                "lot": 10728118.0,
+                "ratio": 9.71,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY ÜÇÜNCÜ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "ODİNE SOLUTİONS TEKNOLOJİ TİCARET VE SANAYİ A.Ş."
+            }
+        },
+        "GMO": {
+            "GRSEL": {
+                "lot": 6735000.0,
+                "ratio": 6.6,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY G MOBİLİTE HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GÜR-SEL TURİZM TAŞIMACILIK VE SERVİS TİCARET A.Ş."
+            }
+        },
+        "HDH": {
+            "HEDEF": {
+                "lot": 338683007.28,
+                "ratio": 11.29,
+                "is_manual": false,
+                "shareholder_name": "HEDEF PORTFÖY DOĞU HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "HEDEF HOLDİNG A.Ş."
+            },
+            "INFO": {
+                "lot": 78389943.9,
+                "ratio": 8.16,
+                "is_manual": false,
+                "shareholder_name": "HEDEF PORTFÖY DOĞU HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "İNFO YATIRIM MENKUL DEĞERLER A.Ş."
+            }
+        },
+        "DFI": {
+            "ISKPL": {
+                "lot": 123133339.0,
+                "ratio": 8.21,
+                "is_manual": false,
+                "shareholder_name": "ATLAS PORTFÖY SERBEST FON",
+                "company_name": "IŞIK PLASTİK SANAYİ VE DIŞ TİCARET PAZARLAMA A.Ş."
+            },
+            "IEYHO": {
+                "lot": 81775746.0,
+                "ratio": 15.04,
+                "is_manual": false,
+                "shareholder_name": "ATLAS PORTFÖY SERBEST FON",
+                "company_name": "IŞIKLAR ENERJİ VE YAPI HOLDİNG A.Ş."
+            }
+        },
+        "HPF": {
+            "INFO": {
+                "lot": 86528079.0,
+                "ratio": 9.01,
+                "is_manual": false,
+                "shareholder_name": "HEDEF PORTFÖY KUZEY HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "İNFO YATIRIM MENKUL DEĞERLER A.Ş."
+            },
+            "TMPOL": {
+                "lot": 1695800.0,
+                "ratio": 11.96,
+                "is_manual": false,
+                "shareholder_name": "HEDEF PORTFÖY KUZEY HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "TEMAPOL POLİMER PLASTİK VE İNŞAAT SANAYİ TİCARET A.Ş."
+            }
+        },
+        "DHI": {
+            "IZENR": {
+                "lot": 271272957.0,
+                "ratio": 11.1,
+                "is_manual": false,
+                "shareholder_name": "PARDUS PORTFÖY DOKUZUNCU HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "İZDEMİR ENERJİ ELEKTRİK ÜRETİM A.Ş."
+            }
+        },
+        "PKZ": {
+            "KTLEV": {
+                "lot": 995672029.62,
+                "ratio": 14.22,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY KUZEY HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "KATILIMEVİM TASARRUF FİNANSMAN A.Ş."
+            }
+        },
+        "ZTV": {
+            "KAYSE": {
+                "lot": 282315480.94,
+                "ratio": 9.41,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VARLIK FONU",
+                "company_name": "KAYSERİ ŞEKER FABRİKASI A.Ş."
+            },
+            "THYAO": {
+                "lot": 677884848.57,
+                "ratio": 49.12,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VARLIK FONU",
+                "company_name": "TÜRK HAVA YOLLARI A.O."
+            },
+            "TTKOM": {
+                "lot": 2158800000.02,
+                "ratio": 61.68,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VARLIK FONU",
+                "company_name": "TÜRK TELEKOMÜNİKASYON A.Ş."
+            },
+            "HALKB": {
+                "lot": 6573603541.96,
+                "ratio": 91.49,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VARLIK FONU",
+                "company_name": "TÜRKİYE HALK BANKASI A.Ş."
+            },
+            "VAKBN": {
+                "lot": 7263921522.54,
+                "ratio": 73.26,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VARLIK FONU",
+                "company_name": "TÜRKİYE VAKIFLAR BANKASI T.A.O."
+            }
+        },
+        "TGV": {
+            "KLRHO": {
+                "lot": 102618005.0,
+                "ratio": 6.31,
+                "is_manual": false,
+                "shareholder_name": "TACİRLER PORTFÖY KG SERBEST ÖZEL FON",
+                "company_name": "KİLER HOLDİNG A.Ş."
+            }
+        },
+        "LTS": {
+            "KGYO": {
+                "lot": 116901036.92,
+                "ratio": 11.69,
+                "is_manual": false,
+                "shareholder_name": "HEDEF PORTFÖY LOTUS SERBEST FON",
+                "company_name": "KORAY GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "PSR": {
+            "KOPOL": {
+                "lot": 218092144.0,
+                "ratio": 16.82,
+                "is_manual": false,
+                "shareholder_name": "PARDUS PORTFÖY SANAYİ ŞİRKETLERİ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "KOZA POLYESTER SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "BAC": {
+            "LIDER": {
+                "lot": 45500000.0,
+                "ratio": 5.52,
+                "is_manual": false,
+                "shareholder_name": "ATLAS PORTFÖY BİRİNCİ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "LDR TURİZM A.Ş."
+            }
+        },
+        "MGE": {
+            "LIDER": {
+                "lot": 49436977.0,
+                "ratio": 5.99,
+                "is_manual": false,
+                "shareholder_name": "PARDUS PORTFÖY MUTLAK GETİRİ HEDEFLİ HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "LDR TURİZM A.Ş."
+            }
+        },
+        "CBO": {
+            "LILAK": {
+                "lot": 51666333.0,
+                "ratio": 8.76,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY HCBO HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "LİLA KAĞIT SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "SYF": {
+            "LILAK": {
+                "lot": 58966758.0,
+                "ratio": 9.99,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY KLM HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "LİLA KAĞIT SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "SAT": {
+            "LILAK": {
+                "lot": 49037479.0,
+                "ratio": 8.31,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY RASAT HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "LİLA KAĞIT SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "BIK": {
+            "LYDYE": {
+                "lot": 122872.0,
+                "ratio": 6.5,
+                "is_manual": false,
+                "shareholder_name": "BULLS PORTFÖY İKİNCİ HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "LYDİA YEŞİL ENERJİ KAYNAKLARI A.Ş."
+            }
+        },
+        "IYP": {
+            "MAKTK": {
+                "lot": 66213392.0,
+                "ratio": 33.11,
+                "is_manual": false,
+                "shareholder_name": "İSTANBUL PORTFÖY YILDIZ SERBEST ÖZEL FON",
+                "company_name": "MAKİNA TAKIM ENDÜSTRİSİ A.Ş."
+            }
+        },
+        "NUH": {
+            "NUHCM": {
+                "lot": 66283863.52,
+                "ratio": 44.13,
+                "is_manual": false,
+                "shareholder_name": "NUH TİCARET VE SANAYİ A Ş",
+                "company_name": "NUH ÇİMENTO SANAYİ A.Ş."
+            }
+        },
+        "DAL": {
+            "OBASE": {
+                "lot": 10489500.0,
+                "ratio": 23.05,
+                "is_manual": false,
+                "shareholder_name": "BÜLENT DAL",
+                "company_name": "OBASE BİLGİSAYAR VE DANIŞMANLIK HİZMETLERİ TİCARET A.Ş."
+            }
+        },
+        "TCC": {
+            "OYAKC": {
+                "lot": 3891795733.59,
+                "ratio": 80.05,
+                "is_manual": false,
+                "shareholder_name": "TCC OYAK AMSTERDAM HOLDINGS B.V.",
+                "company_name": "OYAK ÇİMENTO FABRİKALARI A.Ş."
+            }
+        },
+        "EHS": {
+            "PNLSN": {
+                "lot": 13752384.0,
+                "ratio": 18.34,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY ERCİYES HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "PANELSAN ÇATI CEPHE SİSTEMLERİ SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "PHB": {
+            "PASEU": {
+                "lot": 58222513.0,
+                "ratio": 8.66,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY BEŞİNCİ HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "PASİFİK EURASİA LOJİSTİK DIŞ TİCARET A.Ş."
+            }
+        },
+        "PRY": {
+            "PASEU": {
+                "lot": 103670553.0,
+                "ratio": 15.43,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY PARA PİYASASI (TL) FONU",
+                "company_name": "PASİFİK EURASİA LOJİSTİK DIŞ TİCARET A.Ş."
+            }
+        },
+        "PDG": {
+            "SKYLP": {
+                "lot": 1345000.0,
+                "ratio": 14.16,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY DOĞU HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "SKYALP FİNANSAL TEKNOLOJİLER VE DANIŞMANLIK A.Ş."
+            }
+        },
+        "PHN": {
+            "SKYLP": {
+                "lot": 1027842.0,
+                "ratio": 10.82,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY İKİNCİ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "SKYALP FİNANSAL TEKNOLOJİLER VE DANIŞMANLIK A.Ş."
+            }
+        },
+        "VPS": {
+            "SOKE": {
+                "lot": 19937145.0,
+                "ratio": 5.16,
+                "is_manual": false,
+                "shareholder_name": "VEGA PORTFÖY SALUR HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "SÖKE DEĞİRMENCİLİK SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "SLR": {
+            "SUNTK": {
+                "lot": 32000000.0,
+                "ratio": 6.74,
+                "is_manual": false,
+                "shareholder_name": "QNB PORTFÖY SOLARİS SERBEST ÖZEL FON",
+                "company_name": "SUN TEKSTİL SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "SUR": {
+            "SURGY": {
+                "lot": 117700000.0,
+                "ratio": 70.27,
+                "is_manual": false,
+                "shareholder_name": "SUR YAPI ENDÜSTRİ SANAYİ TİC.A.Ş.",
+                "company_name": "SUR TATİL EVLERİ GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "ZVO": {
+            "SUWEN": {
+                "lot": 40461673.5,
+                "ratio": 7.23,
+                "is_manual": false,
+                "shareholder_name": "ZİRAAT PORTFÖY ÜÇÜNCÜ SERBEST (TL) FON",
+                "company_name": "SUWEN TEKSTİL SANAYİ PAZARLAMA A.Ş."
+            }
+        },
+        "HMV": {
+            "TEHOL": {
+                "lot": 100778000.0,
+                "ratio": 5.05,
+                "is_manual": false,
+                "shareholder_name": "HEDEF PORTFÖY MAVİ HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "TERA YATIRIM TEKNOLOJİ HOLDİNG A.Ş."
+            }
+        },
+        "SPA": {
+            "TOASO": {
+                "lot": 189279856.87,
+                "ratio": 37.86,
+                "is_manual": false,
+                "shareholder_name": "STELLANTİS EUROPE SPA",
+                "company_name": "TOFAŞ TÜRK OTOMOBİL FABRİKASI A.Ş."
+            }
+        },
+        "TAO": {
+            "TSKB": {
+                "lot": 234569489.94,
+                "ratio": 8.38,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VAKIFLAR BANKASI T.A.O.",
+                "company_name": "TÜRKİYE SINAİ KALKINMA BANKASI A.Ş."
+            },
+            "VAKFA": {
+                "lot": 685784035.0,
+                "ratio": 76.2,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VAKIFLAR BANKASI T.A.O.",
+                "company_name": "VAKIF FAKTORİNG A.Ş."
+            },
+            "VAKFN": {
+                "lot": 3811720314.74,
+                "ratio": 63.53,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VAKIFLAR BANKASI T.A.O.",
+                "company_name": "VAKIF FİNANSAL KİRALAMA A.Ş."
+            },
+            "VKGYO": {
+                "lot": 2469149921.21,
+                "ratio": 56.12,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VAKIFLAR BANKASI T.A.O.",
+                "company_name": "VAKIF GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            },
+            "VKFYO": {
+                "lot": 10132457.69,
+                "ratio": 33.77,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VAKIFLAR BANKASI T.A.O.",
+                "company_name": "VAKIF MENKUL KIYMET YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "NTD": {
+            "UNLU": {
+                "lot": 34990000.0,
+                "ratio": 19.91,
+                "is_manual": false,
+                "shareholder_name": "ÜNLÜ PORTFÖY UFT HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "ÜNLÜ YATIRIM HOLDİNG A.Ş."
+            }
+        },
+        "T3B": {
+            "VANGD": {
+                "lot": 1693535.0,
+                "ratio": 6.77,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY ÜÇÜNCÜ  HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN)",
+                "company_name": "VANET GIDA SANAYİ İÇ VE DIŞ TİCARET A.Ş."
+            }
+        },
+        "NOV": {
+            "YYLGD": {
+                "lot": 70656800.0,
+                "ratio": 6.5,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY INOVA AGRO HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "YAYLA AGRO GIDA SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "ZJB": {
+            "ZRGYO": {
+                "lot": 343115470.0,
+                "ratio": 7.31,
+                "is_manual": false,
+                "shareholder_name": "ZİRAAT PORTFÖY BİRİNCİ SERBEST (TL) FON",
+                "company_name": "ZİRAAT GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "ZJI": {
+            "ZRGYO": {
+                "lot": 260904378.0,
+                "ratio": 5.56,
+                "is_manual": false,
+                "shareholder_name": "ZİRAAT PORTFÖY İKİNCİ SERBEST (TL) FON",
+                "company_name": "ZİRAAT GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            }
+        }
+    },
+    "2026-08-31": {
+        "SRO": {
+            "AGHOL": {
+                "lot": 171565220.0,
+                "ratio": 7.04,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY SKY HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "AG ANADOLU GRUBU HOLDİNG A.Ş."
+            }
+        },
+        "RE8": {
+            "AHSGY": {
+                "lot": 68226857.9,
+                "ratio": 9.46,
+                "is_manual": false,
+                "shareholder_name": "RE-PIE PORTFÖY SEKİZİNCİ HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "AHES GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "BSC": {
+            "ALBRK": {
+                "lot": 1334860092.57,
+                "ratio": 53.39,
+                "is_manual": false,
+                "shareholder_name": "AL BARAKA GROUP B.S.C. (C)",
+                "company_name": "ALBARAKA TÜRK KATILIM BANKASI A.Ş."
+            }
+        },
+        "TLY": {
+            "ALKLC": {
+                "lot": 7892263.0,
+                "ratio": 7.05,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "ALTINKILIÇ GIDA VE SÜT SANAYİ TİCARET A.Ş."
+            },
+            "ANELE": {
+                "lot": 42955201.0,
+                "ratio": 16.21,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "ANEL ELEKTRİK PROJE TAAHHÜT VE TİCARET A.Ş."
+            },
+            "BIGEN": {
+                "lot": 37594409.0,
+                "ratio": 6.52,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "BİRLEŞİM GRUP ENERJİ YATIRIMLARI A.Ş."
+            },
+            "DSTKF": {
+                "lot": 23055816.0,
+                "ratio": 6.92,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "DESTEK FİNANS FAKTORİNG A.Ş."
+            },
+            "OZATD": {
+                "lot": 14286394.0,
+                "ratio": 20.02,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "ÖZATA DENİZCİLİK SANAYİ VE TİCARET A.Ş."
+            },
+            "PEKGY": {
+                "lot": 1549723492.0,
+                "ratio": 30.99,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "PEKER GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            },
+            "TRHOL": {
+                "lot": 6394121.0,
+                "ratio": 21.31,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "TERA FİNANSAL YATIRIMLAR HOLDİNG A.Ş."
+            },
+            "TEHOL": {
+                "lot": 530172360.75,
+                "ratio": 26.56,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY BİRİNCİ SERBEST FON",
+                "company_name": "TERA YATIRIM TEKNOLOJİ HOLDİNG A.Ş."
+            }
+        },
+        "THF": {
+            "ALKLC": {
+                "lot": 6330424.0,
+                "ratio": 5.65,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "ALTINKILIÇ GIDA VE SÜT SANAYİ TİCARET A.Ş."
+            },
+            "ANELE": {
+                "lot": 15580685.0,
+                "ratio": 5.88,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "ANEL ELEKTRİK PROJE TAAHHÜT VE TİCARET A.Ş."
+            },
+            "GIPTA": {
+                "lot": 8231516.0,
+                "ratio": 6.24,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GIPTA OFİS KIRTASİYE VE PROMOSYON ÜRÜNLERİ İMALAT SANAYİ A.Ş."
+            },
+            "MANAS": {
+                "lot": 30000000.0,
+                "ratio": 9.06,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "MANAS ENERJİ YÖNETİMİ SANAYİ VE TİCARET A.Ş."
+            },
+            "SVGYO": {
+                "lot": 98870725.0,
+                "ratio": 9.13,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "SAVUR GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            },
+            "TMPOL": {
+                "lot": 1250000.0,
+                "ratio": 8.82,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "TEMAPOL POLİMER PLASTİK VE İNŞAAT SANAYİ TİCARET A.Ş."
+            }
+        },
+        "TMV": {
+            "ANELE": {
+                "lot": 26999000.0,
+                "ratio": 10.19,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY ALGORİTMİK STRATEJİLER SERBEST FON",
+                "company_name": "ANEL ELEKTRİK PROJE TAAHHÜT VE TİCARET A.Ş."
+            },
+            "TMPOL": {
+                "lot": 1670000.0,
+                "ratio": 11.78,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY ALGORİTMİK STRATEJİLER SERBEST FON",
+                "company_name": "TEMAPOL POLİMER PLASTİK VE İNŞAAT SANAYİ TİCARET A.Ş."
+            },
+            "TRHOL": {
+                "lot": 1520436.0,
+                "ratio": 5.07,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY ALGORİTMİK STRATEJİLER SERBEST FON",
+                "company_name": "TERA FİNANSAL YATIRIMLAR HOLDİNG A.Ş."
+            }
+        },
+        "ARF": {
+            "ARFYE": {
+                "lot": 128500000.0,
+                "ratio": 70.28,
+                "is_manual": false,
+                "shareholder_name": "RE-PİE PORTFÖY YÖNETİMİ A.Ş. ARF GİRİŞİM SERMAYESİ YATIRIM FONU",
+                "company_name": "ARF BİO YENİLENEBİLİR ENERJİ ÜRETİM A.Ş."
+            }
+        },
+        "AVC": {
+            "ATAGY": {
+                "lot": 7176087.0,
+                "ratio": 15.11,
+                "is_manual": false,
+                "shareholder_name": "ATA PORTFÖY İKİNCİ SERBEST (TL) FON",
+                "company_name": "ATA GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "STI": {
+            "AYEN": {
+                "lot": 230412946.42,
+                "ratio": 83.03,
+                "is_manual": false,
+                "shareholder_name": "AYDINER İNŞAAT ANONİM ŞTİ.",
+                "company_name": "AYEN ENERJİ A.Ş."
+            }
+        },
+        "GAS": {
+            "AYGAZ": {
+                "lot": 53884641.77,
+                "ratio": 24.52,
+                "is_manual": false,
+                "shareholder_name": "LİQUİD PETROLEUM GAS DEVELOPMENT CY SA MERKEZİ CENEVRE TÜRKİYE İSTANBUL",
+                "company_name": "AYGAZ A.Ş."
+            }
+        },
+        "RTA": {
+            "A1CAP": {
+                "lot": 174750000.0,
+                "ratio": 25.89,
+                "is_manual": false,
+                "shareholder_name": "RTA LABORATUVARLARI BİYOLOJİK ÜRÜNLER İLAÇ VE MAKİNE SANAYİ TİCARET ANONİM ŞİRKETİ",
+                "company_name": "A1 CAPİTAL YATIRIM MENKUL DEĞERLER A.Ş."
+            }
+        },
+        "ICG": {
+            "A1CAP": {
+                "lot": 50000000.0,
+                "ratio": 7.41,
+                "is_manual": false,
+                "shareholder_name": "İCG FİNANSAL DANIŞMANLIK ANONİM ŞİRKETİ",
+                "company_name": "A1 CAPİTAL YATIRIM MENKUL DEĞERLER A.Ş."
+            },
+            "A1YEN": {
+                "lot": 29999999.98,
+                "ratio": 5.0,
+                "is_manual": false,
+                "shareholder_name": "İCG FİNANSAL DANIŞMANLIK ANONİM ŞİRKETİ",
+                "company_name": "A1 YENİLENEBİLİR ENERJİ ÜRETİM A.Ş."
+            },
+            "RTALB": {
+                "lot": 56016845.01,
+                "ratio": 11.2,
+                "is_manual": false,
+                "shareholder_name": "İCG FİNANSAL DANIŞMANLIK ANONİM ŞİRKETİ",
+                "company_name": "RTA LABORATUVARLARI BİYOLOJİK ÜRÜNLER İLAÇ VE MAKİNE SANAYİ TİCARET A.Ş."
+            }
+        },
+        "IAS": {
+            "BAGFS": {
+                "lot": 8642409.0,
+                "ratio": 6.4,
+                "is_manual": false,
+                "shareholder_name": "ASTRA PORTFÖY MUTLAK GETİRİ HEDEFLİ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "BAGFAŞ BANDIRMA GÜBRE FABRİKALARI A.Ş."
+            }
+        },
+        "PHF": {
+            "BAHKM": {
+                "lot": 2837357.0,
+                "ratio": 5.16,
+                "is_manual": false,
+                "shareholder_name": "PİRAMİT PORTFÖY BİST 50 DIŞI ŞİRKETLER HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "BAHADIR KİMYA SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "HPL": {
+            "BALSU": {
+                "lot": 75890865.0,
+                "ratio": 6.82,
+                "is_manual": false,
+                "shareholder_name": "HEDEF PORTFÖY ÇINAR HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "BALSU GIDA SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "BRF": {
+            "BANVT": {
+                "lot": 55036207.82,
+                "ratio": 55.02,
+                "is_manual": false,
+                "shareholder_name": "BRF GMBH",
+                "company_name": "BANVİT BANDIRMA VİTAMİNLİ YEM SANAYİ A.Ş."
+            }
+        },
+        "AS3": {
+            "BAYRK": {
+                "lot": 19078738.35,
+                "ratio": 7.63,
+                "is_manual": false,
+                "shareholder_name": "ALLBATROSS PORTFÖY ATLAS SERBEST FON",
+                "company_name": "BAYRAK EBT TABAN SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "DTP": {
+            "BLCYT": {
+                "lot": 13179899.0,
+                "ratio": 13.18,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY ADATEPE SERBEST ÖZEL FON",
+                "company_name": "BİLİCİ YATIRIM SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "HGJ": {
+            "BORLS": {
+                "lot": 53112748.0,
+                "ratio": 7.59,
+                "is_manual": false,
+                "shareholder_name": "HEDEF PORTFÖY GÜNEY HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "BORLEASE OTOMOTİV A.Ş."
+            }
+        },
+        "BBO": {
+            "BURVA": {
+                "lot": 1073003.0,
+                "ratio": 14.6,
+                "is_manual": false,
+                "shareholder_name": "BULLS PORTFÖY BANKACILIK SEKTÖRÜ DIŞI ŞİRKETLER HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "BURÇELİK VANA SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "DHS": {
+            "CEMZY": {
+                "lot": 170783581.05,
+                "ratio": 7.43,
+                "is_manual": false,
+                "shareholder_name": "DENİZ PORTFÖY CC HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "CEM ZEYTİN A.Ş."
+            }
+        },
+        "ABG": {
+            "CRDFA": {
+                "lot": 59378784.0,
+                "ratio": 19.79,
+                "is_manual": false,
+                "shareholder_name": "ATLAS PORTFÖY DÖRDÜNCÜ SERBEST (TL) FON",
+                "company_name": "CREDITWEST FAKTORİNG A.Ş."
+            },
+            "IEYHO": {
+                "lot": 61179728.0,
+                "ratio": 11.25,
+                "is_manual": false,
+                "shareholder_name": "ATLAS PORTFÖY DÖRDÜNCÜ SERBEST (TL) FON",
+                "company_name": "IŞIKLAR ENERJİ VE YAPI HOLDİNG A.Ş."
+            }
+        },
+        "BDO": {
+            "CWENE": {
+                "lot": 79515699.9,
+                "ratio": 7.37,
+                "is_manual": false,
+                "shareholder_name": "BULLS PORTFÖY DÖRDÜNCÜ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "CW ENERJİ MÜHENDİSLİK TİCARET VE SANAYİ A.Ş."
+            }
+        },
+        "SVY": {
+            "CWENE": {
+                "lot": 97312630.34,
+                "ratio": 9.02,
+                "is_manual": false,
+                "shareholder_name": "DENİZ PORTFÖY TTSVY HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "CW ENERJİ MÜHENDİSLİK TİCARET VE SANAYİ A.Ş."
+            }
+        },
+        "BSN": {
+            "CGCAM": {
+                "lot": 19115390.0,
+                "ratio": 11.38,
+                "is_manual": false,
+                "shareholder_name": "BULLS PORTFÖY SANAYİ ŞİRKETLERİ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "ÇAĞDAŞ CAM SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "DRH": {
+            "DAGI": {
+                "lot": 24990125.0,
+                "ratio": 6.25,
+                "is_manual": false,
+                "shareholder_name": "PARDUS PORTFÖY DÖRDÜNCÜ HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "DAGİ GİYİM SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "DAP": {
+            "DAPGM": {
+                "lot": 246675994.95,
+                "ratio": 9.31,
+                "is_manual": false,
+                "shareholder_name": "DAP YAPI İNŞAAT SANAYİ VE TİCARET ANONİM ŞİRKETİ",
+                "company_name": "DAP GAYRİMENKUL GELİŞTİRME A.Ş."
+            }
+        },
+        "TP2": {
+            "DSTKF": {
+                "lot": 26208865.0,
+                "ratio": 7.86,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY PARA PİYASASI (TL) FONU",
+                "company_name": "DESTEK FİNANS FAKTORİNG A.Ş."
+            }
+        },
+        "BDY": {
+            "DITAS": {
+                "lot": 114610965.68,
+                "ratio": 67.42,
+                "is_manual": false,
+                "shareholder_name": "BDY GROUP İNŞAAT ANONİM ŞİRKETİ",
+                "company_name": "DİTAŞ BDY YEDEK PARÇA İMALAT VE TEKNİK A.Ş."
+            }
+        },
+        "YLZ": {
+            "DITAS": {
+                "lot": 10708488.0,
+                "ratio": 6.3,
+                "is_manual": false,
+                "shareholder_name": "BULLS PORTFÖY YILDIZ PAZAR ŞİRKETLERİ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "DİTAŞ BDY YEDEK PARÇA İMALAT VE TEKNİK A.Ş."
+            }
+        },
+        "DP1": {
+            "ERBOS": {
+                "lot": 3818141.0,
+                "ratio": 19.09,
+                "is_manual": false,
+                "shareholder_name": "DENİZ PORTFÖY DELTA SERBEST ÖZEL FON",
+                "company_name": "ERBOSAN ERCİYAS BORU SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "PYH": {
+            "FZLGY": {
+                "lot": 110832895.17,
+                "ratio": 8.87,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY 10.0 KATILIM SERBEST FON",
+                "company_name": "FUZUL GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "FS3": {
+            "FZLGY": {
+                "lot": 104741000.0,
+                "ratio": 8.38,
+                "is_manual": false,
+                "shareholder_name": "ONE PORTFÖY KATILIM HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "FUZUL GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "PGH": {
+            "GRNYO": {
+                "lot": 3014682.0,
+                "ratio": 8.04,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY GÜNEY HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GARANTİ YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "PPU": {
+            "GATEG": {
+                "lot": 1040000.0,
+                "ratio": 9.19,
+                "is_manual": false,
+                "shareholder_name": "PARDUS PORTFÖY ÜÇÜNCÜ SERBEST FON",
+                "company_name": "GATE GROUP TEKNOLOJİ MEDYA VE SİBER GÜVENLİK HİZMETLERİ A.Ş."
+            }
+        },
+        "ABJ": {
+            "GZNMI": {
+                "lot": 5187703.0,
+                "ratio": 7.98,
+                "is_manual": false,
+                "shareholder_name": "ALLBATROSS PORTFÖY BENZ HİSSE SENEDİ SERBEST (TL) ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GEZİNOMİ SEYAHAT TURİZM TİCARET A.Ş."
+            },
+            "QUAGR": {
+                "lot": 160647082.0,
+                "ratio": 6.09,
+                "is_manual": false,
+                "shareholder_name": "ALLBATROSS PORTFÖY BENZ HİSSE SENEDİ SERBEST (TL) ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "QUA GRANITE HAYAL YAPI VE ÜRÜNLERİ SANAYİ TİCARET A.Ş."
+            }
+        },
+        "BSE": {
+            "GZNMI": {
+                "lot": 5415000.0,
+                "ratio": 8.33,
+                "is_manual": false,
+                "shareholder_name": "PARDUS PORTFÖY BIST 30 DIŞI ŞİRKETLER HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GEZİNOMİ SEYAHAT TURİZM TİCARET A.Ş."
+            }
+        },
+        "RAI": {
+            "GLYHO": {
+                "lot": 335000000.0,
+                "ratio": 17.18,
+                "is_manual": false,
+                "shareholder_name": "ROTA PORTFÖY ABİS HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GLOBAL YATIRIM HOLDİNG A.Ş."
+            }
+        },
+        "BBN": {
+            "GRTHO": {
+                "lot": 6594323.0,
+                "ratio": 5.28,
+                "is_manual": false,
+                "shareholder_name": "BULLS PORTFÖY BİRİNCİ HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GRAINTURK HOLDİNG A.Ş."
+            }
+        },
+        "MAC": {
+            "GSDHO": {
+                "lot": 65000000.0,
+                "ratio": 6.5,
+                "is_manual": false,
+                "shareholder_name": "MARMARA CAPITAL PORTFÖY HİSSE SENEDİ (TL) FONU (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GSD HOLDİNG A.Ş."
+            }
+        },
+        "PBH": {
+            "GLRMK": {
+                "lot": 17788910.0,
+                "ratio": 5.51,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY BİRİNCİ HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GÜLERMAK AĞIR SANAYİ İNŞAAT VE TAAHHÜT A.Ş."
+            }
+        },
+        "PDE": {
+            "GUNDG": {
+                "lot": 7225749.0,
+                "ratio": 18.53,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY DENGE KATILIM SERBEST FON",
+                "company_name": "GÜNDOĞDU GIDA SÜT ÜRÜNLERİ SANAYİ VE DIŞ TİCARET A.Ş."
+            },
+            "IZFAS": {
+                "lot": 48578131.0,
+                "ratio": 27.42,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY DENGE KATILIM SERBEST FON",
+                "company_name": "İZMİR FIRÇA SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "PHE": {
+            "GUNDG": {
+                "lot": 2870237.0,
+                "ratio": 7.36,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY HİSSE SENEDİ FONU (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GÜNDOĞDU GIDA SÜT ÜRÜNLERİ SANAYİ VE DIŞ TİCARET A.Ş."
+            }
+        },
+        "PCS": {
+            "GUNDG": {
+                "lot": 4277667.0,
+                "ratio": 10.97,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY ÜÇÜNCÜ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GÜNDOĞDU GIDA SÜT ÜRÜNLERİ SANAYİ VE DIŞ TİCARET A.Ş."
+            },
+            "KTLEV": {
+                "lot": 1755922253.07,
+                "ratio": 25.08,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY ÜÇÜNCÜ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "KATILIMEVİM TASARRUF FİNANSMAN A.Ş."
+            },
+            "ODINE": {
+                "lot": 10728118.0,
+                "ratio": 9.71,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY ÜÇÜNCÜ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "ODİNE SOLUTİONS TEKNOLOJİ TİCARET VE SANAYİ A.Ş."
+            }
+        },
+        "GMO": {
+            "GRSEL": {
+                "lot": 6735000.0,
+                "ratio": 6.6,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY G MOBİLİTE HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "GÜR-SEL TURİZM TAŞIMACILIK VE SERVİS TİCARET A.Ş."
+            }
+        },
+        "HDH": {
+            "HEDEF": {
+                "lot": 338683007.28,
+                "ratio": 11.29,
+                "is_manual": false,
+                "shareholder_name": "HEDEF PORTFÖY DOĞU HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "HEDEF HOLDİNG A.Ş."
+            },
+            "INFO": {
+                "lot": 78389943.9,
+                "ratio": 8.16,
+                "is_manual": false,
+                "shareholder_name": "HEDEF PORTFÖY DOĞU HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "İNFO YATIRIM MENKUL DEĞERLER A.Ş."
+            }
+        },
+        "DFI": {
+            "ISKPL": {
+                "lot": 123133339.0,
+                "ratio": 8.21,
+                "is_manual": false,
+                "shareholder_name": "ATLAS PORTFÖY SERBEST FON",
+                "company_name": "IŞIK PLASTİK SANAYİ VE DIŞ TİCARET PAZARLAMA A.Ş."
+            },
+            "IEYHO": {
+                "lot": 81775746.0,
+                "ratio": 15.04,
+                "is_manual": false,
+                "shareholder_name": "ATLAS PORTFÖY SERBEST FON",
+                "company_name": "IŞIKLAR ENERJİ VE YAPI HOLDİNG A.Ş."
+            }
+        },
+        "HPF": {
+            "INFO": {
+                "lot": 86528079.0,
+                "ratio": 9.01,
+                "is_manual": false,
+                "shareholder_name": "HEDEF PORTFÖY KUZEY HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "İNFO YATIRIM MENKUL DEĞERLER A.Ş."
+            },
+            "TMPOL": {
+                "lot": 1695800.0,
+                "ratio": 11.96,
+                "is_manual": false,
+                "shareholder_name": "HEDEF PORTFÖY KUZEY HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "TEMAPOL POLİMER PLASTİK VE İNŞAAT SANAYİ TİCARET A.Ş."
+            }
+        },
+        "DHI": {
+            "IZENR": {
+                "lot": 271272957.0,
+                "ratio": 11.1,
+                "is_manual": false,
+                "shareholder_name": "PARDUS PORTFÖY DOKUZUNCU HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "İZDEMİR ENERJİ ELEKTRİK ÜRETİM A.Ş."
+            }
+        },
+        "PKZ": {
+            "KTLEV": {
+                "lot": 995672029.62,
+                "ratio": 14.22,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY KUZEY HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "KATILIMEVİM TASARRUF FİNANSMAN A.Ş."
+            }
+        },
+        "ZTV": {
+            "KAYSE": {
+                "lot": 282315480.94,
+                "ratio": 9.41,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VARLIK FONU",
+                "company_name": "KAYSERİ ŞEKER FABRİKASI A.Ş."
+            },
+            "THYAO": {
+                "lot": 677884848.57,
+                "ratio": 49.12,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VARLIK FONU",
+                "company_name": "TÜRK HAVA YOLLARI A.O."
+            },
+            "TTKOM": {
+                "lot": 2158800000.02,
+                "ratio": 61.68,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VARLIK FONU",
+                "company_name": "TÜRK TELEKOMÜNİKASYON A.Ş."
+            },
+            "HALKB": {
+                "lot": 6573603541.96,
+                "ratio": 91.49,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VARLIK FONU",
+                "company_name": "TÜRKİYE HALK BANKASI A.Ş."
+            },
+            "VAKBN": {
+                "lot": 7263921522.54,
+                "ratio": 73.26,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VARLIK FONU",
+                "company_name": "TÜRKİYE VAKIFLAR BANKASI T.A.O."
+            }
+        },
+        "TGV": {
+            "KLRHO": {
+                "lot": 102618005.0,
+                "ratio": 6.31,
+                "is_manual": false,
+                "shareholder_name": "TACİRLER PORTFÖY KG SERBEST ÖZEL FON",
+                "company_name": "KİLER HOLDİNG A.Ş."
+            }
+        },
+        "LTS": {
+            "KGYO": {
+                "lot": 116901036.92,
+                "ratio": 11.69,
+                "is_manual": false,
+                "shareholder_name": "HEDEF PORTFÖY LOTUS SERBEST FON",
+                "company_name": "KORAY GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "PSR": {
+            "KOPOL": {
+                "lot": 218092144.0,
+                "ratio": 16.82,
+                "is_manual": false,
+                "shareholder_name": "PARDUS PORTFÖY SANAYİ ŞİRKETLERİ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "KOZA POLYESTER SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "BAC": {
+            "LIDER": {
+                "lot": 45500000.0,
+                "ratio": 5.52,
+                "is_manual": false,
+                "shareholder_name": "ATLAS PORTFÖY BİRİNCİ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "LDR TURİZM A.Ş."
+            }
+        },
+        "MGE": {
+            "LIDER": {
+                "lot": 49436977.0,
+                "ratio": 5.99,
+                "is_manual": false,
+                "shareholder_name": "PARDUS PORTFÖY MUTLAK GETİRİ HEDEFLİ HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "LDR TURİZM A.Ş."
+            }
+        },
+        "CBO": {
+            "LILAK": {
+                "lot": 51666333.0,
+                "ratio": 8.76,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY HCBO HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "LİLA KAĞIT SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "SYF": {
+            "LILAK": {
+                "lot": 58966758.0,
+                "ratio": 9.99,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY KLM HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "LİLA KAĞIT SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "SAT": {
+            "LILAK": {
+                "lot": 49037479.0,
+                "ratio": 8.31,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY RASAT HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "LİLA KAĞIT SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "BIK": {
+            "LYDYE": {
+                "lot": 122872.0,
+                "ratio": 6.5,
+                "is_manual": false,
+                "shareholder_name": "BULLS PORTFÖY İKİNCİ HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "LYDİA YEŞİL ENERJİ KAYNAKLARI A.Ş."
+            }
+        },
+        "IYP": {
+            "MAKTK": {
+                "lot": 66213392.0,
+                "ratio": 33.11,
+                "is_manual": false,
+                "shareholder_name": "İSTANBUL PORTFÖY YILDIZ SERBEST ÖZEL FON",
+                "company_name": "MAKİNA TAKIM ENDÜSTRİSİ A.Ş."
+            }
+        },
+        "DOH": {
+            "MANAS": {
+                "lot": 17124756.0,
+                "ratio": 5.17,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY DÖRDÜNCÜ HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "MANAS ENERJİ YÖNETİMİ SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "NUH": {
+            "NUHCM": {
+                "lot": 66283863.52,
+                "ratio": 44.13,
+                "is_manual": false,
+                "shareholder_name": "NUH TİCARET VE SANAYİ A Ş",
+                "company_name": "NUH ÇİMENTO SANAYİ A.Ş."
+            }
+        },
+        "DAL": {
+            "OBASE": {
+                "lot": 10489500.0,
+                "ratio": 23.05,
+                "is_manual": false,
+                "shareholder_name": "BÜLENT DAL",
+                "company_name": "OBASE BİLGİSAYAR VE DANIŞMANLIK HİZMETLERİ TİCARET A.Ş."
+            }
+        },
+        "TCC": {
+            "OYAKC": {
+                "lot": 3891795733.59,
+                "ratio": 80.05,
+                "is_manual": false,
+                "shareholder_name": "TCC OYAK AMSTERDAM HOLDINGS B.V.",
+                "company_name": "OYAK ÇİMENTO FABRİKALARI A.Ş."
+            }
+        },
+        "EHS": {
+            "PNLSN": {
+                "lot": 13752384.0,
+                "ratio": 18.34,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY ERCİYES HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "PANELSAN ÇATI CEPHE SİSTEMLERİ SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "PHB": {
+            "PASEU": {
+                "lot": 58242187.0,
+                "ratio": 8.67,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY BEŞİNCİ HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "PASİFİK EURASİA LOJİSTİK DIŞ TİCARET A.Ş."
+            }
+        },
+        "PRY": {
+            "PASEU": {
+                "lot": 55417696.0,
+                "ratio": 8.25,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY PARA PİYASASI (TL) FONU",
+                "company_name": "PASİFİK EURASİA LOJİSTİK DIŞ TİCARET A.Ş."
+            }
+        },
+        "PNU": {
+            "PASEU": {
+                "lot": 57818952.0,
+                "ratio": 8.6,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY İKİNCİ PARA PİYASASI (TL) FONU",
+                "company_name": "PASİFİK EURASİA LOJİSTİK DIŞ TİCARET A.Ş."
+            }
+        },
+        "PDG": {
+            "SKYLP": {
+                "lot": 1345000.0,
+                "ratio": 14.16,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY DOĞU HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "SKYALP FİNANSAL TEKNOLOJİLER VE DANIŞMANLIK A.Ş."
+            }
+        },
+        "PHN": {
+            "SKYLP": {
+                "lot": 1027842.0,
+                "ratio": 10.82,
+                "is_manual": false,
+                "shareholder_name": "PUSULA PORTFÖY İKİNCİ HİSSE SENEDİ SERBEST FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "SKYALP FİNANSAL TEKNOLOJİLER VE DANIŞMANLIK A.Ş."
+            }
+        },
+        "VPS": {
+            "SOKE": {
+                "lot": 19957145.0,
+                "ratio": 5.16,
+                "is_manual": false,
+                "shareholder_name": "VEGA PORTFÖY SALUR HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "SÖKE DEĞİRMENCİLİK SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "SLR": {
+            "SUNTK": {
+                "lot": 32000000.0,
+                "ratio": 6.74,
+                "is_manual": false,
+                "shareholder_name": "QNB PORTFÖY SOLARİS SERBEST ÖZEL FON",
+                "company_name": "SUN TEKSTİL SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "SUR": {
+            "SURGY": {
+                "lot": 117700000.0,
+                "ratio": 70.27,
+                "is_manual": false,
+                "shareholder_name": "SUR YAPI ENDÜSTRİ SANAYİ TİC.A.Ş.",
+                "company_name": "SUR TATİL EVLERİ GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "ZVO": {
+            "SUWEN": {
+                "lot": 40461673.5,
+                "ratio": 7.23,
+                "is_manual": false,
+                "shareholder_name": "ZİRAAT PORTFÖY ÜÇÜNCÜ SERBEST (TL) FON",
+                "company_name": "SUWEN TEKSTİL SANAYİ PAZARLAMA A.Ş."
+            }
+        },
+        "HMV": {
+            "TEHOL": {
+                "lot": 100778000.0,
+                "ratio": 5.05,
+                "is_manual": false,
+                "shareholder_name": "HEDEF PORTFÖY MAVİ HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "TERA YATIRIM TEKNOLOJİ HOLDİNG A.Ş."
+            }
+        },
+        "SPA": {
+            "TOASO": {
+                "lot": 189279856.87,
+                "ratio": 37.86,
+                "is_manual": false,
+                "shareholder_name": "STELLANTİS EUROPE SPA",
+                "company_name": "TOFAŞ TÜRK OTOMOBİL FABRİKASI A.Ş."
+            }
+        },
+        "TAO": {
+            "TSKB": {
+                "lot": 234569489.94,
+                "ratio": 8.38,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VAKIFLAR BANKASI T.A.O.",
+                "company_name": "TÜRKİYE SINAİ KALKINMA BANKASI A.Ş."
+            },
+            "VAKFA": {
+                "lot": 685784035.0,
+                "ratio": 76.2,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VAKIFLAR BANKASI T.A.O.",
+                "company_name": "VAKIF FAKTORİNG A.Ş."
+            },
+            "VAKFN": {
+                "lot": 3811720314.74,
+                "ratio": 63.53,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VAKIFLAR BANKASI T.A.O.",
+                "company_name": "VAKIF FİNANSAL KİRALAMA A.Ş."
+            },
+            "VKGYO": {
+                "lot": 2469149922.23,
+                "ratio": 56.12,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VAKIFLAR BANKASI T.A.O.",
+                "company_name": "VAKIF GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."
+            },
+            "VKFYO": {
+                "lot": 10132457.69,
+                "ratio": 33.77,
+                "is_manual": false,
+                "shareholder_name": "TÜRKİYE VAKIFLAR BANKASI T.A.O.",
+                "company_name": "VAKIF MENKUL KIYMET YATIRIM ORTAKLIĞI A.Ş."
+            }
+        },
+        "NTD": {
+            "UNLU": {
+                "lot": 34990000.0,
+                "ratio": 19.91,
+                "is_manual": false,
+                "shareholder_name": "ÜNLÜ PORTFÖY UFT HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "ÜNLÜ YATIRIM HOLDİNG A.Ş."
+            }
+        },
+        "T3B": {
+            "VANGD": {
+                "lot": 1693535.0,
+                "ratio": 6.77,
+                "is_manual": false,
+                "shareholder_name": "TERA PORTFÖY ÜÇÜNCÜ  HİSSE SENEDİ SERBEST (TL) FON (HİSSE SENEDİ YOĞUN)",
+                "company_name": "VANET GIDA SANAYİ İÇ VE DIŞ TİCARET A.Ş."
+            }
+        },
+        "NOV": {
+            "YYLGD": {
+                "lot": 70656800.0,
+                "ratio": 6.5,
+                "is_manual": false,
+                "shareholder_name": "AZİMUT PORTFÖY INOVA AGRO HİSSE SENEDİ SERBEST ÖZEL FON (HİSSE SENEDİ YOĞUN FON)",
+                "company_name": "YAYLA AGRO GIDA SANAYİ VE TİCARET A.Ş."
+            }
+        },
+        "ZJB": {
+            "ZRGYO": {
+                "lot": 342695470.0,
+                "ratio": 7.3,
                 "is_manual": false,
                 "shareholder_name": "ZİRAAT PORTFÖY BİRİNCİ SERBEST (TL) FON",
                 "company_name": "ZİRAAT GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş."

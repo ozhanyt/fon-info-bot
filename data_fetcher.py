@@ -627,15 +627,28 @@ def fetch_tracked_funds(tracked_codes, period_type, resolved_dates):
     actual_start_date = resolved_dates["actual_start_date"]
     actual_end_date = resolved_dates["actual_end_date"]
 
-    for code in tracked_codes:
+    for idx_code, code in enumerate(tracked_codes):
+        if idx_code > 0:
+            time.sleep(1.5)
         try:
-            if custom_range:
-                df = tapi.get_fund_history_between(code, actual_start_date, actual_end_date)
-            else:
-                period_months = 2 if period_type == "monthly" else 1
-                df = tapi.get_fund_history(code, period_months=period_months)
+            df = None
+            for fund_attempt in range(2):
+                if custom_range:
+                    df = tapi.get_fund_history_between(code, actual_start_date, actual_end_date)
+                else:
+                    period_months = 2 if period_type == "monthly" else 1
+                    df = tapi.get_fund_history(code, period_months=period_months)
+
+                if df is not None and not df.empty and len(df) >= 2:
+                    break
+                if fund_attempt == 0:
+                    import logging
+                    logging.warning(f"Retrying history fetch for fund {code} after short pause...")
+                    time.sleep(3.0)
 
             if df is None or df.empty or len(df) < 2:
+                import logging
+                logging.error(f"Failed to fetch history for fund {code}, skipping.")
                 continue
 
             latest = df.iloc[-1]
